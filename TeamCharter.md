@@ -43,4 +43,4 @@
 - [ ] Анастасія (GitHub: @anastasiaaq)
 - [ ] Валентина (GitHub: @valuuusha)
 - [ ] Антон (GitHub: @MaFiN1337)
-- [ ] Вікторія (GitHub: @Victoria7778)
+- [x] Вікторія (GitHub: @Victoria7778)
