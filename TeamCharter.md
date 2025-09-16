@@ -42,5 +42,5 @@
 ## 8. Підписи
 - [ ] Анастасія (GitHub: @anastasiaaq)
 - [x] Валентина (GitHub: @valuuusha)
-- [ ] Антон (GitHub: @MaFiN1337)
+- [x] Антон (GitHub: @MaFiN1337)
 - [x] Вікторія (GitHub: @Victoria7778)
