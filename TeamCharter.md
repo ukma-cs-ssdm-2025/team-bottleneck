@@ -40,7 +40,7 @@
  - не плагіатити код та документацію 
 
 ## 8. Підписи
-- [ ] Анастасія (GitHub: @anastasiaaq)
+- [x] Анастасія (GitHub: @anastasiaaq)
 - [x] Валентина (GitHub: @valuuusha)
 - [x] Антон (GitHub: @MaFiN1337)
 - [x] Вікторія (GitHub: @Victoria7778)
