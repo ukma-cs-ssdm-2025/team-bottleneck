@@ -13,4 +13,10 @@
 ## Структура репозиторію
 - [Project-Description.md](Project-Description.md) -- опис проекту
 - [TeamCharter.md](TeamCharter.md) -- командний статут
+
+## Артефакти вимог
+- [requirements.md](docs/requirements/requirements.md) -- функціональні та нефункціональні вимоги
+- [user-stories.md](docs/requirements/user-stories.md) -- користувацькі історії
+- [rtm.md](docs/requirements/rtm.md) -- матриця простежуваності
+- [use-cases.md](docs/requirements/rtm.md) -- use cases
   
