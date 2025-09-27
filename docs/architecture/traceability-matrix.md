@@ -1,17 +1,17 @@
 | FR/NFR                           | Компонент                       | Архітектурне рішення             | Метод перевірки                       |
 | -------------------------------- | ------------------------------- | -------------------------------- | ------------------------------------- |
-| FR-001: Відображення паркомісць  | Parking Service + DB            | Запит даних через REST API       | TC-001 (≤3с рендер списку)            |
-| FR-002: Оплата онлайн            | Payment Service + Gateway       | HTTPS інтеграція з LiqPay/Stripe | TC-002 (немає відкритих карт/паролів) |
-| FR-003: Додавання паркінгів      | Admin Panel + DB                | CRUD через API                   | TC-003 (zero downtime)                |
-| FR-004: Повідомлення про помилки | Notification Service            | Локалізовані повідомлення        | TC-004                                |
-| FR-005: Push/email нагадування   | Notification Service + Firebase | Push/email інтеграція            | TC-005                                |
-| FR-006: Резервне копіювання      | DB + Backup Module              | Автоматичний cron backup         | TC-007                                |
-| FR-007: Історія транзакцій       | Transactions Table + API        | REST endpoint `/history`         | TC-008                                |
-| NFR-001: Performance ≤3s         | Всі сервіси                     | Кешування + оптимізація запитів  | TC-009: Навантажувальні тести         |
-| NFR-002: Security (AES-256)      | Auth + Payment                  | Шифрування даних, HTTPS          | TC-010: Pen-testing                   |
-| NFR-003: Reliability (Backup)    | DB                              | Автоматичні резервні копії       | TC-011: Перевірка логів backup        |
-| NFR-004: Usability (Mobile)      | Web/Mobile UI                   | Адаптивна верстка                | TC-012: Тестування на смартфонах      |
-| NFR-005: Usability (Errors)      | Notification Service            | UX-тексти з інструкціями         | TC-013: Користувацьке тестування      |
+| FR-001: Відображення паркомісць  | Parking Management Service + DB | Запит даних через REST API       | TC-001 (≤3с рендер списку)            |
+| FR-002: Оплата онлайн            | Payment Service + Gateway       | HTTPS інтеграція з LiqPay        | TC-002 (немає відкритих карт/паролів) |
+| FR-003: Додавання паркінгів      | Admin Panel + DB                | CRUD через API                   | TC-003 (збереження функцій)           |
+| FR-004: Повідомлення про помилки | Notification Service            | Локалізовані повідомлення        | TC-004 (пояснення та підказки)        |
+| FR-005: Push/email нагадування   | Notification Service + Firebase | Push/email інтеграція            | TC-005 (push-повідомлення)            |
+| FR-006: Резервне копіювання      | DB + Backup Module              | Автоматичний cron backup         | TC-007 (перевірка логу і бекапу)      |
+| FR-007: Історія транзакцій       | Web/Mobile UI + API             | REST endpoint `/history`         | TC-008  (≤3с рендер списку)           |
+| NFR-001: Performance ≤3s         | Всі сервіси                     | Оптимізація запитів, нормалізація БД | Навантажувальні тести             |
+| NFR-002: Security (AES-256)      | Auth + Payment                  | Шифрування даних, HTTPS          | Пентестинг                            |
+| NFR-003: Reliability (Backup)    | DB                              | Автоматичні резервні копії       | TC-007 (перевірка логів і бекапу)     |
+| NFR-004: Usability (Mobile)      | Web/Mobile UI                   | Адаптивна верстка                | TC-006 (тестування на смартфонах)     |
+| NFR-005: Usability (Errors)      | Notification Service            | UX-тексти з інструкціями         | TC-005 (push-повідомлення)            |
 
 # Performance  
 **Вимога:** "Час відображення історії оплат ≤ 3 секунд"  
