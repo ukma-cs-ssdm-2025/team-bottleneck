@@ -1,0 +1,36 @@
+@startuml
+title Component Diagram: Parking Management System
+
+package "Presentation Layer" {
+  [Web/Mobile UI] as UI
+}
+
+package "Application Layer" {
+  [Authentication Service] as Auth
+  [Parking Management Service] as ParkingService
+  [Payment Service] as PaymentService
+  [Notification Service] as NotificationService
+}
+
+package "Data Layer" {
+  [DAO] as DAO
+  database "PostgreSQL DB" as DB
+}
+
+package "External Systems" {
+  [Payment Gateway] as Gateway
+  [Email/SMS Provider] as EmailService
+}
+
+UI --> Auth : login/logout
+UI --> ParkingService : search, book
+UI --> PaymentService : request payment
+UI --> NotificationService : view alerts
+
+ParkingService --> DAO : CRUD parkings
+PaymentService --> Gateway : process payment
+NotificationService --> EmailService : send messages
+
+DAO --> DB : SQL queries
+
+@enduml
