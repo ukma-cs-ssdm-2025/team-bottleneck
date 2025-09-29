@@ -17,6 +17,8 @@
 ## Артефакти вимог
 - [requirements.md](docs/requirements/requirements.md) -- функціональні та нефункціональні вимоги
 - [user-stories.md](docs/requirements/user-stories.md) -- користувацькі історії
-- [rtm.md](docs/requirements/rtm.md) -- матриця простежуваності
 - [use-cases.md](docs/requirements/rtm.md) -- use cases
   
+## Архітектура проекту
+- [architecture](docs/architecture/) -- папка з усіма файлами архітектури проекту
+- [traceability-matrix.md](docs/architecture/traceability-matrix.md) - відповідність вимог архітектурі
