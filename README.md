@@ -20,5 +20,7 @@
 - [use-cases.md](docs/requirements/rtm.md) -- use cases
   
 ## Архітектура проекту
-- [architecture](docs/architecture/) -- папка з усіма файлами архітектури проекту
+- [high-level-diagram.png](docs/architecture/high-level-diagram.png) -- діаграма архітектурного огляду
+- [high-level-design.md](docs/architecture/high-level-design.md) -- опис high-level-design
 - [traceability-matrix.md](docs/architecture/traceability-matrix.md) - відповідність вимог архітектурі
+- [architecture](docs/architecture/) -- папка з усіма файлами архітектури проекту
