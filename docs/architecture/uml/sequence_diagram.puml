@@ -1,0 +1,46 @@
+@startuml
+title Sequence Diagram: Online Parking Payment
+
+actor Driver as User
+boundary ReactUI
+control RESTAPI
+control PythonApp as "Python App\n(Бізнес-логіка)"
+control DAO
+database DB as "PostgreSQL"
+entity PaymentSystem as "Платіжна система"
+
+User -> ReactUI : Відобразити карту паркінгу
+ReactUI -> RESTAPI : Запитати доступність
+RESTAPI -> PythonApp : Виклик методу пошуку
+PythonApp -> DAO : SQL-запит доступних місць
+DAO -> DB : SELECT * FROM ParkingLots
+DB --> DAO : Результати
+DAO --> PythonApp : Дані паркомісць
+PythonApp --> RESTAPI : Список вільних місць
+RESTAPI --> ReactUI : Дані в JSON
+ReactUI --> User : Відобразити місця на карті
+
+User -> ReactUI : Обрати вільне місце
+ReactUI -> RESTAPI : Запит на розрахунок вартості
+RESTAPI -> PythonApp : Виклик методу calculatePrice
+PythonApp -> DAO : SELECT price FROM ParkingLots WHERE id=...
+DAO -> DB : Отримати ціну місця
+DB --> DAO : Ціна
+DAO --> PythonApp : Ціна
+PythonApp --> RESTAPI : Вартість броні
+RESTAPI --> ReactUI : JSON-ціна
+ReactUI --> User : Відобразити вартість
+
+User -> ReactUI : Підтвердити оплату
+ReactUI -> RESTAPI : Запит на оплату
+RESTAPI -> PythonApp : Виклик методу createPayment
+PythonApp -> PaymentSystem : API-запит на оплату
+PaymentSystem --> PythonApp : Статус платежу (успіх/відмова)
+PythonApp -> DAO : INSERT INTO Transactions
+DAO -> DB : Зберегти транзакцію
+DB --> DAO : OK
+DAO --> PythonApp : OK
+PythonApp --> RESTAPI : Квитанція
+RESTAPI --> ReactUI : JSON-квитанція
+ReactUI --> User : Підтвердження оплати
+@enduml
