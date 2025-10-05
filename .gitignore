@@ -1,0 +1,18 @@
+# Python / Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+db.sqlite3
+
+# Virtual env
+venv/
+
+# Django static build (якщо робитимеш collectstatic локально)
+staticfiles/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
