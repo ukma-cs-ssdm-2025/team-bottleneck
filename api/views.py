@@ -1,9 +1,11 @@
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
+)
 
 from .models import ParkingLot, Spot, Booking
 from .serializers import (
@@ -18,7 +20,7 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     queryset = ParkingLot.objects.all()
     serializer_class = ParkingLotSerializer
 
-    # GET /api/lots/
+    # GET /api/v1/lots/
     @extend_schema(
         summary="List parking lots",
         description="Returns a paginated list of parking lots with coordinates.",
@@ -30,7 +32,7 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # POST /api/lots/
+    # POST /api/v1/lots/
     @extend_schema(
         summary="Create a parking lot",
         request=ParkingLotSerializer,
@@ -40,17 +42,24 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
             409: OpenApiResponse(ErrorSerializer, description="Duplicate lot (same name and address)"),
             **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
         },
+        examples=[
+            OpenApiExample(
+                "Valid request",
+                value={"name": "Gulliver", "address": "Kyiv", "lat": 50.44, "lng": 30.52}
+            )
+        ]
     )
     def create(self, request, *args, **kwargs):
-        # приклад простої перевірки конфлікту
         name = request.data.get("name")
         address = request.data.get("address")
         if name and address and ParkingLot.objects.filter(name=name, address=address).exists():
-            return Response({"detail": "Parking lot with this name and address already exists."},
-                            status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"detail": "Parking lot with this name and address already exists."},
+                status=status.HTTP_409_CONFLICT
+            )
         return super().create(request, *args, **kwargs)
 
-    # GET /api/lots/{id}/
+    # GET /api/v1/lots/{id}/
     @extend_schema(
         summary="Retrieve a parking lot",
         responses={
@@ -62,7 +71,7 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    # PUT /api/lots/{id}/
+    # PUT /api/v1/lots/{id}/
     @extend_schema(
         summary="Replace a parking lot",
         request=ParkingLotSerializer,
@@ -77,7 +86,7 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-    # PATCH /api/lots/{id}/
+    # PATCH /api/v1/lots/{id}/
     @extend_schema(
         summary="Partially update a parking lot",
         request=ParkingLotSerializer,
@@ -92,7 +101,7 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
-    # DELETE /api/lots/{id}/
+    # DELETE /api/v1/lots/{id}/
     @extend_schema(
         summary="Delete a parking lot",
         responses={
@@ -109,7 +118,7 @@ class SpotViewSet(viewsets.ModelViewSet):
     queryset = Spot.objects.select_related("lot").all()
     serializer_class = SpotSerializer
 
-    # GET /api/spots/
+    # GET /api/v1/spots/
     @extend_schema(
         summary="List parking spots",
         description="Supports filtering by lot id and flags. Boolean values accept 'true' or 'false' (case-insensitive).",
@@ -152,7 +161,7 @@ class SpotViewSet(viewsets.ModelViewSet):
         self.queryset = qs
         return super().list(request, *args, **kwargs)
 
-    # інші CRUD залишаємо успадкованими, але документуємо
+    # POST /api/v1/spots/
     @extend_schema(
         summary="Create a parking spot",
         request=SpotSerializer,
@@ -162,12 +171,18 @@ class SpotViewSet(viewsets.ModelViewSet):
             409: OpenApiResponse(ErrorSerializer, description="Duplicate spot number within the same lot"),
             **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
         },
+        examples=[
+            OpenApiExample(
+                "Valid request",
+                value={"number": "B12", "is_ev": True, "is_disabled": False, "lot_id": 1}
+            )
+        ]
     )
     def create(self, request, *args, **kwargs):
-        # можливий 409 на unique_together(lot, number) — БД кине 400,
-        # але якщо хочеш саме 409, можна перевірити вручну, як у lots.
+
         return super().create(request, *args, **kwargs)
 
+    # GET /api/v1/spots/{id}/
     @extend_schema(
         summary="Retrieve a parking spot",
         responses={
@@ -179,6 +194,7 @@ class SpotViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
+    # PUT /api/v1/spots/{id}/
     @extend_schema(
         summary="Replace a parking spot",
         request=SpotSerializer,
@@ -193,6 +209,7 @@ class SpotViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
+    # PATCH /api/v1/spots/{id}/
     @extend_schema(
         summary="Partially update a parking spot",
         request=SpotSerializer,
@@ -207,6 +224,7 @@ class SpotViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
+    # DELETE /api/v1/spots/{id}/
     @extend_schema(
         summary="Delete a parking spot",
         responses={
@@ -225,7 +243,7 @@ class BookingViewSet(mixins.ListModelMixin,
     queryset = Booking.objects.select_related("spot", "user").all()
     serializer_class = BookingSerializer
 
-    # GET /api/bookings/
+    # GET /api/v1/bookings/
     @extend_schema(
         summary="List bookings",
         responses={
@@ -236,7 +254,7 @@ class BookingViewSet(mixins.ListModelMixin,
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # GET /api/bookings/{id}/
+    # GET /api/v1/bookings/{id}/
     @extend_schema(
         summary="Retrieve a booking",
         responses={
@@ -248,7 +266,7 @@ class BookingViewSet(mixins.ListModelMixin,
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    # POST /api/bookings/create/
+    # POST /api/v1/bookings/create/
     @extend_schema(
         summary="Create a booking",
         request=BookingCreateSerializer,
@@ -258,6 +276,17 @@ class BookingViewSet(mixins.ListModelMixin,
             409: OpenApiResponse(ErrorSerializer, description="Overlapping booking"),
             **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
         },
+        examples=[
+            OpenApiExample(
+                "Valid request",
+                value={"spot": 10, "start_at": "2025-10-08T10:00:00Z", "end_at": "2025-10-08T12:00:00Z"},
+            ),
+            OpenApiExample(
+                "Overlap error (409)",
+                value={"detail": "Spot already booked in this interval."},
+                response_only=True, status_codes=["409"]
+            ),
+        ]
     )
     @action(detail=False, methods=["post"], url_path="create")
     @transaction.atomic
@@ -283,7 +312,7 @@ class BookingViewSet(mixins.ListModelMixin,
         )
         return Response(BookingSerializer(b).data, status=status.HTTP_201_CREATED)
 
-    # POST /api/bookings/{id}/cancel/
+    # POST /api/v1/bookings/{id}/cancel/
     @extend_schema(
         summary="Cancel a booking",
         request=BookingCancelSerializer,
@@ -293,6 +322,14 @@ class BookingViewSet(mixins.ListModelMixin,
             404: OpenApiResponse(ErrorSerializer, description="Booking not found"),
             **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
         },
+        examples=[
+            OpenApiExample("Valid request", value={"reason": "Changed plans"}),
+            OpenApiExample(
+                "Already cancelled (400)",
+                value={"detail": "Booking is already cancelled."},
+                response_only=True, status_codes=["400"]
+            ),
+        ]
     )
     @action(detail=True, methods=["post"], url_path="cancel")
     @transaction.atomic

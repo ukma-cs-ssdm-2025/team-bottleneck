@@ -6,6 +6,16 @@ class ParkingLotSerializer(serializers.ModelSerializer):
         model = ParkingLot
         fields = ["id", "name", "address", "lat", "lng"]
 
+        def validate_lat(self, v):
+            if not (-90 <= v <= 90):
+                raise serializers.ValidationError("lat must be between -90 and 90")
+            return v
+
+        def validate_lng(self, v):
+            if not (-180 <= v <= 180):
+                raise serializers.ValidationError("lng must be between -180 and 180")
+            return v
+
 class SpotSerializer(serializers.ModelSerializer):
     lot = ParkingLotSerializer(read_only=True)
     lot_id = serializers.PrimaryKeyRelatedField(
