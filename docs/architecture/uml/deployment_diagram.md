@@ -6,7 +6,7 @@
 
 ## Діаграма
 
-![Deployment Diagram](uml/diagrams_png/deployment_diagram.png)
+![Deployment Diagram](diagrams_png/deployment_diagram.png)
 
 ## Вихідний код
 
