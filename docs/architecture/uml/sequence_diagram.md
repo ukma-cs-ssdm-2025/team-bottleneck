@@ -6,7 +6,7 @@
 
 ## Діаграма
 
-![Sequence Diagram](uml/diagrams_png/sequence_diagram.png)
+![Sequence Diagram](diagrams_png/sequence_diagram.png)
 
 ## Вихідний код
 
