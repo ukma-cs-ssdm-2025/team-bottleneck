@@ -6,7 +6,7 @@
 
 ## Діаграма
 
-![Component Diagram](uml/diagrams_png/component_diagram.png)
+![Component Diagram](diagrams_png/component_diagram.png)
 
 ## Вихідний код
 
