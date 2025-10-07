@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import ParkingLot, Spot, Booking
+import re
 
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
