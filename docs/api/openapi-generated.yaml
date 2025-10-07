@@ -1,0 +1,1255 @@
+components:
+  schemas:
+    Booking:
+      properties:
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        end_at:
+          format: date-time
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        spot:
+          type: integer
+        start_at:
+          format: date-time
+          type: string
+        status:
+          readOnly: true
+          type: string
+        user:
+          nullable: true
+          readOnly: true
+          type: integer
+      required:
+      - created_at
+      - end_at
+      - id
+      - spot
+      - start_at
+      - status
+      - user
+      type: object
+    BookingCancel:
+      properties:
+        reason:
+          maxLength: 200
+          type: string
+      type: object
+    BookingCreate:
+      properties:
+        end_at:
+          format: date-time
+          type: string
+        spot:
+          type: integer
+        start_at:
+          format: date-time
+          type: string
+      required:
+      - end_at
+      - spot
+      - start_at
+      type: object
+    Error:
+      properties:
+        code:
+          type: string
+        detail:
+          type: string
+      required:
+      - detail
+      type: object
+    PaginatedBookingList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/Booking'
+          type: array
+      required:
+      - count
+      - results
+      type: object
+    PaginatedParkingLotList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/ParkingLot'
+          type: array
+      required:
+      - count
+      - results
+      type: object
+    PaginatedSpotList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/Spot'
+          type: array
+      required:
+      - count
+      - results
+      type: object
+    ParkingLot:
+      properties:
+        address:
+          maxLength: 255
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        lat:
+          format: double
+          type: number
+        lng:
+          format: double
+          type: number
+        name:
+          maxLength: 120
+          type: string
+      required:
+      - address
+      - id
+      - lat
+      - lng
+      - name
+      type: object
+    PatchedParkingLot:
+      properties:
+        address:
+          maxLength: 255
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        lat:
+          format: double
+          type: number
+        lng:
+          format: double
+          type: number
+        name:
+          maxLength: 120
+          type: string
+      type: object
+    PatchedSpot:
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        is_disabled:
+          type: boolean
+        is_ev:
+          type: boolean
+        lot:
+          allOf:
+          - $ref: '#/components/schemas/ParkingLot'
+          readOnly: true
+        lot_id:
+          type: integer
+          writeOnly: true
+        number:
+          maxLength: 20
+          type: string
+      type: object
+    Spot:
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        is_disabled:
+          type: boolean
+        is_ev:
+          type: boolean
+        lot:
+          allOf:
+          - $ref: '#/components/schemas/ParkingLot'
+          readOnly: true
+        lot_id:
+          type: integer
+          writeOnly: true
+        number:
+          maxLength: 20
+          type: string
+      required:
+      - id
+      - lot
+      - lot_id
+      - number
+      type: object
+  securitySchemes:
+    basicAuth:
+      scheme: basic
+      type: http
+    cookieAuth:
+      in: cookie
+      name: sessionid
+      type: apiKey
+info:
+  description: Search lots/spots, book & cancel.
+  title: Smart Parking API
+  version: 0.1.0
+openapi: 3.0.3
+paths:
+  /api/v1/bookings/:
+    get:
+      operationId: api_v1_bookings_list
+      parameters:
+      - description: A page number within the paginated result set.
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookingList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: List bookings
+      tags:
+      - api
+  /api/v1/bookings/create/:
+    post:
+      operationId: api_v1_bookings_create_create
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ValidRequest:
+                summary: Valid request
+                value:
+                  end_at: '2025-10-08T12:00:00Z'
+                  spot: 10
+                  start_at: '2025-10-08T10:00:00Z'
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              examples:
+                ValidRequest:
+                  summary: Valid request
+                  value:
+                    end_at: '2025-10-08T12:00:00Z'
+                    spot: 10
+                    start_at: '2025-10-08T10:00:00Z'
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid time window
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '409':
+          content:
+            application/json:
+              examples:
+                OverlapError(409):
+                  summary: Overlap error (409)
+                  value:
+                    detail: Spot already booked in this interval.
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Overlapping booking
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Create a booking
+      tags:
+      - api
+  /api/v1/bookings/{id}/:
+    get:
+      operationId: api_v1_bookings_retrieve
+      parameters:
+      - description: A unique integer value identifying this booking.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Booking not found
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Retrieve a booking
+      tags:
+      - api
+  /api/v1/bookings/{id}/cancel/:
+    post:
+      operationId: api_v1_bookings_cancel_create
+      parameters:
+      - description: A unique integer value identifying this booking.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ValidRequest:
+                summary: Valid request
+                value:
+                  reason: Changed plans
+            schema:
+              $ref: '#/components/schemas/BookingCancel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingCancel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingCancel'
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                ValidRequest:
+                  summary: Valid request
+                  value:
+                    reason: Changed plans
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+        '400':
+          content:
+            application/json:
+              examples:
+                AlreadyCancelled(400):
+                  summary: Already cancelled (400)
+                  value:
+                    detail: Booking is already cancelled.
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Booking already cancelled
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Booking not found
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Cancel a booking
+      tags:
+      - api
+  /api/v1/lots/:
+    get:
+      description: Returns a paginated list of parking lots with coordinates.
+      operationId: api_v1_lots_list
+      parameters:
+      - description: A page number within the paginated result set.
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParkingLotList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: List parking lots
+      tags:
+      - api
+    post:
+      operationId: api_v1_lots_create
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ValidRequest:
+                summary: Valid request
+                value:
+                  address: Kyiv
+                  lat: 50.44
+                  lng: 30.52
+                  name: Gulliver
+            schema:
+              $ref: '#/components/schemas/ParkingLot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParkingLot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParkingLot'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              examples:
+                ValidRequest:
+                  summary: Valid request
+                  value:
+                    address: Kyiv
+                    lat: 50.44
+                    lng: 30.52
+                    name: Gulliver
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Duplicate lot (same name and address)
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Create a parking lot
+      tags:
+      - api
+  /api/v1/lots/{id}/:
+    delete:
+      operationId: api_v1_lots_destroy
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Lot not found
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Delete a parking lot
+      tags:
+      - api
+    get:
+      operationId: api_v1_lots_retrieve
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Lot not found
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Retrieve a parking lot
+      tags:
+      - api
+    patch:
+      operationId: api_v1_lots_partial_update
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingLot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingLot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingLot'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Partially update a parking lot
+      tags:
+      - api
+    put:
+      operationId: api_v1_lots_update
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingLot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParkingLot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParkingLot'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Duplicate lot
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Replace a parking lot
+      tags:
+      - api
+  /api/v1/schema/:
+    get:
+      description: 'OpenApi3 schema for this API. Format can be selected via content
+        negotiation.
+
+
+        - YAML: application/vnd.oai.openapi
+
+        - JSON: application/vnd.oai.openapi+json'
+      operationId: api_v1_schema_retrieve
+      parameters:
+      - in: query
+        name: format
+        schema:
+          enum:
+          - json
+          - yaml
+          type: string
+      - in: query
+        name: lang
+        schema:
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: {}
+                type: object
+            application/vnd.oai.openapi:
+              schema:
+                additionalProperties: {}
+                type: object
+            application/vnd.oai.openapi+json:
+              schema:
+                additionalProperties: {}
+                type: object
+            application/yaml:
+              schema:
+                additionalProperties: {}
+                type: object
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      tags:
+      - api
+  /api/v1/spots/:
+    get:
+      description: Supports filtering by lot id and flags. Boolean values accept 'true'
+        or 'false' (case-insensitive).
+      operationId: api_v1_spots_list
+      parameters:
+      - description: Filter by accessible/disabled spots
+        in: query
+        name: is_disabled
+        schema:
+          type: boolean
+      - description: Filter by EV-ready spots
+        in: query
+        name: is_ev
+        schema:
+          type: boolean
+      - description: Filter by parking lot id
+        in: query
+        name: lot_id
+        schema:
+          type: integer
+      - description: A page number within the paginated result set.
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSpotList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid filter value (expected true/false)
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: List parking spots
+      tags:
+      - api
+    post:
+      operationId: api_v1_spots_create
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ValidRequest:
+                summary: Valid request
+                value:
+                  is_disabled: false
+                  is_ev: true
+                  lot_id: 1
+                  number: B12
+            schema:
+              $ref: '#/components/schemas/Spot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Spot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Spot'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              examples:
+                ValidRequest:
+                  summary: Valid request
+                  value:
+                    is_disabled: false
+                    is_ev: true
+                    lot_id: 1
+                    number: B12
+              schema:
+                $ref: '#/components/schemas/Spot'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Duplicate spot number within the same lot
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Create a parking spot
+      tags:
+      - api
+  /api/v1/spots/{id}/:
+    delete:
+      operationId: api_v1_spots_destroy
+      parameters:
+      - description: A unique integer value identifying this spot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Delete a parking spot
+      tags:
+      - api
+    get:
+      operationId: api_v1_spots_retrieve
+      parameters:
+      - description: A unique integer value identifying this spot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spot'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Retrieve a parking spot
+      tags:
+      - api
+    patch:
+      operationId: api_v1_spots_partial_update
+      parameters:
+      - description: A unique integer value identifying this spot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSpot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSpot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSpot'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spot'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Partially update a parking spot
+      tags:
+      - api
+    put:
+      operationId: api_v1_spots_update
+      parameters:
+      - description: A unique integer value identifying this spot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Spot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Spot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Spot'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spot'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthenticated
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Replace a parking spot
+      tags:
+      - api
