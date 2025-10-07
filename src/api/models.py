@@ -11,8 +11,8 @@ class ParkingLot(models.Model):
         return f"{self.name} ({self.city}, {self.street} {self.building or ''})"
 
 class Spot(models.Model):
-    lot = models.ForeignKey(ParkingLot, on_delete=models.CASCADE, related_name="spots")
-    number = models.CharField(max_length=20)
+    number = models.CharField(max_length=10)
+    lot = models.ForeignKey(ParkingLot, related_name="spots", on_delete=models.CASCADE)
     is_ev = models.BooleanField(default=False)
     is_disabled = models.BooleanField(default=False)
 

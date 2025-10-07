@@ -1,10 +1,15 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from rest_framework_nested import routers
 from .views import ParkingLotViewSet, SpotViewSet, BookingViewSet
 
-router = DefaultRouter()
+# Base router
+router = routers.SimpleRouter()
 router.register(r"lots", ParkingLotViewSet, basename="lot")
-router.register(r"spots", SpotViewSet, basename="spot")
+
+# Nested router: /lots/{lot_id}/spots/
+lots_router = routers.NestedSimpleRouter(router, r"lots", lookup="lot")
+lots_router.register(r"spots", SpotViewSet, basename="lot-spots")
+
+# Bookings remain global
 router.register(r"bookings", BookingViewSet, basename="booking")
 
-urlpatterns = [ path("", include(router.urls)) ]
+urlpatterns = router.urls + lots_router.urls
