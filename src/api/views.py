@@ -20,7 +20,6 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     queryset = ParkingLot.objects.all()
     serializer_class = ParkingLotSerializer
 
-    # GET /api/v1/lots/
     @extend_schema(
         summary="List parking lots",
         description="Returns a paginated list of parking lots with coordinates.",
@@ -32,7 +31,6 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # POST /api/v1/lots/
     @extend_schema(
         summary="Create a parking lot",
         request=ParkingLotSerializer,
@@ -59,7 +57,6 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
             )
         return super().create(request, *args, **kwargs)
 
-    # GET /api/v1/lots/{id}/
     @extend_schema(
         summary="Retrieve a parking lot",
         responses={
@@ -71,7 +68,6 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    # PUT /api/v1/lots/{id}/
     @extend_schema(
         summary="Replace a parking lot",
         request=ParkingLotSerializer,
@@ -86,7 +82,6 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-    # PATCH /api/v1/lots/{id}/
     @extend_schema(
         summary="Partially update a parking lot",
         request=ParkingLotSerializer,
@@ -101,7 +96,6 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
-    # DELETE /api/v1/lots/{id}/
     @extend_schema(
         summary="Delete a parking lot",
         responses={
@@ -115,15 +109,13 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
 
 
 class SpotViewSet(viewsets.ModelViewSet):
-    queryset = Spot.objects.select_related("lot").all()
     serializer_class = SpotSerializer
 
-    # GET /api/v1/spots/
     @extend_schema(
         summary="List parking spots",
-        description="Supports filtering by lot id and flags. Boolean values accept 'true' or 'false' (case-insensitive).",
+        description="List all spots or spots belonging to a specific parking lot. "
+                    "Boolean values accept 'true' or 'false' (case-insensitive).",
         parameters=[
-            OpenApiParameter(name="lot_id", required=False, type=int, description="Filter by parking lot id"),
             OpenApiParameter(name="is_ev", required=False, type=bool, description="Filter by EV-ready spots"),
             OpenApiParameter(name="is_disabled", required=False, type=bool, description="Filter by accessible/disabled spots"),
         ],
@@ -134,8 +126,9 @@ class SpotViewSet(viewsets.ModelViewSet):
         }
     )
     def list(self, request, *args, **kwargs):
-        qs = self.get_queryset()
-        lot_id = request.query_params.get("lot_id")
+        lot_id = self.kwargs.get("lot_pk")
+
+        qs = Spot.objects.select_related("lot").all()
         if lot_id:
             qs = qs.filter(lot_id=lot_id)
 
@@ -161,7 +154,6 @@ class SpotViewSet(viewsets.ModelViewSet):
         self.queryset = qs
         return super().list(request, *args, **kwargs)
 
-    # POST /api/v1/spots/
     @extend_schema(
         summary="Create a parking spot",
         request=SpotSerializer,
@@ -174,15 +166,20 @@ class SpotViewSet(viewsets.ModelViewSet):
         examples=[
             OpenApiExample(
                 "Valid request",
-                value={"number": "B12", "is_ev": True, "is_disabled": False, "lot_id": 1}
+                value={"number": "B12", "is_ev": True, "is_disabled": False}
             )
         ]
     )
     def create(self, request, *args, **kwargs):
+        lot_id = self.kwargs.get("lot_pk")
+        if not lot_id:
+            return Response({"detail": "Lot ID is required in the URL."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(lot_id=lot_id)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return super().create(request, *args, **kwargs)
-
-    # GET /api/v1/spots/{id}/
     @extend_schema(
         summary="Retrieve a parking spot",
         responses={
@@ -194,7 +191,6 @@ class SpotViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    # PUT /api/v1/spots/{id}/
     @extend_schema(
         summary="Replace a parking spot",
         request=SpotSerializer,
@@ -209,7 +205,6 @@ class SpotViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-    # PATCH /api/v1/spots/{id}/
     @extend_schema(
         summary="Partially update a parking spot",
         request=SpotSerializer,
@@ -224,7 +219,6 @@ class SpotViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
-    # DELETE /api/v1/spots/{id}/
     @extend_schema(
         summary="Delete a parking spot",
         responses={
@@ -243,7 +237,6 @@ class BookingViewSet(mixins.ListModelMixin,
     queryset = Booking.objects.select_related("spot", "user").all()
     serializer_class = BookingSerializer
 
-    # GET /api/v1/bookings/
     @extend_schema(
         summary="List bookings",
         responses={
@@ -254,7 +247,6 @@ class BookingViewSet(mixins.ListModelMixin,
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # GET /api/v1/bookings/{id}/
     @extend_schema(
         summary="Retrieve a booking",
         responses={
@@ -266,7 +258,6 @@ class BookingViewSet(mixins.ListModelMixin,
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    # POST /api/v1/bookings/create/
     @extend_schema(
         summary="Create a booking",
         request=BookingCreateSerializer,
@@ -312,7 +303,6 @@ class BookingViewSet(mixins.ListModelMixin,
         )
         return Response(BookingSerializer(b).data, status=status.HTTP_201_CREATED)
 
-    # POST /api/v1/bookings/{id}/cancel/
     @extend_schema(
         summary="Cancel a booking",
         request=BookingCancelSerializer,
