@@ -177,5 +177,4 @@ if os.getenv("RDS_DB_NAME"):
         "PORT": os.getenv("RDS_PORT", "5432"),
     }
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".elasticbeanstalk.com"]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
