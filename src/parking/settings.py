@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'src.api',
 ]
 
 MIDDLEWARE = [
@@ -125,7 +126,6 @@ INSTALLED_APPS += [
     "rest_framework",
     "drf_spectacular",
     "corsheaders",
-    "api",
 ]
 
 MIDDLEWARE = [
@@ -152,7 +152,6 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
 }
 
-# Статика (для локалки та EB через WhiteNoise)
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_URL = "/static/"
@@ -161,7 +160,6 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}
 }
 
-# База даних: локально sqlite (просто), у проді RDS (через ENV)
 import os
 DATABASES = {
     "default": {
