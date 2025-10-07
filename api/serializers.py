@@ -4,17 +4,33 @@ from .models import ParkingLot, Spot, Booking
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParkingLot
-        fields = ["id", "name", "address", "lat", "lng"]
+        fields = ['id', 'name', 'city', 'street', 'building']
 
-        def validate_lat(self, v):
-            if not (-90 <= v <= 90):
-                raise serializers.ValidationError("lat must be between -90 and 90")
-            return v
+    def validate_name(self, value):
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("Name must contain at least 3 characters.")
+        return value
 
-        def validate_lng(self, v):
-            if not (-180 <= v <= 180):
-                raise serializers.ValidationError("lng must be between -180 and 180")
-            return v
+    def validate_city(self, value):
+        if not value.replace('-', '').replace(' ', '').isalpha():
+            raise serializers.ValidationError("City name must contain only letters.")
+        return value.title()
+
+    def validate_street(self, value):
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("Street name must contain at least 3 characters.")
+        return value.title()
+
+    def validate_building(self, value):
+        if value and not re.match(r'^[0-9]+[A-Za-z\-]*$', value):
+            raise serializers.ValidationError("Invalid building number format.")
+        return value
+
+    def validate(self, attrs):
+        if not attrs.get('city') or not attrs.get('street'):
+            raise serializers.ValidationError("City and street are required fields.")
+        return attrs
+
 
 class SpotSerializer(serializers.ModelSerializer):
     lot = ParkingLotSerializer(read_only=True)
