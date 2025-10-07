@@ -1,7 +1,7 @@
 # Smart Parking API Design Documentation
 
 ## Architecture Overview
-- **Base URL**: http://127.0.0.1:8000/api/v1
+- **Base URL**: http://16.170.148.253:8000/api
 - **API Style:** RESTful
 - **Authentication:** JWT Bearer tokens (planned)
 - **Response Format:** JSON
@@ -18,8 +18,6 @@
   - `id` (integer): Unique identifier
   - `name` (string): Parking lot name
   - `address` (string): Parking lot address
-  - `lat` (float): Latitude coordinate
-  - `lng` (float): Longitude coordinate
 - **Relationships:**
   - Has many spots
 
