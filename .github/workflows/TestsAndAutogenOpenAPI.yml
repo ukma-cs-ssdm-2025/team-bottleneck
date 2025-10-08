@@ -26,7 +26,7 @@ jobs:
     
     - name: Запуск тестів
       run: |
-        pytest src/api/tests.py -v
+        python manage.py test src.api.tests -v2
     
     - name: Завантаження OpenAPI схеми
       run: |
