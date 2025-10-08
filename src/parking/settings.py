@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-k)(flx8*!5_w*mzv77nrkumbzy08!i)v-u_93mcq#bkl%%p$6f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'src.api',
 ]
 
 MIDDLEWARE = [
@@ -49,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'parking.urls'
+ROOT_URLCONF = 'src.parking.urls'
 
 TEMPLATES = [
     {
@@ -66,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'parking.wsgi.application'
+WSGI_APPLICATION = 'src.parking.wsgi.application'
 
 
 # Database
@@ -125,7 +126,6 @@ INSTALLED_APPS += [
     "rest_framework",
     "drf_spectacular",
     "corsheaders",
-    "api",
 ]
 
 MIDDLEWARE = [
@@ -152,7 +152,6 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
 }
 
-# Статика (для локалки та EB через WhiteNoise)
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_URL = "/static/"
@@ -161,7 +160,6 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}
 }
 
-# База даних: локально sqlite (просто), у проді RDS (через ENV)
 import os
 DATABASES = {
     "default": {
@@ -179,5 +177,4 @@ if os.getenv("RDS_DB_NAME"):
         "PORT": os.getenv("RDS_PORT", "5432"),
     }
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".elasticbeanstalk.com"]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
