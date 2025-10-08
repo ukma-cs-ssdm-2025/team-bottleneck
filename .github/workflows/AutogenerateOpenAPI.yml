@@ -13,21 +13,8 @@ jobs:
     steps:
     - name: Checkout код
       uses: actions/checkout@v3
-    
-    - name: Налаштування Python
-      uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
-    
-    - name: Встановлення залежностей
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install drf-nested-routers
-    
-    - name: Запуск тестів
-      run: |
-        python manage.py test src.api.tests -v2
+        token: ${{ secrets.GIT_TOKEN }}
     
     - name: Завантаження OpenAPI схеми
       run: |
