@@ -3,7 +3,9 @@ name: TestsAndAutogenOpenAPI
 on:
   push:
     branches: [ main, develop ]
-
+    paths: 
+      - 'src/**'
+      
 jobs:
   test-and-docs:
     runs-on: ubuntu-latest
