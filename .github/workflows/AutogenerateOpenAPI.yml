@@ -18,7 +18,7 @@ jobs:
     
     - name: Завантаження OpenAPI схеми
       run: |
-        curl -o docx/api/openapi-generated.yaml http://16.170.148.253/api/schema/
+        curl -o docs/api/openapi-generated.yaml http://16.170.148.253/api/schema/
     
     - name: Commit та push оновленої документації
       if: github.event_name == 'push'
