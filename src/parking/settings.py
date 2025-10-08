@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'parking.urls'
+ROOT_URLCONF = 'src.parking.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'parking.wsgi.application'
+WSGI_APPLICATION = 'src.parking.wsgi.application'
 
 
 # Database
