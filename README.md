@@ -1,4 +1,4 @@
-[![GitHub Actions Demo](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml/badge.svg?event=push)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml) [![Deploy to EC2](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml) [![TestsAndAutogenOpenAPI](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/TestsAndAutogenOpenAPI.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/TestsAndAutogenOpenAPI.yml)
+[![GitHub Actions Demo](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml/badge.svg?event=push)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml) [![Deploy to EC2](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml)
 
 # Командний проект: Smart Parking
 
