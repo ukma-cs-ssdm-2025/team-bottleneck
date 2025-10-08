@@ -14,7 +14,6 @@ class ApiConfig(AppConfig):
         new_schema = generator.get_schema(request=None, public=True)
         file_path = 'docs/api/openapi-generated.yaml'
 
-        # Якщо файл існує, зчитуємо поточну схему
         if os.path.exists(file_path):
             with open(file_path, 'r') as f:
                 try:
