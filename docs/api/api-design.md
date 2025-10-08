@@ -71,6 +71,11 @@
 - Ensures start and end times are valid
 - Maintains integrity of parking spot availability
 
+### Nested Resource Architecture
+- Logical hierarchy between entities:
+- Each spot is linked to a specific parking lot through lot_id
+- Each booking is linked to a specific spot through spot_id
+
 ### Error Handling
 - Consistent error response structure
 - Machine-readable error codes
