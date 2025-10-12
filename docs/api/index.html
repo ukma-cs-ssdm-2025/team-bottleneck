@@ -4,17 +4,17 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Bottleneck API Documentation</title>
-    <!-- Підключення стилів Swagger UI -->
+    <!-- Include Swagger UI CSS -->
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
 </head>
 <body>
-    <!-- Контейнер для Swagger UI -->
+    <!-- Container where Swagger UI will be rendered -->
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
     <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
 
     <script>
-        // Ініціалізація Swagger UI
+        // Initialize Swagger UI
         const ui = SwaggerUIBundle({
             url: "openapi-generated.yaml",  
             dom_id: "#swagger-ui",
