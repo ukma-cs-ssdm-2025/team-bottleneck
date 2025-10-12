@@ -1,0 +1,73 @@
+name: Security Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+
+jobs:
+  bandit-security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install Bandit
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit[toml]
+    
+    - name: Run Bandit scan
+      run: |
+        bandit -r src/ -f json -o bandit-report.json -ll || true
+        bandit -r src/ -f txt -ll
+      continue-on-error: false
+    
+    - name: Comment PR with results
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          let reportContent = '## Bandit Security Scan Results\n\n';
+          
+          try {
+            const report = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
+            const metrics = report.metrics['_totals'];
+            
+            reportContent += `**Severity Summary:**\n`;
+            reportContent += `- High: ${metrics['SEVERITY.HIGH'] || 0}\n`;
+            reportContent += `- Medium: ${metrics['SEVERITY.MEDIUM'] || 0}\n`;
+            reportContent += `- Low: ${metrics['SEVERITY.LOW'] || 0}\n`;
+            reportContent += `- Total issues: ${report.results.length}\n\n`;
+            
+            if (report.results.length > 0) {
+              reportContent += `**Issues found:**\n\n`;
+              report.results.slice(0, 10).forEach((issue, index) => {
+                reportContent += `${index + 1}. **${issue.test_id}** (${issue.issue_severity}): ${issue.issue_text}\n`;
+                reportContent += `   - File: \`${issue.filename}:${issue.line_number}\`\n\n`;
+              });
+              
+              if (report.results.length > 10) {
+                reportContent += `\n_...and ${report.results.length - 10} more issues._\n`;
+              }
+            } else {
+              reportContent += '**No security issues found!**\n';
+            }
+          } catch (error) {
+            reportContent += 'Failed to read Bandit report\n';
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: reportContent
+          });
