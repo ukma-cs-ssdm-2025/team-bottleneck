@@ -30,4 +30,4 @@ jobs:
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
 
-          echo "✅ Деплой завершено успішно!"
+          echo "✅ Deployment completed successfully!"
