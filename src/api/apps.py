@@ -18,17 +18,17 @@ class ApiConfig(AppConfig):
             with open(file_path, 'r') as f:
                 try:
                     old_schema = yaml.safe_load(f)
-                    # Перетворюємо в JSON для порівняння (щоб уникнути проблем із форматуванням YAML)
+                    # Convert to JSON for comparison (to avoid YAML formatting issues)
                     new_schema_json = json.dumps(new_schema, sort_keys=True)
                     old_schema_json = json.dumps(old_schema, sort_keys=True)
                     if new_schema_json != old_schema_json:
                         with open(file_path, 'w') as f:
                             yaml.dump(new_schema, f)
                 except Exception:
-                    # У разі помилки (наприклад, пошкоджений файл) перезаписуємо
+                    # In case of an error (for example, a corrupted file), overwrite it
                     with open(file_path, 'w') as f:
                         yaml.dump(new_schema, f)
         else:
-            # Якщо файлу немає, створюємо новий
+            # If the file doesn’t exist, create a new one
             with open(file_path, 'w') as f:
                 yaml.dump(new_schema, f)
