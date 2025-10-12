@@ -1,0 +1,12 @@
+language: "uk"
+
+reviews:
+  auto_review:
+    enabled: true
+  poem: false
+  high_level_summary: true
+  request_changes_workflow: false
+  collapse_walkthrough: false
+
+chat:
+  auto_reply: true
