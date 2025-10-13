@@ -1,3 +1,26 @@
+# Bandit Static Analysis Report
+
+**Run started:** 2025-10-12 09:46:13.628316  
+
+---
+
+## Test Results
+
+> **Issue:** [B105:hardcoded_password_string]  
+> **Description:** Possible hardcoded password detected:  
+> `'django-insecure-eu8i0&87l%-25hpe+j1uw=+v1gx14xk16@^6q!==qec)9oaa$y'`  
+> **Severity:** Low  
+> **Confidence:** Medium  
+> **CWE:** [CWE-259](https://cwe.mitre.org/data/definitions/259.html)  
+> **More Info:** [Bandit B105 Documentation](https://bandit.readthedocs.io/en/1.8.6/plugins/b105_hardcoded_password_string.html)  
+> **Location:** `.\delivery-service\app\settings.py:23:13`
+
+```python
+22  # SECURITY WARNING: keep the secret key used in production secret!
+23  SECRET_KEY = 'django-insecure-eu8i0&87l%-25hpe+j1uw=+v1gx14xk16@^6q!==qec)9oaa$y'
+24
+```
+
 # Flake8 Static Analysis Report
 
 **Run started:** 2025-10-9 
