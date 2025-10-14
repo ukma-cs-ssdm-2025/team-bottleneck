@@ -23,7 +23,6 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
-# !!! ДОДАНО ВАШУ ПУБЛІЧНУ АДРЕСУ та дозволено для AWS хостингу
 ALLOWED_HOSTS = get_list(str(config("ALLOWED_HOSTS", default="127.0.0.1,16.170.148.253")))
 
 INSTALLED_APPS = [

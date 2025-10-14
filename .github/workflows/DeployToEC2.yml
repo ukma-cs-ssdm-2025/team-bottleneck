@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy to EC2 with Archive
 
 on:
   push:
@@ -9,25 +9,52 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+    env:
+      PROJECT_ROOT_DIR: team-bottleneck
+      ARCHIVE_NAME: deploy.tar.gz
+      ALLOWED_HOSTS_PROD: "16.170.148.253,127.0.0.1"
+      DEBUG_PROD: "False"
+      
     steps:
-    - name: Деплой на EC2 сервер
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create deployment archive
+      run: tar -czf ${{ env.ARCHIVE_NAME }} src/
+
+    - name: Upload archive to server (scp)
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }} 
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: ${{ env.ARCHIVE_NAME }}
+        target: /tmp/
+
+    - name: Deploy and Restart Services (ssh)
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
+        
         script: |
-          cd team-bottleneck
+          export SECRET_KEY_PROD="${{ secrets.DJANGO_SECRET_KEY }}"
+          export GIT_TOKEN_PROD="${{ secrets.GIT_TOKEN }}"
+          export ALLOWED_HOSTS="${{ env.ALLOWED_HOSTS_PROD }}"
+          export DEBUG="${{ env.DEBUG_PROD }}"
+          DEPLOY_PATH="/home/ubuntu/${{ env.PROJECT_ROOT_DIR }}"
           
           git config --local credential.helper store
-          echo "https://${{ secrets.GIT_TOKEN }}@github.com" > ~/.git-credentials
+          echo "https://$GIT_TOKEN_PROD@github.com" > /home/ubuntu/.git-credentials
 
-          git pull origin main
-          source venv/bin/activate
-          
+          echo "DJANGO_SECRET_KEY=$SECRET_KEY_PROD" > $DEPLOY_PATH/.env
+          echo "DJANGO_DEBUG=$DEBUG" >> $DEPLOY_PATH/.env
+          echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> $DEPLOY_PATH/.env
+
+          echo "RDS_DB_NAME=" >> $DEPLOY_PATH/.env
           sudo systemctl daemon-reload
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
-
-          echo "✅ Деплой завершено успішно!"
+          
+          echo "✅ Deployment completed successfully!"
