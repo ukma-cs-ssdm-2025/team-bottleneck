@@ -12,16 +12,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+from decouple import AutoConfig
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k)(flx8*!5_w*mzv77nrkumbzy08!i)v-u_93mcq#bkl%%p$6f'
+config = AutoConfig(BASE_DIR)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
-ALLOWED_HOSTS = ["*"]
+DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
+
+ALLOWED_HOSTS = get_list(str(config("ALLOWED_HOSTS", default="127.0.0.1,16.170.148.253")))
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -62,18 +63,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'src.parking.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -92,10 +81,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -103,10 +88,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
 
@@ -142,8 +123,6 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
 }
 
-from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
@@ -151,20 +130,14 @@ STORAGES = {
 }
 
 import os
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-if os.getenv("RDS_DB_NAME"):
+if config("RDS_DB_NAME", default=None):
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("RDS_DB_NAME"),
-        "USER": os.getenv("RDS_USERNAME"),
-        "PASSWORD": os.getenv("RDS_PASSWORD"),
-        "HOST": os.getenv("RDS_HOSTNAME"),
-        "PORT": os.getenv("RDS_PORT", "5432"),
+        "NAME": config("RDS_DB_NAME"),
+        "USER": config("RDS_USERNAME"),
+        "PASSWORD": config("RDS_PASSWORD"),
+        "HOST": config("RDS_HOSTNAME"),
+        "PORT": config("RDS_PORT", "5432"),
     }
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
