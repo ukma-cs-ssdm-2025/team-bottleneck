@@ -23,12 +23,18 @@ class Spot(models.Model):
         return f"{self.lot.name} #{self.number}"
 
 class Booking(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+    )
     spot = models.ForeignKey(Spot, on_delete=models.PROTECT, related_name="bookings")
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
-    status = models.CharField(max_length=16, default="confirmed")  # confirmed|cancelled
+    status = models.CharField(max_length=16, default="confirmed") 
     created_at = models.DateTimeField(auto_now_add=True)
+    cancellation_reason = models.CharField(max_length=255, blank=True, default="") 
 
     class Meta:
         indexes = [

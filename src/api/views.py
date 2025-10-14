@@ -3,135 +3,110 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import (
     extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
 )
+from django.utils.dateparse import parse_datetime
 
 from .models import ParkingLot, Spot, Booking
 from .serializers import (
-    ParkingLotSerializer, SpotSerializer,
+    ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer, 
     BookingSerializer, BookingCreateSerializer, BookingCancelSerializer
 )
 from .validators import validate_booking_window
 from .swagger import DEFAULT_ERROR_RESPONSES, ErrorSerializer
+from .services import PaymentService
 
 
-class ParkingLotViewSet(viewsets.ModelViewSet):
-    queryset = ParkingLot.objects.all()
-    serializer_class = ParkingLotSerializer
+class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ParkingLot.objects.all().prefetch_related("spots") 
+    permission_classes = [AllowAny]
+    
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ParkingLotDetailSerializer
+        return ParkingLotSerializer 
 
     @extend_schema(
-        summary="List parking lots",
-        description="Returns a paginated list of parking lots with coordinates.",
+        summary="List of all spots",
+        description="Return list of all available lots with base info (/api/v1/lots/).",
         responses={
             200: ParkingLotSerializer(many=True),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
         },
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Create a parking lot",
-        request=ParkingLotSerializer,
+        summary="Detailed info about lot (free spots/services)",
+        description="Returns detailed information about a specific parking lot, including a list of parking spots (/api/v1/lots/{id}/).",
         responses={
-            201: ParkingLotSerializer,
-            400: OpenApiResponse(ErrorSerializer, description="Validation error"),
-            409: OpenApiResponse(ErrorSerializer, description="Duplicate lot (same name and address)"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        }
-    )
-    def create(self, request, *args, **kwargs):
-        name = request.data.get("name")
-        address = request.data.get("address")
-        if name and address and ParkingLot.objects.filter(name=name, address=address).exists():
-            return Response(
-                {"detail": "Parking lot with this name and address already exists."},
-                status=status.HTTP_409_CONFLICT
-            )
-        return super().create(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Retrieve a parking lot",
-        responses={
-            200: ParkingLotSerializer,
+            200: ParkingLotDetailSerializer,
             404: OpenApiResponse(ErrorSerializer, description="Lot not found"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
         },
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-    @extend_schema(
-        summary="Replace a parking lot",
-        request=ParkingLotSerializer,
-        responses={
-            200: ParkingLotSerializer,
-            400: OpenApiResponse(ErrorSerializer),
-            404: OpenApiResponse(ErrorSerializer),
-            409: OpenApiResponse(ErrorSerializer, description="Duplicate lot"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-    )
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
 
-    @extend_schema(
-        summary="Partially update a parking lot",
-        request=ParkingLotSerializer,
-        responses={
-            200: ParkingLotSerializer,
-            400: OpenApiResponse(ErrorSerializer),
-            404: OpenApiResponse(ErrorSerializer),
-            409: OpenApiResponse(ErrorSerializer),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-    )
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Delete a parking lot",
-        responses={
-            204: OpenApiResponse(description="Deleted"),
-            404: OpenApiResponse(ErrorSerializer, description="Lot not found"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-    )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-
-class SpotViewSet(viewsets.ModelViewSet):
+class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SpotSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        lot_id = self.kwargs.get("lot_pk")
+        qs = Spot.objects.select_related("lot").all()
+        if lot_id:
+            get_object_or_404(ParkingLot, pk=lot_id)
+            qs = qs.filter(lot_id=lot_id)
+        return qs
 
     @extend_schema(
-        summary="List parking spots",
-        description="List all spots or spots belonging to a specific parking lot. "
-                    "Boolean values accept 'true' or 'false' (case-insensitive).",
+        summary="List of parking spots in a parking lot",
+        description="List of all parking spots in a specific parking lot. "
+                    "You can filter by type (EV, for disabled) and availability.",
         parameters=[
-            OpenApiParameter(name="is_ev", required=False, type=bool, description="Filter by EV-ready spots"),
-            OpenApiParameter(name="is_disabled", required=False, type=bool, description="Filter by accessible/disabled spots"),
+            OpenApiParameter(
+                name="is_ev",
+                required=False,
+                type=bool,
+                description="Filter: spots with EV charging (true/false)"
+            ),
+            OpenApiParameter(
+                name="is_disabled",
+                required=False,
+                type=bool,
+                description="Filter: spots for people with disabilities (true/false)"
+            ),
+            OpenApiParameter(
+                name="available_from",
+                required=False,
+                type=str,
+                description="ISO datetime - show only available spots from this time"
+            ),
+            OpenApiParameter(
+                name="available_to",
+                required=False,
+                type=str,
+                description="ISO datetime - show only available spots until this time"
+            ),
         ],
         responses={
             200: SpotSerializer(many=True),
-            400: OpenApiResponse(ErrorSerializer, description="Invalid filter value (expected true/false)"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
+            400: OpenApiResponse(ErrorSerializer, description="Invalid filter parameters"),
+            404: OpenApiResponse(ErrorSerializer, description="Parking lot not found"),
         }
     )
     def list(self, request, *args, **kwargs):
-        lot_id = self.kwargs.get("lot_pk")
-
-        qs = Spot.objects.select_related("lot").all()
-        if lot_id:
-            qs = qs.filter(lot_id=lot_id)
+        qs = self.get_queryset()
 
         def parse_bool(val, key):
             if val is None:
                 return None
             low = val.lower()
             if low not in ("true", "false"):
-                raise ValueError(f"{key} must be 'true' or 'false'")
+                raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
             return low == "true"
 
         try:
@@ -145,108 +120,90 @@ class SpotViewSet(viewsets.ModelViewSet):
         if dis is not None:
             qs = qs.filter(is_disabled=dis)
 
+        available_from = request.query_params.get("available_from")
+        available_to = request.query_params.get("available_to")
+
+        if available_from and available_to:
+            start = parse_datetime(available_from)
+            end = parse_datetime(available_to)
+
+            if not start or not end:
+                return Response(
+                    {"detail": "Invalid date format. Use ISO 8601 format."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Exclude spots that are booked during this period
+            booked_spots = Booking.objects.filter(
+                status="confirmed",
+                start_at__lt=end,
+                end_at__gt=start
+            ).values_list('spot_id', flat=True)
+
+            qs = qs.exclude(id__in=booked_spots)
+
         self.queryset = qs
         return super().list(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Create a parking spot",
-        request=SpotSerializer,
-        responses={
-            201: SpotSerializer,
-            400: OpenApiResponse(ErrorSerializer),
-            409: OpenApiResponse(ErrorSerializer, description="Duplicate spot number within the same lot"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-        examples=[
-            OpenApiExample(
-                "Valid request",
-                value={"number": "B12", "is_ev": True, "is_disabled": False}
-            )
-        ]
-    )
-    def create(self, request, *args, **kwargs):
-        lot_id = self.kwargs.get("lot_pk")
-        if not lot_id:
-            return Response({"detail": "Lot ID is required in the URL."},
-                            status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(lot_id=lot_id)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @extend_schema(
-        summary="Retrieve a parking spot",
-        responses={
-            200: SpotSerializer,
-            404: OpenApiResponse(ErrorSerializer),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-    )
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Replace a parking spot",
-        request=SpotSerializer,
-        responses={
-            200: SpotSerializer,
-            400: OpenApiResponse(ErrorSerializer),
-            404: OpenApiResponse(ErrorSerializer),
-            409: OpenApiResponse(ErrorSerializer),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-    )
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Partially update a parking spot",
-        request=SpotSerializer,
-        responses={
-            200: SpotSerializer,
-            400: OpenApiResponse(ErrorSerializer),
-            404: OpenApiResponse(ErrorSerializer),
-            409: OpenApiResponse(ErrorSerializer),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-    )
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Delete a parking spot",
-        responses={
-            204: OpenApiResponse(description="Deleted"),
-            404: OpenApiResponse(ErrorSerializer),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-    )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
 
 
 class BookingViewSet(mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
                      viewsets.GenericViewSet):
-    queryset = Booking.objects.select_related("spot", "user").all()
+    """
+    - GET /api/v1/bookings/
+    - GET /api/v1/bookings/{id}/
+    - POST /api/v1/bookings/create/
+    - POST /api/v1/bookings/{id}/cancel/
+    """
     serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Booking.objects.none()
+        return Booking.objects.filter(
+            user=self.request.user
+        ).select_related("spot__lot", "user").order_by("-created_at")
 
     @extend_schema(
-        summary="List bookings",
+        summary="My bookings",
+        description="Returns a list of all bookings for the current user (/api/v1/bookings/).",
+        parameters=[
+            OpenApiParameter(
+                name="status",
+                required=False,
+                type=str,
+                enum=["confirmed", "cancelled"],
+                description="Filter by booking status"
+            ),
+        ],
         responses={
             200: BookingSerializer(many=True),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
+            401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
         },
     )
     def list(self, request, *args, **kwargs):
+        status_filter = request.query_params.get("status")
+        qs = self.get_queryset()
+
+        if status_filter in ["confirmed", "cancelled"]:
+            qs = qs.filter(status=status_filter)
+        elif status_filter:
+            return Response(
+                {"detail": "Invalid status. Allowed: confirmed, cancelled"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        self.queryset = qs
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Retrieve a booking",
+        summary="Booking details",
+        description="Returns detailed information about a specific user booking (/api/v1/bookings/{id}/).",
         responses={
             200: BookingSerializer,
-            404: OpenApiResponse(ErrorSerializer, description="Booking not found"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
+            404: OpenApiResponse(ErrorSerializer, description="Booking not found or belongs to another user"),
+            401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
         },
     )
     def retrieve(self, request, *args, **kwargs):
@@ -254,73 +211,121 @@ class BookingViewSet(mixins.ListModelMixin,
 
     @extend_schema(
         summary="Create a booking",
+        description="Creates a new parking spot booking. After successful creation, a mock LiqPay payment process is initiated. (/api/v1/bookings/create/)",
         request=BookingCreateSerializer,
         responses={
             201: BookingSerializer,
-            400: OpenApiResponse(ErrorSerializer, description="Invalid time window"),
-            409: OpenApiResponse(ErrorSerializer, description="Overlapping booking"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
+            400: OpenApiResponse(
+                ErrorSerializer,
+                description="Invalid time range or data"
+            ),
+            401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
+            409: OpenApiResponse(
+                ErrorSerializer,
+                description="The spot is already booked for the selected period"
+            ),
         },
         examples=[
             OpenApiExample(
                 "Valid request",
-                value={"spot": 10, "start_at": "2025-10-08T10:00:00Z", "end_at": "2025-10-08T12:00:00Z"},
-            ),
-            OpenApiExample(
-                "Overlap error (409)",
-                value={"detail": "Spot already booked in this interval."},
-                response_only=True, status_codes=["409"]
+                value={
+                    "spot": 10,
+                    "start_at": "2025-10-15T10:00:00Z",
+                    "end_at": "2025-10-15T12:00:00Z"
+                },
             ),
         ]
     )
     @action(detail=False, methods=["post"], url_path="create")
     @transaction.atomic
     def create_booking(self, request):
+        """Create a new booking with payment initiation"""
         ser = BookingCreateSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
+
         spot = ser.validated_data["spot"]
         start_at = ser.validated_data["start_at"]
         end_at = ser.validated_data["end_at"]
+
         validate_booking_window(start_at, end_at)
 
         conflict = Booking.objects.filter(
-            spot=spot, status="confirmed",
-            start_at__lt=end_at, end_at__gt=start_at
+            spot=spot,
+            status="confirmed",
+            start_at__lt=end_at,
+            end_at__gt=start_at
         ).exists()
-        if conflict:
-            return Response({"detail": "Spot already booked in this interval."},
-                            status=status.HTTP_409_CONFLICT)
 
-        b = Booking.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            spot=spot, start_at=start_at, end_at=end_at, status="confirmed"
+        if conflict:
+            return Response(
+                {"detail": "This spot is already booked for the specified period."},
+                status=status.HTTP_409_CONFLICT
+            )
+
+        # !!! ASSIGN CURRENT USER
+        booking = Booking.objects.create(
+            user=request.user,
+            spot=spot,
+            start_at=start_at,
+            end_at=end_at,
+            status="confirmed"
         )
-        return Response(BookingSerializer(b).data, status=status.HTTP_201_CREATED)
+
+        # Payment initiation (LiqPay mock)
+        payment_data = PaymentService.initiate_payment(booking)
+
+        response_data = BookingSerializer(booking).data
+        response_data["payment"] = payment_data
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         summary="Cancel a booking",
+        description="Cancels an existing user booking. A mock refund process is triggered. (/api/v1/bookings/{id}/cancel/)",
         request=BookingCancelSerializer,
         responses={
             200: BookingSerializer,
-            400: OpenApiResponse(ErrorSerializer, description="Booking already cancelled"),
-            404: OpenApiResponse(ErrorSerializer, description="Booking not found"),
-            **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
+            400: OpenApiResponse(
+                ErrorSerializer,
+                description="Booking already cancelled"
+            ),
+            401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
+            404: OpenApiResponse(
+                ErrorSerializer,
+                description="Booking not found or belongs to another user"
+            ),
         },
         examples=[
-            OpenApiExample("Valid request", value={"reason": "Changed plans"}),
             OpenApiExample(
-                "Already cancelled (400)",
-                value={"detail": "Booking is already cancelled."},
-                response_only=True, status_codes=["400"]
+                "Valid request",
+                value={"reason": "Changed plans"}
             ),
         ]
     )
     @action(detail=True, methods=["post"], url_path="cancel")
     @transaction.atomic
     def cancel(self, request, pk=None):
-        booking = get_object_or_404(Booking, pk=pk)
+        """Cancel a booking"""
+        booking = get_object_or_404(
+            Booking,
+            pk=pk,
+            user=request.user
+        )
+
         if booking.status == "cancelled":
-            return Response({"detail": "Booking is already cancelled."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "This booking has already been cancelled."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cancel_serializer = BookingCancelSerializer(data=request.data)
+        cancel_serializer.is_valid(raise_exception=True)
+        reason = cancel_serializer.validated_data.get("reason", "")
+
         booking.status = "cancelled"
-        booking.save(update_fields=["status"])
+        booking.cancellation_reason = reason
+        booking.save(update_fields=["status", "cancellation_reason"])
+
+        # Refund logic (LiqPay mock)
+        PaymentService.process_refund(booking)
         return Response(BookingSerializer(booking).data)

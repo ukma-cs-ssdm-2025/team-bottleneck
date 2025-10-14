@@ -9,11 +9,16 @@ class SpotSerializer(serializers.ModelSerializer):
         read_only_fields = ["lot"]
         
 class ParkingLotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParkingLot
+        fields = ['id', 'name', 'city', 'street', 'building']
+        
+class ParkingLotDetailSerializer(ParkingLotSerializer):
     spots = SpotSerializer(many=True, read_only=True)
     class Meta:
         model = ParkingLot
         fields = ['id', 'name', 'city', 'street', 'building', 'spots']
-
+        
     def validate_name(self, value):
         if len(value.strip()) < 3:
             raise serializers.ValidationError("Name must contain at least 3 characters.")
@@ -42,15 +47,9 @@ class ParkingLotSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ["id", "user", "spot", "start_at", "end_at", "status", "created_at"]
-        read_only_fields = ["status", "created_at", "user"]
-
-
-class BookingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = ["id", "user", "spot", "start_at", "end_at", "status", "created_at"]
-        read_only_fields = ["status", "created_at", "user"]
+        # !!! ДОДАНО: cancellation_reason
+        fields = ["id", "user", "spot", "start_at", "end_at", "status", "created_at", "cancellation_reason"]
+        read_only_fields = ["status", "created_at", "user", "cancellation_reason"]
 
 class BookingCreateSerializer(serializers.ModelSerializer):
     class Meta:
