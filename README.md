@@ -1,4 +1,4 @@
-[![GitHub Actions Demo](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml/badge.svg?event=push)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml)
+[![GitHub Actions Demo](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml/badge.svg?event=push)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/github-actions-demo.yml) [![Deploy to EC2](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml)
 
 # Командний проект: Smart Parking
 
@@ -24,3 +24,13 @@
 - [high-level-design.md](docs/architecture/high-level-design.md) -- опис high-level-design
 - [traceability-matrix.md](docs/architecture/traceability-matrix.md) - відповідність вимог архітектурі
 - [architecture](docs/architecture/) -- папка з усіма файлами архітектури проекту
+
+## Інструкція запуску
+### Для запуску потрібно:
+- pip install -r requirements.txt
+- python manage.py makemigrations api
+- python manage.py migrate
+
+- **python manage.py runserver**
+
+- Після цього перейти за адресою http://127.0.0.1:8000/

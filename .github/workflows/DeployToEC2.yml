@@ -1,0 +1,33 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Деплой на EC2 сервер
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd team-bottleneck
+          
+          git config --local credential.helper store
+          echo "https://${{ secrets.GIT_TOKEN }}@github.com" > ~/.git-credentials
+
+          git pull origin main
+          source venv/bin/activate
+          
+          sudo systemctl daemon-reload
+          sudo systemctl restart gunicorn
+          sudo systemctl restart nginx
+
+          echo "✅ Deployment completed successfully!"

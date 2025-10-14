@@ -39,13 +39,7 @@ class ParkingLotViewSet(viewsets.ModelViewSet):
             400: OpenApiResponse(ErrorSerializer, description="Validation error"),
             409: OpenApiResponse(ErrorSerializer, description="Duplicate lot (same name and address)"),
             **{k: v for k, v in DEFAULT_ERROR_RESPONSES.items() if k in (401, 403)}
-        },
-        examples=[
-            OpenApiExample(
-                "Valid request",
-                value={"name": "Gulliver", "address": "Kyiv", "lat": 50.44, "lng": 30.52}
-            )
-        ]
+        }
     )
     def create(self, request, *args, **kwargs):
         name = request.data.get("name")
