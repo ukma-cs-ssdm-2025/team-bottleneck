@@ -13,17 +13,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 # Для роботи з .env
-from decouple import AutoConfig, get_list
+from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-config = AutoConfig(BASE_DIR)
 
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = get_list(str(config("ALLOWED_HOSTS", default="127.0.0.1,16.170.148.253")))
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,16.170.148.253", cast=Csv())
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -139,6 +137,13 @@ try:
                 "PASSWORD": config("RDS_PASSWORD"),
                 "HOST": config("RDS_HOSTNAME"),
                 "PORT": config("RDS_PORT", "5432"),
+            }
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
             }
         }
 except NameError:
