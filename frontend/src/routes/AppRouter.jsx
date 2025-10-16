@@ -5,17 +5,16 @@ import HomePage from '../pages/HomePage';
 import ProfilePage from '../pages/ProfilePage';
 
 function AppRouter() {
-  return (
-    <BrowserRouter>
-      <Header />
-      <main>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Routes>
-      </main>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <Header />
+            <main>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                </Routes>
+            </main>
+        </BrowserRouter>
+    );
 }
-
 export default AppRouter;
