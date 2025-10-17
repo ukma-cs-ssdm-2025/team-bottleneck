@@ -1,5 +1,5 @@
 from rest_framework_nested import routers
-from .views import ParkingLotViewSet, SpotViewSet, BookingViewSet
+from .views import ParkingLotViewSet, SpotViewSet, BookingViewSet, UserViewSet
 
 # Base router
 router = routers.SimpleRouter()
@@ -9,7 +9,8 @@ router.register(r"lots", ParkingLotViewSet, basename="lot")
 lots_router = routers.NestedSimpleRouter(router, r"lots", lookup="lot")
 lots_router.register(r"spots", SpotViewSet, basename="lot-spots")
 
-# Bookings remain global
 router.register(r"bookings", BookingViewSet, basename="booking")
+
+router.register(r'users', UserViewSet, basename='user') 
 
 urlpatterns = router.urls + lots_router.urls

@@ -12,12 +12,12 @@ from django.utils.dateparse import parse_datetime
 from .models import ParkingLot, Spot, Booking
 from .serializers import (
     ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer, 
-    BookingSerializer, BookingCreateSerializer, BookingCancelSerializer
+    BookingSerializer, BookingCreateSerializer, BookingCancelSerializer,
+    UserRegistrationSerializer 
 )
 from .validators import validate_booking_window
-from .swagger import DEFAULT_ERROR_RESPONSES, ErrorSerializer
+from .swagger import ErrorSerializer
 from .services import PaymentService
-
 
 class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingLot.objects.all().prefetch_related("spots") 
@@ -239,7 +239,6 @@ class BookingViewSet(mixins.ListModelMixin,
     @action(detail=False, methods=["post"], url_path="create")
     @transaction.atomic
     def create_booking(self, request):
-        """Create a new booking with payment initiation"""
         ser = BookingCreateSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
@@ -262,7 +261,6 @@ class BookingViewSet(mixins.ListModelMixin,
                 status=status.HTTP_409_CONFLICT
             )
 
-        # !!! ASSIGN CURRENT USER
         booking = Booking.objects.create(
             user=request.user,
             spot=spot,
@@ -271,7 +269,6 @@ class BookingViewSet(mixins.ListModelMixin,
             status="confirmed"
         )
 
-        # Payment initiation (LiqPay mock)
         payment_data = PaymentService.initiate_payment(booking)
 
         response_data = BookingSerializer(booking).data
@@ -305,7 +302,6 @@ class BookingViewSet(mixins.ListModelMixin,
     @action(detail=True, methods=["post"], url_path="cancel")
     @transaction.atomic
     def cancel(self, request, pk=None):
-        """Cancel a booking"""
         booking = get_object_or_404(
             Booking,
             pk=pk,
@@ -325,7 +321,30 @@ class BookingViewSet(mixins.ListModelMixin,
         booking.status = "cancelled"
         booking.cancellation_reason = reason
         booking.save(update_fields=["status", "cancellation_reason"])
-
-        # Refund logic (LiqPay mock)
         PaymentService.process_refund(booking)
         return Response(BookingSerializer(booking).data)
+
+class UserViewSet(viewsets.GenericViewSet):
+    serializer_class = UserRegistrationSerializer
+    permission_classes = [AllowAny]
+    @extend_schema(
+        summary="Registration of a new user",
+        description="Creates a new user account with hashing the password. After registration, the user can use Basic Auth to log in.",
+        request=UserRegistrationSerializer,
+        responses={
+            201: OpenApiResponse(
+                UserRegistrationSerializer,
+                description="User successfully created"
+            ),
+            400: OpenApiResponse(
+                ErrorSerializer,
+                description="Validation error (e.g., username already exists, weak password)"
+            ),
+        }
+    )
+    @action(detail=False, methods=['post'], url_path='register')
+    def register(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import ParkingLot, Spot, Booking
+from django.contrib.auth.models import User 
+from django.contrib.auth.password_validation import validate_password
 import re
 
 class SpotSerializer(serializers.ModelSerializer):
@@ -58,3 +60,49 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
 class BookingCancelSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, max_length=200)
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', 'first_name', 'last_name')
+        extra_kwargs = {
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'email': {'required': True},
+        }
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+        return user
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', 'first_name', 'last_name')
+        extra_kwargs = {
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'email': {'required': True}, 
+        }
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+        return user
+    
