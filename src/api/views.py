@@ -13,7 +13,7 @@ from .models import ParkingLot, Spot, Booking
 from .serializers import (
     ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer, 
     BookingSerializer, BookingCreateSerializer, BookingCancelSerializer,
-    UserRegistrationSerializer 
+    UserRegistrationSerializer, UserSerializer, UserProfileUpdateSerializer
 )
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
@@ -325,15 +325,33 @@ class BookingViewSet(mixins.ListModelMixin,
         return Response(BookingSerializer(booking).data)
 
 class UserViewSet(viewsets.GenericViewSet):
+    http_method_names = ['get', 'post', 'patch', 'head', 'options']
+
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    
+    def get_permissions(self):
+        if self.action == 'register':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_serializer_class(self):
+        if self.action == 'register':
+            return UserRegistrationSerializer
+        if self.action == 'me':
+            if self.request.method == 'PATCH':
+                return UserProfileUpdateSerializer
+            return UserSerializer
+        return super().get_serializer_class()
+
+
     @extend_schema(
         summary="Registration of a new user",
         description="Creates a new user account with hashing the password. After registration, the user can use Basic Auth to log in.",
         request=UserRegistrationSerializer,
         responses={
             201: OpenApiResponse(
-                UserRegistrationSerializer,
+                UserSerializer, 
                 description="User successfully created"
             ),
             400: OpenApiResponse(
@@ -346,5 +364,29 @@ class UserViewSet(viewsets.GenericViewSet):
     def register(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+        response_serializer = UserSerializer(user)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    
+    @extend_schema(
+        summary="Get/Update current user profile info",
+        description="GET: Returns current authenticated user details (Login check). PATCH: Updates profile data (first_name, last_name).",
+        request=UserProfileUpdateSerializer,
+        responses={
+            200: UserSerializer,
+            401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
+        }
+    )
+    @action(detail=False, methods=['get', 'patch'], url_path='me')
+    def me(self, request):
+        if request.method == 'GET':
+            return Response(self.get_serializer(request.user).data)
+        
+        elif request.method == 'PATCH':
+            user = request.user
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(UserSerializer(user).data)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
