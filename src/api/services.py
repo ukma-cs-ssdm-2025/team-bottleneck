@@ -9,10 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class PaymentService:
-    """
-    Service for handling payments via LiqPay.
-    Currently a mock implementation to be replaced with real integration later.
-    """
     
     # Constants for price calculation
     BASE_PRICE_PER_HOUR = Decimal('30.00')  # 30 UAH per hour
@@ -97,7 +93,6 @@ class PaymentService:
 class BookingNotificationService:    
     @staticmethod
     def send_booking_confirmation(booking):
-        """Sends a booking confirmation email"""
         logger.info(f"Sending booking confirmation for {booking.id} to {booking.user.email}")
         # TODO: Integrate with email service
         pass
