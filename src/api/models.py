@@ -24,19 +24,21 @@ class Spot(models.Model):
 
 class Booking(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     spot = models.ForeignKey(Spot, on_delete=models.PROTECT, related_name="bookings")
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
-    status = models.CharField(max_length=16, default="confirmed") 
+    status = models.CharField(max_length=16, default="confirmed")
     created_at = models.DateTimeField(auto_now_add=True)
-    cancellation_reason = models.CharField(max_length=255, blank=True, default="") 
+    cancellation_reason = models.CharField(max_length=255, blank=True, default="")
+    payment_intent_id = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         indexes = [
             models.Index(fields=["spot", "start_at", "end_at", "status"])
         ]
+
