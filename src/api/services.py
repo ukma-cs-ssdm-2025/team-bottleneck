@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class PaymentService:
+    """
+    Service for handling payments via Stripe.
+    Currently a mock implementation to be replaced with real integration later.
+    """
     
     # Constants for price calculation
     BASE_PRICE_PER_HOUR = Decimal('30.00')  # 30 UAH per hour

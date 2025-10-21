@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import HomePage from '../pages/HomePage';
 import ProfilePage from '../pages/ProfilePage';
+import RegisterPage from '../pages/RegisterPage';
+import LoginPage from '../pages/LoginPage';
 
 function AppRouter() {
     return (
@@ -11,6 +13,8 @@ function AppRouter() {
             <main>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/me" element={<LoginPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                 </Routes>
             </main>
