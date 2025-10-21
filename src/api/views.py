@@ -211,7 +211,7 @@ class BookingViewSet(mixins.ListModelMixin,
 
     @extend_schema(
         summary="Create a booking",
-        description="Creates a new parking spot booking. After successful creation, a mock LiqPay payment process is initiated. (/api/v1/bookings/create/)",
+        description="Creates a new parking spot booking. After successful creation, a mock Stripe payment process is initiated. (/api/v1/bookings/create/)",
         request=BookingCreateSerializer,
         responses={
             201: BookingSerializer,

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class PaymentService:
     """
-    Service for handling payments via LiqPay.
+    Service for handling payments via Stripe.
     Currently a mock implementation to be replaced with real integration later.
     """
     
