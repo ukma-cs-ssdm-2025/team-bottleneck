@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import ParkingLot, Spot, Booking
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 import re
 
@@ -9,18 +9,18 @@ class SpotSerializer(serializers.ModelSerializer):
         model = Spot
         fields = ["id", "number", "is_ev", "is_disabled", "lot"]
         read_only_fields = ["lot"]
-        
+       
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParkingLot
         fields = ['id', 'name', 'city', 'street', 'building']
-        
+       
 class ParkingLotDetailSerializer(ParkingLotSerializer):
     spots = SpotSerializer(many=True, read_only=True)
     class Meta:
         model = ParkingLot
         fields = ['id', 'name', 'city', 'street', 'building', 'spots']
-        
+       
     def validate_name(self, value):
         if len(value.strip()) < 3:
             raise serializers.ValidationError("Name must contain at least 3 characters.")
@@ -49,9 +49,8 @@ class ParkingLotDetailSerializer(ParkingLotSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        # !!! ДОДАНО: cancellation_reason
-        fields = ["id", "user", "spot", "start_at", "end_at", "status", "created_at", "cancellation_reason"]
-        read_only_fields = ["status", "created_at", "user", "cancellation_reason"]
+        fields = ["id", "user", "spot", "start_at", "end_at", "status", "created_at", "cancellation_reason", "payment_intent_id"]
+        read_only_fields = ["status", "created_at", "user", "cancellation_reason", "payment_intent_id"]
 
 class BookingCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,7 +63,7 @@ class BookingCancelSerializer(serializers.Serializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    
+   
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'first_name', 'last_name')
@@ -86,14 +85,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    
+   
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'first_name', 'last_name')
         extra_kwargs = {
             'first_name': {'required': False},
             'last_name': {'required': False},
-            'email': {'required': True}, 
+            'email': {'required': True},
         }
 
     def create(self, validated_data):
@@ -105,12 +104,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', '')
         )
         return user
-    
+   
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name')
-        read_only_fields = ('id', 'username', 'email') 
+        read_only_fields = ('id', 'username', 'email')
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -120,3 +119,4 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
             'first_name': {'required': False},
             'last_name': {'required': False},
         }
+
