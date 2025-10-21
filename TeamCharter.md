@@ -9,10 +9,10 @@
   - Рахманова Вікторія Ігорівна (GitHub: @Victoria7778, електронна пошта НаУКМА: v.rakhmanova@ukma.edu.ua )
 
 ## 2. Ролі та відповідальності
-- Супроводжувач репозиторію (Lab1), керівник вимог (Lab2), Architecture lead (Lab3), Backend Lead (Lab4), Quality Lead (Lab 5): Дерменжи Валентина Сергіївна
-- Супроводжувач CI (Lab1) , керівник простежуваності (Lab2), Requirements-architecture mapper (Lab3), Integration Lead (Lab4), Code Reviewer (Lab 5): Пігуляк Антон Богданович
-- Керівник документації (Lab1, Lab2, Lab3, Lab4, Lab5): Рахманова Вікторія Ігорівна
-- Керівник трекера завдань (Lab1), керівник якості (Lab2), UML Lead (Lab3), Quality Lead (Lab4), Security Analyst (Lab 5): Двойленко Анастасія Іванівна
+- Супроводжувач репозиторію (Lab1), керівник вимог (Lab2), Architecture lead (Lab3), Backend Lead (Lab4), Quality Lead (Lab 5), Test Lead (Lab 6): Дерменжи Валентина Сергіївна
+- Супроводжувач CI (Lab1) , керівник простежуваності (Lab2), Requirements-architecture mapper (Lab3), Integration Lead (Lab4), Code Reviewer (Lab 5), Integration Lead (Lab 6): Пігуляк Антон Богданович
+- Керівник документації (Lab1, Lab2, Lab3, Lab4, Lab5), Debugger (Lab 6): Рахманова Вікторія Ігорівна
+- Керівник трекера завдань (Lab1), керівник якості (Lab2), UML Lead (Lab3), Quality Lead (Lab4), Security Analyst (Lab 5), QA Planner (Lab 6): Двойленко Анастасія Іванівна
 
 ## 3. План комунікації
 - Основний канал: Discord та мессенджер
