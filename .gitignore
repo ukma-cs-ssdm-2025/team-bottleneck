@@ -17,6 +17,7 @@ staticfiles/
 .DS_Store
 Thumbs.db
 .vscode/
+.idea/
 
 
 # Frontend/Node
