@@ -1,5 +1,6 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; 
 import {
     Typography,
     Container,
@@ -10,7 +11,7 @@ import {
     Alert,
     Box
 } from '@mui/material';
-import { fetchParkingLots } from '../api/parkingAPI'; // Імпортуємо нашу нову функцію
+import { fetchParkingLots } from '../api/parkingAPI';
 
 function HomePage() {
     const [parkings, setParkings] = useState([]);
@@ -30,41 +31,51 @@ function HomePage() {
         };
 
         loadData();
-    }, []); // Пустий масив означає, що ефект виконається лише один раз
+    }, []);
 
-    // Показуємо спіннер, поки дані завантажуються
+    
     if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    // Показуємо повідомлення про помилку
-    if (error) {
-        return (
-            <Container sx={{ mt: 4 }}>
-                <Alert severity="error">{error}</Alert>
-            </Container>
-        );
-    }
+         return (
+             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+                 <CircularProgress />
+             </Box>
+         );
+     }
+ 
+     if (error) {
+         return (
+             <Container sx={{ mt: 4 }}>
+                 <Alert severity="error">{error}</Alert>
+             </Container>
+         );
+     }
+    // ...
 
     return (
         <Container sx={{ mt: 4 }}>
-            <Typography variant="h1" gutterBottom>
+            <Typography variant="h4" gutterBottom> {}
                 Доступні паркінги
             </Typography>
             <List>
                 {parkings.map((parking) => (
-                    <ListItem key={parking.id} divider>
+                    <ListItem 
+                        key={parking.id} 
+                        divider
+                        // Використовуємо Link для навігації на сторінку деталей
+                        component={Link} 
+                        to={`/lots/${parking.id}`}
+                        sx={{ textDecoration: 'none', color: 'inherit', '&:hover': { backgroundColor: '#f5f5f5' } }} // Стилі для Link
+                    >
                         <ListItemText
                             primary={parking.name}
-                            secondary={`${parking.city}, ${parking.street}`}
+                            secondary={`${parking.city || 'Місто не вказано'}, ${parking.street || 'Вулиця не вказана'}`}
                         />
                     </ListItem>
                 ))}
             </List>
+            {parkings.length === 0 && !loading && (
+                <Alert severity="info">Наразі немає доступних паркувальних лотів.</Alert>
+            )}
         </Container>
     );
 }
