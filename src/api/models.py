@@ -42,3 +42,10 @@ class Booking(models.Model):
             models.Index(fields=["spot", "start_at", "end_at", "status"])
         ]
 
+class OperatorProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='operator_profile')
+    lot = models.ForeignKey(ParkingLot, on_delete=models.SET_NULL, null=True, related_name='operators')
+    
+    def __str__(self):
+        return f"Operator {self.user.username} for {self.lot.name if self.lot else 'N/A'}"
+    
