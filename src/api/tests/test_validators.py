@@ -22,3 +22,9 @@ def test_start_in_past_raises():
     end = timezone.now() + timezone.timedelta(hours=1)
     with pytest.raises(serializers.ValidationError, match="must be in the future"):
         validate_booking_window(start, end)
+
+def test_zero_duration_raises_error():
+    start = timezone.now() + timezone.timedelta(hours=1)
+    end = start 
+    with pytest.raises(serializers.ValidationError, match="must be before"):
+        validate_booking_window(start, end)
