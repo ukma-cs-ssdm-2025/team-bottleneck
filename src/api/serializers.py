@@ -52,6 +52,10 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = ["id", "user", "spot", "start_at", "end_at", "status", "created_at", "cancellation_reason", "payment_intent_id"]
         read_only_fields = ["status", "created_at", "user", "cancellation_reason", "payment_intent_id"]
 
+class OperatorBookingCancelSerializer(serializers.Serializer):
+    reason = serializers.CharField(max_length=255, required=True, 
+                                   help_text="Причина скасування бронювання оператором.")
+
 class BookingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking

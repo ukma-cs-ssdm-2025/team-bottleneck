@@ -8,19 +8,20 @@ from drf_spectacular.utils import (
     extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
 )
 from django.utils.dateparse import parse_datetime
-
-from .models import ParkingLot, Spot, Booking
+from .permissions import IsLotOperator
+from .models import ParkingLot, Spot, Booking, OperatorProfile
 from .serializers import (
     ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer, 
     BookingSerializer, BookingCreateSerializer, BookingCancelSerializer,
-    UserRegistrationSerializer, UserSerializer, UserProfileUpdateSerializer
+    UserRegistrationSerializer, UserSerializer, UserProfileUpdateSerializer,
+    OperatorBookingCancelSerializer
 )
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
-from .services import PaymentService
+from .services import PaymentService, BookingNotificationService
 
 class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ParkingLot.objects.all().prefetch_related("spots") 
+    queryset = ParkingLot.objects.all().prefetch_related("spots").order_by('name') 
     permission_classes = [AllowAny]
     
     def get_serializer_class(self):
@@ -29,7 +30,7 @@ class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
         return ParkingLotSerializer 
 
     @extend_schema(
-        summary="List of all spots",
+        summary="List of all lots",
         description="Return list of all available lots with base info (/api/v1/lots/).",
         responses={
             200: ParkingLotSerializer(many=True),
@@ -48,7 +49,6 @@ class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
-
 
 class SpotViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SpotSerializer
@@ -145,7 +145,6 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         self.queryset = qs
         return super().list(request, *args, **kwargs)
 
-
 class BookingViewSet(mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
                      viewsets.GenericViewSet):
@@ -154,16 +153,21 @@ class BookingViewSet(mixins.ListModelMixin,
     - GET /api/v1/bookings/{id}/
     - POST /api/v1/bookings/create/
     - POST /api/v1/bookings/{id}/cancel/
+    - GET /api/v1/bookings/my-lot-bookings/
+    - POST /api/v1/bookings/{id}/cancel-operator/
     """
     serializer_class = BookingSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        qs = Booking.objects.all().select_related("spot__lot", "user").order_by("-created_at")
+
         if not self.request.user.is_authenticated:
             return Booking.objects.none()
-        return Booking.objects.filter(
-            user=self.request.user
-        ).select_related("spot__lot", "user").order_by("-created_at")
+
+        if self.action in ['my_lot_bookings', 'cancel_by_operator']:
+            return qs
+        return qs.filter(user=self.request.user)
 
     @extend_schema(
         summary="My bookings",
@@ -323,6 +327,70 @@ class BookingViewSet(mixins.ListModelMixin,
         booking.save(update_fields=["status", "cancellation_reason"])
         PaymentService.process_refund(booking)
         return Response(BookingSerializer(booking).data)
+    
+    @action(detail=False, methods=['get'], url_path='my-lot-bookings',
+            permission_classes=[IsAuthenticated, IsLotOperator])
+    def my_lot_bookings(self, request):
+        try:
+            operator_profile = request.user.operator_profile
+            operator_lot_id = operator_profile.lot_id
+        except OperatorProfile.DoesNotExist:
+            return Response({'detail': 'Користувач не є оператором (профіль не знайдено).'}, 
+                            status=status.HTTP_403_FORBIDDEN)
+        
+        if operator_lot_id is None:
+            return Response({'detail': 'За вами не закріплено жодного паркувального лоту.'}, 
+                            status=status.HTTP_403_FORBIDDEN)
+
+        queryset = self.get_queryset().filter(
+            spot__lot_id=operator_lot_id
+        ).order_by('start_at')
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = BookingSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = BookingSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = super().get_object()
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    @action(detail=True, methods=['post'], url_path='cancel-operator', 
+            permission_classes=[IsAuthenticated, IsLotOperator])
+    @transaction.atomic
+    def cancel_by_operator(self, request, pk=None):
+        try:
+            booking = self.get_object() 
+        except Booking.DoesNotExist:
+            return Response({'detail': 'Booking not found.'}, status=status.HTTP_404_NOT_FOUND)
+                
+        if booking.status == 'cancelled':
+            return Response({'detail': 'Booking is already cancelled.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = OperatorBookingCancelSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        reason = serializer.validated_data['reason']
+        
+        refund_result = PaymentService.process_refund(booking)
+        
+        booking.status = 'cancelled'
+        operator_reason = f"Cancelled by Operator ({request.user.username}): {reason}"
+        booking.cancellation_reason = operator_reason
+        booking.save(update_fields=['status', 'cancellation_reason'])
+
+        BookingNotificationService.send_cancellation_confirmation(booking)
+
+        return Response({
+            'detail': 'Booking successfully cancelled by operator.',
+            'booking_id': booking.id,
+            'reason': operator_reason,
+            'refund_status': refund_result.get('status', 'N/A'),
+        }, status=status.HTTP_200_OK)
 
 class UserViewSet(viewsets.GenericViewSet):
     http_method_names = ['get', 'post', 'patch', 'head', 'options']
