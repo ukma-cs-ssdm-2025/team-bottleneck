@@ -146,3 +146,12 @@ def test_operator_profile_without_lot():
 
     assert "N/A" in str(profile)
     assert "solo" in str(profile)
+
+@pytest.mark.django_db
+def test_operator_profile_user_must_be_unique_fails():
+    user = User.objects.create_user(username="operator_gulliver", password="gulliver")
+    lot = ParkingLot.objects.create(name="Central", city="Kyiv", street="Main")
+    
+    OperatorProfile.objects.create(user=user, lot=lot)
+    with pytest.raises(IntegrityError):
+        OperatorProfile.objects.create(user=user, lot=None)
