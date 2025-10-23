@@ -8,10 +8,10 @@ class IsLotOperator(permissions.BasePermission):
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        
+
         try:
             profile = user.operator_profile
-        except Exception:
+        except OperatorProfile.DoesNotExist:
             return False
 
         lot_pk = view.kwargs.get("lot_pk")
@@ -20,7 +20,7 @@ class IsLotOperator(permissions.BasePermission):
                 return profile.lot_id == int(lot_pk)
             except (ValueError, TypeError):
                 return False
-            
+
         return True
 
     def has_object_permission(self, request, view, obj):
