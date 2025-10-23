@@ -14,7 +14,7 @@ from .serializers import (
     ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer, 
     BookingSerializer, BookingCreateSerializer, BookingCancelSerializer,
     UserRegistrationSerializer, UserSerializer, UserProfileUpdateSerializer,
-    OperatorBookingCancelSerializer
+    OperatorBookingCancelSerializer, SpotOperatorUpdateSerializer
 )
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
@@ -154,7 +154,7 @@ class SpotViewSet(mixins.ListModelMixin,
     @transaction.atomic
     def operator_update(self, request, lot_pk=None, pk=None):
         spot = self.get_object()
-        serializer = self.get_serializer(spot, data=request.data, partial=True)
+        serializer = SpotOperatorUpdateSerializer(spot, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         SpotUpdateService.update_spot(spot, serializer.validated_data)
         return Response(serializer.data)
