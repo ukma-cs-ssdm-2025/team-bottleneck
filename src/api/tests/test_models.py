@@ -19,7 +19,7 @@ class BookingTests(APITestCase):
 
 
 # ────────────────────────────────────────────────
-# 🅰️ ParkingLot model
+# ParkingLot model
 # ────────────────────────────────────────────────
 
 @pytest.mark.django_db
@@ -49,7 +49,7 @@ def test_parking_lot_str_without_building():
 
 
 # ────────────────────────────────────────────────
-# 🅱️ Spot model
+# Spot model
 # ────────────────────────────────────────────────
 
 @pytest.mark.django_db
@@ -80,7 +80,7 @@ def test_spot_number_can_repeat_in_different_lots():
 
 
 # ────────────────────────────────────────────────
-# 🅲 Booking model
+# Booking model
 # ────────────────────────────────────────────────
 
 @pytest.mark.django_db
