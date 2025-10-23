@@ -7,26 +7,25 @@ from rest_framework.validators import UniqueTogetherValidator
 
 
 class SpotSerializer(serializers.ModelSerializer):
-    lot_name = serializers.CharField(source="lot.name", read_only=True)
-
     class Meta:
         model = Spot
-        fields = ["id", "number", "is_ev", "is_disabled", "lot", "lot_name"]
-        read_only_fields = ["lot", "lot_name"]
+        fields = ["id", "number", "is_ev", "is_disabled", "lot"]
+        read_only_fields = ["lot"]
 
     def validate(self, attrs):
+        """Ensure unique spot number within the same lot (case-insensitive)."""
         lot = self.instance.lot if self.instance else self.context.get("lot")
         number = attrs.get("number") or (self.instance.number if self.instance else None)
 
         if lot and number:
-            qs = Spot.objects.filter(lot=lot, number=number)
+            qs = Spot.objects.filter(lot=lot, number__iexact=number)
             if self.instance:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
                 existing_numbers = Spot.objects.filter(lot=lot).values_list("number", flat=True)
                 raise serializers.ValidationError(
                     {
-                        "number": f"This spot number already exists in lot '{lot.name}'.",
+                        "number": f"This spot number already exists in lot '{lot.name}' (case-insensitive check).",
                         "existing_numbers": list(existing_numbers),
                     }
                 )
