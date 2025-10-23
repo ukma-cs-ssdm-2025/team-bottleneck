@@ -119,3 +119,24 @@ def test_operator_cannot_change_spot_number():
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert spot.number == "A1"
+
+@pytest.mark.django_db
+def test_operator_cannot_patch_spot_from_other_lot():
+    client = APIClient()
+
+    lot1 = ParkingLot.objects.create(name="Lot 1", city="Kyiv", street="Main")
+    lot2 = ParkingLot.objects.create(name="Lot 2", city="Kyiv", street="Side")
+
+    operator = User.objects.create_user(username="op1", password="123")
+    OperatorProfile.objects.create(user=operator, lot=lot1)
+
+    spot_other_lot = Spot.objects.create(number="B2", lot=lot2, is_ev=False, is_disabled=False)
+
+    client.force_authenticate(operator)
+    url = f"/api/v1/lots/{lot2.id}/spots/{spot_other_lot.id}/operator-update/"
+
+    resp = client.patch(url, {"is_ev": True}, format="json")
+    spot_other_lot.refresh_from_db()
+
+    assert resp.status_code == status.HTTP_403_FORBIDDEN
+    assert spot_other_lot.is_ev is False
