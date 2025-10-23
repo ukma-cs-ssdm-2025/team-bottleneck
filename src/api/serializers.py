@@ -3,12 +3,25 @@ from .models import ParkingLot, Spot, Booking
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 import re
+from rest_framework.validators import UniqueTogetherValidator
+
 
 class SpotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Spot
         fields = ["id", "number", "is_ev", "is_disabled", "lot"]
         read_only_fields = ["lot"]
+
+    def validate(self, attrs):
+        """Ensure unique spot number within the same lot"""
+        lot = self.instance.lot if self.instance else self.context.get("lot")
+        number = attrs.get("number")
+
+        if Spot.objects.filter(lot=lot, number=number).exists():
+            raise serializers.ValidationError(
+                {"number": "This spot number already exists in this lot."}
+            )
+        return attrs
        
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
