@@ -19,9 +19,16 @@ export const AuthProvider = ({ children }) => {
     // Function to handle successful login (store credentials and user data)
     const login = (username, password, userData) => {
         localStorage.setItem('authUsername', username);
-        localStorage.setItem('authPassword', password); // Warning: storing passwords in localStorage is insecure!
+        localStorage.setItem('authPassword', password);
         setUser(userData);
         setIsAuthenticated(true);
+    };
+
+    const updateUser = (newUserData) => {
+        setUser(prevUser => ({
+            ...prevUser,
+            ...newUserData
+        }));
     };
 
     // Function to handle logout
@@ -39,12 +46,13 @@ export const AuthProvider = ({ children }) => {
     });
 
     return (
-        <AuthContext.Provider value={{ 
-            isAuthenticated, 
-            user, 
-            login, 
-            logout, 
-            getCredentials 
+        <AuthContext.Provider value={{
+            isAuthenticated,
+            user,
+            login,
+            logout,
+            getCredentials,
+            updateUser,
         }}>
             {children}
         </AuthContext.Provider>
