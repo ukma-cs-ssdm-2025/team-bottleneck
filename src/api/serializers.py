@@ -13,14 +13,18 @@ class SpotSerializer(serializers.ModelSerializer):
         read_only_fields = ["lot"]
 
     def validate(self, attrs):
-        """Ensure unique spot number within the same lot"""
+        """Ensure unique spot number within the same lot."""
         lot = self.instance.lot if self.instance else self.context.get("lot")
-        number = attrs.get("number")
+        number = attrs.get("number") or (self.instance.number if self.instance else None)
 
-        if Spot.objects.filter(lot=lot, number=number).exists():
-            raise serializers.ValidationError(
-                {"number": "This spot number already exists in this lot."}
-            )
+        if lot and number:
+            qs = Spot.objects.filter(lot=lot, number=number)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    {"number": "This spot number already exists in this lot."}
+                )
         return attrs
        
 class ParkingLotSerializer(serializers.ModelSerializer):

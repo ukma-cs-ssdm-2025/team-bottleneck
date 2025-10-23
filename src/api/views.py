@@ -19,6 +19,8 @@ from .serializers import (
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
 from .services import PaymentService, BookingNotificationService, CancellationService, SpotUpdateService
+from rest_framework.exceptions import ValidationError
+
 
 class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingLot.objects.all().prefetch_related("spots").order_by('name') 
@@ -165,10 +167,8 @@ class SpotViewSet(mixins.ListModelMixin,
     )
     @transaction.atomic
     def create_spot(self, request, lot_pk=None):
-        """Allow an operator to create a new spot in their assigned lot"""
         lot = get_object_or_404(ParkingLot, pk=lot_pk)
 
-        # Ensure operator has access to this lot
         operator_profile = getattr(request.user, "operator_profile", None)
         if not operator_profile or operator_profile.lot_id != lot.id:
             return Response(
@@ -176,14 +176,16 @@ class SpotViewSet(mixins.ListModelMixin,
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        number = request.data.get("number")
+        if Spot.objects.filter(lot=lot, number=number).exists():
+            raise ValidationError({"number": "This spot number already exists in this lot."})
+
         serializer = SpotSerializer(data=request.data, context={"lot": lot})
         serializer.is_valid(raise_exception=True)
-
         spot = serializer.save(lot=lot)
 
         response_data = serializer.data
         response_data["lot_name"] = lot.name
-
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 
