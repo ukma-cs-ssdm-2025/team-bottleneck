@@ -58,3 +58,43 @@ def test_operator_can_patch_own_spot():
 
     assert response.status_code == status.HTTP_200_OK
     assert spot.is_ev is True
+
+@pytest.mark.django_db
+def test_parking_lot_list_and_detail():
+    lot = ParkingLot.objects.create(name="Sky", city="Kyiv", street="Main")
+    Spot.objects.create(number="A1", lot=lot)
+    client = APIClient()
+    resp_list = client.get("/api/v1/lots/")
+    assert resp_list.status_code == 200
+    resp_detail = client.get(f"/api/v1/lots/{lot.id}/")
+    assert resp_detail.status_code == 200
+    assert "Sky" in str(resp_detail.data)
+
+@pytest.mark.django_db
+def test_create_and_cancel_booking():
+    user = User.objects.create_user("user", password="123")
+    client = APIClient()
+    client.force_authenticate(user)
+    lot = ParkingLot.objects.create(name="Test", city="Kyiv", street="Main")
+    spot = Spot.objects.create(number="A1", lot=lot)
+    start = timezone.now() + timezone.timedelta(hours=1)
+    end = start + timezone.timedelta(hours=1)
+
+    resp = client.post("/api/v1/bookings/create/", {"spot": spot.id, "start_at": start, "end_at": end}, format="json")
+    assert resp.status_code == 201
+    booking_id = resp.data["id"]
+
+    cancel = client.post(f"/api/v1/bookings/{booking_id}/cancel/", {"reason": "no longer needed"}, format="json")
+    assert cancel.status_code == 200
+    assert cancel.data["status"] == "cancelled"
+
+@pytest.mark.django_db
+def test_user_register_and_update_me():
+    client = APIClient()
+    reg = client.post("/api/v1/users/register/", {"username": "newu", "email": "n@e.com", "password": "StrongPass123!"}, format="json")
+    assert reg.status_code == 201
+    user = User.objects.get(username="newu")
+    client.force_authenticate(user)
+    patch = client.patch("/api/v1/users/me/", {"first_name": "Valya"}, format="json")
+    assert patch.status_code == 200
+    assert patch.data["first_name"] == "Valya"
