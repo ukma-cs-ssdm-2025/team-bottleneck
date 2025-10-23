@@ -18,6 +18,34 @@ export const fetchParkingLots = async () => {
   }
 };
 
+export async function fetchParkingLotDetails(lotId) {
+    try {
+        // GET /api/v1/lots/{id}/
+        const response = await axios.get(`${API_BASE_URL}/lots/${lotId}/`);
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching details for lot ${lotId}:`, error);
+        throw error;
+    }
+}
+//  Отримання доступних місць
+export async function fetchAvailableSpots(lotId, start, end) {
+    try {
+        // GET /api/v1/lots/{lotId}/spots?available_from=...&available_to=...
+        const response = await axios.get(`${API_BASE_URL}/lots/${lotId}/spots`, {
+            params: {
+                available_from: start,
+                available_to: end,
+                // Тут можна додати фільтри is_ev, is_disabled
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching available spots:", error);
+        throw error;
+    }
+}
+
 /**
  * Asynchronously registers a new user by sending data to the backend.
  * Corresponds to: UserViewSet.register
