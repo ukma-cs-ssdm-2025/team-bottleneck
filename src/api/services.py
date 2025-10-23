@@ -116,3 +116,7 @@ class BookingNotificationService:
         # TODO: Integrate with email or push notification service
         pass
 
+class CancellationService:
+    @staticmethod
+    def get_operator_cancellation_reason(operator_username: str, comment: str) -> str:
+        return f"Cancelled by Operator ({operator_username}): {comment}"

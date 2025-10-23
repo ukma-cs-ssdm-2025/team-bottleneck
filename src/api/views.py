@@ -18,7 +18,7 @@ from .serializers import (
 )
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
-from .services import PaymentService, BookingNotificationService
+from .services import PaymentService, BookingNotificationService, CancellationService
 
 class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingLot.objects.all().prefetch_related("spots").order_by('name') 
@@ -379,10 +379,13 @@ class BookingViewSet(mixins.ListModelMixin,
         refund_result = PaymentService.process_refund(booking)
         
         booking.status = 'cancelled'
-        operator_reason = f"Cancelled by Operator ({request.user.username}): {reason}"
+        operator_reason = CancellationService.get_operator_cancellation_reason(
+            operator_username=request.user.username,
+            comment=reason
+        )
         booking.cancellation_reason = operator_reason
         booking.save(update_fields=['status', 'cancellation_reason'])
-
+        
         BookingNotificationService.send_cancellation_confirmation(booking)
 
         return Response({
