@@ -377,6 +377,13 @@ class BookingViewSet(mixins.ListModelMixin,
         reason = serializer.validated_data['reason']
         
         refund_result = PaymentService.process_refund(booking)
+        cancellation_error = booking.check_cancellable_error() 
+        
+        if cancellation_error:
+            return Response(
+                {'detail': cancellation_error}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         booking.status = 'cancelled'
         operator_reason = CancellationService.get_operator_cancellation_reason(
