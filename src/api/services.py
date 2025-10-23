@@ -123,3 +123,11 @@ class CancellationService:
     @staticmethod
     def get_operator_cancellation_reason(operator_username: str, comment: str) -> str:
         return f"Cancelled by Operator ({operator_username}): {comment}"
+    
+class SpotUpdateService:
+    @staticmethod
+    def update_spot(spot, validated_data):
+        for field, value in validated_data.items():
+            setattr(spot, field, value)
+        spot.save()
+        return spot
