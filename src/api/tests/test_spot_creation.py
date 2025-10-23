@@ -33,3 +33,67 @@ class TestSpotCreation(APITestCase):
         resp2 = self.client.post(url, payload, format="json")
         assert resp2.status_code == status.HTTP_400_BAD_REQUEST
         assert "number" in resp2.data
+
+    def test_operator_cannot_create_spot_in_other_lot(self):
+        """
+        Operator must not be allowed to create a spot in a lot they don't manage.
+        Should return 403 Forbidden.
+        """
+        # Arrange
+        self.client.login(username="op1", password="pass")
+        url = reverse("lot-spots-create-spot", kwargs={"lot_pk": self.other_lot.id})
+        payload = {"number": "X1", "is_ev": False, "is_disabled": False}
+
+        # Act
+        resp = self.client.post(url, payload, format="json")
+
+        # Assert
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
+        assert "detail" in resp.data
+        assert "cannot create spots in another lot" in resp.data["detail"]
+
+    def test_non_operator_cannot_create_spot(self):
+        """
+        A normal authenticated user without operator profile
+        should not be able to create spots.
+        """
+        self.client.login(username="u1", password="pass")  # not an operator
+        url = reverse("lot-spots-create-spot", kwargs={"lot_pk": self.lot.id})
+        payload = {"number": "B1", "is_ev": False, "is_disabled": False}
+
+        resp = self.client.post(url, payload, format="json")
+
+        assert resp.status_code == status.HTTP_403_FORBIDDEN
+        assert "detail" in resp.data
+
+    def test_operator_cannot_create_spot_with_empty_number(self):
+        """
+        Operator should not be able to create a spot with an empty number.
+        """
+        self.client.login(username="op1", password="pass")
+        url = reverse("lot-spots-create-spot", kwargs={"lot_pk": self.lot.id})
+        payload = {"number": "", "is_ev": False, "is_disabled": False}
+
+        resp = self.client.post(url, payload, format="json")
+
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST
+        assert "number" in resp.data
+
+    def test_operator_cannot_create_spot_with_same_number_different_case(self):
+        """
+        Spot numbers should be case-insensitive (A1 == a1).
+        """
+        self.client.login(username="op1", password="pass")
+        url = reverse("lot-spots-create-spot", kwargs={"lot_pk": self.lot.id})
+
+        # Create first spot
+        payload1 = {"number": "A1", "is_ev": False, "is_disabled": False}
+        resp1 = self.client.post(url, payload1, format="json")
+        assert resp1.status_code == status.HTTP_201_CREATED
+
+        # Try to create same number with different case
+        payload2 = {"number": "a1", "is_ev": False, "is_disabled": False}
+        resp2 = self.client.post(url, payload2, format="json")
+
+        assert resp2.status_code == status.HTTP_400_BAD_REQUEST
+        assert "number" in resp2.data
