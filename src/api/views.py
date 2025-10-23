@@ -150,7 +150,8 @@ class SpotViewSet(mixins.ListModelMixin,
         self.queryset = qs
         return super().list(request, *args, **kwargs)
 
-    @action(detail=True, methods=["patch"], url_path="operator-update")
+    @action(detail=True, methods=["patch"], url_path="operator-update",
+        permission_classes=[IsAuthenticated, IsLotOperator])
     @transaction.atomic
     def operator_update(self, request, lot_pk=None, pk=None):
         spot = self.get_object()
