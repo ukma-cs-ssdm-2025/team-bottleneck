@@ -151,6 +151,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         }
 
 class SpotOperatorUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for operators — restricts updates to allowed fields."""
     class Meta:
         model = Spot
         fields = ["is_ev", "is_disabled"]
