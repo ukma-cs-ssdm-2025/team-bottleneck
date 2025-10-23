@@ -133,4 +133,4 @@ def test_operator_cannot_cancel_past_booking():
     assert 'already completed' in response.data['detail'].lower()
     
     booking.refresh_from_db()
-    assert booking.status == 'confirmed'
+    assert booking.status == 'confirmed', "Status should remain 'confirmed' after failed cancellation."
