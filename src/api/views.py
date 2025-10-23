@@ -177,16 +177,20 @@ class SpotViewSet(mixins.ListModelMixin,
             )
 
         number = request.data.get("number")
-        if Spot.objects.filter(lot=lot, number=number).exists():
+        if Spot.objects.filter(lot=lot, number__iexact=number).exists():
             raise ValidationError({"number": "This spot number already exists in this lot."})
 
         serializer = SpotSerializer(data=request.data, context={"lot": lot})
         serializer.is_valid(raise_exception=True)
-        spot = serializer.save(lot=lot)
+
+        spot = serializer.save(lot=lot, created_by=request.user)
+        spot.created_by = request.user  # 🔑 нове поле
+        spot.save(update_fields=["created_by"])
 
         response_data = serializer.data
         response_data["lot_name"] = lot.name
         return Response(response_data, status=status.HTTP_201_CREATED)
+
 
 
 class BookingViewSet(mixins.ListModelMixin,

@@ -7,10 +7,15 @@ from rest_framework.validators import UniqueTogetherValidator
 
 
 class SpotSerializer(serializers.ModelSerializer):
+    created_by = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Spot
-        fields = ["id", "number", "is_ev", "is_disabled", "lot"]
-        read_only_fields = ["lot"]
+        fields = ["id", "number", "is_ev", "is_disabled", "lot", "created_by"]
+        read_only_fields = ["lot", "created_by"]
+
+    def get_created_by(self, obj):
+        return obj.created_by.username if hasattr(obj, "created_by") and obj.created_by else None
 
     def validate(self, attrs):
         """Ensure unique spot number within the same lot (case-insensitive)."""
