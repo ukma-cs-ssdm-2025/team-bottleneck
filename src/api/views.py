@@ -144,6 +144,18 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
 
         self.queryset = qs
         return super().list(request, *args, **kwargs)
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="operator-update",
+        permission_classes=[IsAuthenticated, IsLotOperator],
+    )
+    def operator_update(self, request, lot_pk=None, pk=None):
+        spot = get_object_or_404(Spot, pk=pk, lot_id=lot_pk)
+        serializer = SpotSerializer(spot, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class BookingViewSet(mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
