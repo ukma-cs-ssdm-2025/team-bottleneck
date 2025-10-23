@@ -7,13 +7,14 @@ from rest_framework.validators import UniqueTogetherValidator
 
 
 class SpotSerializer(serializers.ModelSerializer):
+    lot_name = serializers.CharField(source="lot.name", read_only=True)
+
     class Meta:
         model = Spot
-        fields = ["id", "number", "is_ev", "is_disabled", "lot"]
-        read_only_fields = ["lot"]
+        fields = ["id", "number", "is_ev", "is_disabled", "lot", "lot_name"]
+        read_only_fields = ["lot", "lot_name"]
 
     def validate(self, attrs):
-        """Ensure unique spot number within the same lot."""
         lot = self.instance.lot if self.instance else self.context.get("lot")
         number = attrs.get("number") or (self.instance.number if self.instance else None)
 
@@ -22,8 +23,12 @@ class SpotSerializer(serializers.ModelSerializer):
             if self.instance:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
+                existing_numbers = Spot.objects.filter(lot=lot).values_list("number", flat=True)
                 raise serializers.ValidationError(
-                    {"number": "This spot number already exists in this lot."}
+                    {
+                        "number": f"This spot number already exists in lot '{lot.name}'.",
+                        "existing_numbers": list(existing_numbers),
+                    }
                 )
         return attrs
        
