@@ -19,6 +19,8 @@ from .serializers import (
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
 from .services import PaymentService, BookingNotificationService, CancellationService, SpotUpdateService
+from rest_framework.exceptions import ValidationError
+
 
 class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingLot.objects.all().prefetch_related("spots").order_by('name') 
@@ -50,7 +52,10 @@ class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-class SpotViewSet(viewsets.ReadOnlyModelViewSet):
+class SpotViewSet(mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin,
+                  viewsets.GenericViewSet):
+
     serializer_class = SpotSerializer
     permission_classes = [AllowAny]
 
@@ -153,6 +158,39 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         SpotUpdateService.update_spot(spot, serializer.validated_data)
         return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="create",
+        permission_classes=[IsAuthenticated, IsLotOperator],
+    )
+    @transaction.atomic
+    def create_spot(self, request, lot_pk=None):
+        lot = get_object_or_404(ParkingLot, pk=lot_pk)
+
+        operator_profile = getattr(request.user, "operator_profile", None)
+        if not operator_profile or operator_profile.lot_id != lot.id:
+            return Response(
+                {"detail": "You cannot create spots in another lot."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        number = request.data.get("number")
+        if Spot.objects.filter(lot=lot, number__iexact=number).exists():
+            raise ValidationError({"number": "This spot number already exists in this lot."})
+
+        serializer = SpotSerializer(data=request.data, context={"lot": lot})
+        serializer.is_valid(raise_exception=True)
+
+        spot = serializer.save(lot=lot, created_by=request.user)
+        spot.created_by = request.user  # 🔑 нове поле
+        spot.save(update_fields=["created_by"])
+
+        response_data = serializer.data
+        response_data["lot_name"] = lot.name
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
 
 
 class BookingViewSet(mixins.ListModelMixin,

@@ -17,6 +17,14 @@ class Spot(models.Model):
     is_ev = models.BooleanField(default=False)
     is_disabled = models.BooleanField(default=False)
 
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_spots"
+    )
+
     class Meta:
         unique_together = ("lot", "number")
 
