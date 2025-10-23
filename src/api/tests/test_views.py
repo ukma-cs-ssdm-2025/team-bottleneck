@@ -98,3 +98,24 @@ def test_user_register_and_update_me():
     patch = client.patch("/api/v1/users/me/", {"first_name": "Valya"}, format="json")
     assert patch.status_code == 200
     assert patch.data["first_name"] == "Valya"
+
+@pytest.mark.django_db
+def test_operator_cannot_change_spot_number():
+    api_client=APIClient()
+    from django.contrib.auth.models import User
+    from src.api.models import ParkingLot, Spot, OperatorProfile
+    from rest_framework import status
+
+    user = User.objects.create_user(username="operator", password="123")
+    lot = ParkingLot.objects.create(name="Mall", city="Kyiv", street="Main")
+    OperatorProfile.objects.create(user=user, lot=lot)
+    spot = Spot.objects.create(number="A1", lot=lot, is_ev=False, is_disabled=False)
+
+    api_client.force_authenticate(user)
+
+    url = f"/api/v1/lots/{lot.id}/spots/{spot.id}/operator-update/"
+    response = api_client.patch(url, {"number": "Z9"}, format="json")
+    spot.refresh_from_db()
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert spot.number == "A1"
