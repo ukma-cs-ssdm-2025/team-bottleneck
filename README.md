@@ -34,3 +34,5 @@
 - **python manage.py runserver**
 
 - Після цього перейти за адресою http://127.0.0.1:8000/
+- [Посилання на GitHub Pages](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/)
+

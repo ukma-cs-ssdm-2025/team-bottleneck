@@ -5,6 +5,9 @@ import HomePage from '../pages/HomePage';
 import ProfilePage from '../pages/ProfilePage';
 import RegisterPage from '../pages/RegisterPage';
 import LoginPage from '../pages/LoginPage';
+import LotDetailsPage from '../pages/LotDetailsPage.jsx';
+import SpotSelectionPage from '../pages/SpotSelectionPage.jsx'
+import BookingCreatePage from '../pages/BookingCreatePage.jsx';
 
 function AppRouter() {
     return (
@@ -16,6 +19,9 @@ function AppRouter() {
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/me" element={<LoginPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/lots/:id" element={<LotDetailsPage />} />
+                    <Route path="/lots/:lotId/spots" element={<SpotSelectionPage />} />
+                    <Route path="/booking/create" element={<BookingCreatePage />} />
                 </Routes>
             </main>
         </BrowserRouter>
