@@ -14,7 +14,7 @@ class TestSpotCreation(APITestCase):
 
     def test_operator_creates_spot_in_own_lot_201(self):
         self.client.login(username="op1", password="pass")
-        url = reverse("lot-spots-list", kwargs={"lot_pk": self.lot.id})
+        url = reverse("lot-spots-create-spot", kwargs={"lot_pk": self.lot.id})
         payload = {"number": "A1", "is_ev": True, "is_disabled": False}
         resp = self.client.post(url, payload, format="json")
         assert resp.status_code == status.HTTP_201_CREATED

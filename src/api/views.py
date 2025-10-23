@@ -50,7 +50,10 @@ class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
-class SpotViewSet(viewsets.ReadOnlyModelViewSet):
+class SpotViewSet(mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin,
+                  viewsets.GenericViewSet):
+
     serializer_class = SpotSerializer
     permission_classes = [AllowAny]
 
@@ -153,6 +156,24 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid(raise_exception=True)
         SpotUpdateService.update_spot(spot, serializer.validated_data)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="create",
+            permission_classes=[IsAuthenticated, IsLotOperator])
+    @transaction.atomic
+    def create_spot(self, request, lot_pk=None):
+        lot = get_object_or_404(ParkingLot, pk=lot_pk)
+
+        if request.user.operator_profile.lot_id != lot.id:
+            return Response(
+                {"detail": "You cannot create spots in another lot."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        spot = serializer.save(lot=lot)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class BookingViewSet(mixins.ListModelMixin,
