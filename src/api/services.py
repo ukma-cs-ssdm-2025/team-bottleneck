@@ -104,7 +104,10 @@ class BookingNotificationService:
    
     @staticmethod
     def send_cancellation_confirmation(booking):
-        """Sends a booking cancellation confirmation email"""
+        if booking.user is None:
+            logger.warning(f"Skipping cancellation confirmation for {booking.id}. User field is NULL.")
+            return 
+            
         logger.info(f"Sending cancellation confirmation for {booking.id} to {booking.user.email}")
         # TODO: Integrate with email service
         pass

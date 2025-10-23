@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 class ParkingLot(models.Model):
     name = models.CharField(max_length=100)
@@ -36,6 +37,14 @@ class Booking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     cancellation_reason = models.CharField(max_length=255, blank=True, default="")
     payment_intent_id = models.CharField(max_length=100, blank=True, null=True)
+    def check_cancellable_error(self) -> str | None:
+        if self.status == 'cancelled':
+            return 'Booking is already cancelled.'
+        
+        if self.end_at <= timezone.now():
+            return 'Booking time has already completed and cannot be cancelled.'
+            
+        return None
 
     class Meta:
         indexes = [
