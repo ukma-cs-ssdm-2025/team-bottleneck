@@ -40,3 +40,21 @@ def test_operator_cancels_booking_and_reason_is_detailed():
     assert booking.cancellation_reason.startswith(expected_reason_part)
     assert "cleaning" in booking.cancellation_reason
     assert booking.status == 'cancelled'
+
+@pytest.mark.django_db
+def test_operator_can_patch_own_spot():
+    client = APIClient()
+
+    operator_user = User.objects.create_user(username="op", password="123")
+    lot = ParkingLot.objects.create(name="Mall", city="Kyiv", street="Main")
+    OperatorProfile.objects.create(user=operator_user, lot=lot)
+    spot = Spot.objects.create(number="A1", lot=lot, is_ev=False, is_disabled=False)
+
+    client.force_authenticate(user=operator_user)
+
+    url = f"/api/v1/lots/{lot.id}/spots/{spot.id}/operator-update/"
+    response = client.patch(url, {"is_ev": True}, format="json")
+    spot.refresh_from_db()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert spot.is_ev is True
