@@ -8,6 +8,7 @@ db.sqlite3
 
 # Virtual env
 venv/
+.env
 
 # Django static build (якщо робитимеш collectstatic локально)
 staticfiles/
@@ -16,3 +17,9 @@ staticfiles/
 .DS_Store
 Thumbs.db
 .vscode/
+.idea/
+
+
+# Frontend/Node
+node_modules/
+frontend/node_modules/ 
