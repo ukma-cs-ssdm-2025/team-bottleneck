@@ -69,11 +69,12 @@ const BookingCard = ({ booking, onCancel }) => {
 };
 
 function ProfilePage() {
-    const { user, updateUser } = useAuth();
+    const { user, updateUser, loading } = useAuth();
     const [profileData, setProfileData] = useState({
         first_name: user?.first_name || '',
         last_name: user?.last_name || ''
     });
+
     const [bookings, setBookings] = useState([]);
     const [loadingBookings, setLoadingBookings] = useState(false);
     const [loadingProfileUpdate, setLoadingProfileUpdate] = useState(false);
@@ -158,6 +159,15 @@ function ProfilePage() {
         }
     };
 
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+                <CircularProgress />
+                <Typography sx={{ ml: 2 }}>Відновлення сесії...</Typography>
+            </Box>
+        );
+    }
+
     if (!user) {
         return (
             <Container sx={{ mt: 4 }}>
@@ -178,7 +188,6 @@ function ProfilePage() {
                     <Typography variant="h5" gutterBottom>
                         Ваші дані
                     </Typography>
-                    {/* ВИПРАВЛЕНО: Використовуємо <strong> замість ** */}
                     <Typography variant="body1">
                         <strong>Ім'я користувача:</strong> {user.username}
                     </Typography>

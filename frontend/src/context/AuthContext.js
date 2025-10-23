@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios'; // Потрібен для відновлення сесії
+import { API_BASE_URL } from '../constants/apiConfig';
 
 // 1. Create the Context object
 const AuthContext = createContext(null);
@@ -6,29 +8,60 @@ const AuthContext = createContext(null);
 // Helper function to get authentication status from localStorage
 const getAuthStatus = () => {
     const username = localStorage.getItem('authUsername');
-    // Consider the user authenticated if a username is stored
-    return !!username; 
+    return !!username;
 };
 
-// 2. Create the Provider component
+const fetchUserProfile = async (username, password) => {
+    if (!username || !password) return null;
+    try {
+        const encodedCredentials = btoa(`${username}:${password}`);
+        const response = await axios.get(`${API_BASE_URL}/users/me/`, {
+            headers: {
+                Authorization: `Basic ${encodedCredentials}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Failed to restore user session:', error);
+        localStorage.removeItem('authUsername');
+        localStorage.removeItem('authPassword');
+        return null;
+    }
+};
+
+
+// 2. Create the Provider component (Тільки одне оголошення!)
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(getAuthStatus());
-    // Add state to store user data
-    const [user, setUser] = useState(null); 
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Function to handle successful login (store credentials and user data)
+    useEffect(() => {
+        const checkSession = async () => {
+            const username = localStorage.getItem('authUsername');
+            const password = localStorage.getItem('authPassword');
+
+            if (username && password) {
+                const userData = await fetchUserProfile(username, password);
+                if (userData) {
+                    setUser(userData);
+                    setIsAuthenticated(true);
+                } else {
+                    setIsAuthenticated(false);
+                }
+            }
+            setLoading(false);
+        };
+        checkSession();
+    }, []);
+
+
+    // Function to handle successful login
     const login = (username, password, userData) => {
         localStorage.setItem('authUsername', username);
         localStorage.setItem('authPassword', password);
         setUser(userData);
         setIsAuthenticated(true);
-    };
-
-    const updateUser = (newUserData) => {
-        setUser(prevUser => ({
-            ...prevUser,
-            ...newUserData
-        }));
     };
 
     // Function to handle logout
@@ -39,7 +72,13 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
     };
 
-    // Function to retrieve stored credentials for API requests
+    const updateUser = (newUserData) => {
+        setUser(prevUser => ({
+            ...prevUser,
+            ...newUserData
+        }));
+    };
+
     const getCredentials = () => ({
         username: localStorage.getItem('authUsername'),
         password: localStorage.getItem('authPassword')
@@ -53,6 +92,7 @@ export const AuthProvider = ({ children }) => {
             logout,
             getCredentials,
             updateUser,
+            loading,
         }}>
             {children}
         </AuthContext.Provider>

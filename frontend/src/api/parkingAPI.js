@@ -146,3 +146,21 @@ export const cancelBooking = async (bookingId, reason = 'Client cancellation') =
         throw error;
     }
 };
+
+/**
+ * Asynchronously creates a new parking spot booking.
+ * Corresponds to: POST /api/v1/bookings/create/
+ * @param {object} bookingData - Booking data: { spot: number, start_at: string (ISO 8601), end_at: string (ISO 8601) }.
+ * @returns {Promise<object>} Returns the created booking object with payment details.
+ * @throws {Error} Throws an error if creation fails (e.g., 401, 409 Conflict).
+ */
+export const createBooking = async (bookingData) => {
+    try {
+        // POST request to /bookings/create/ (requires Basic Auth via interceptor)
+        const response = await apiClient.post('/bookings/create/', bookingData);
+        return response.data;
+    } catch (error) {
+        console.error('Error creating booking:', error);
+        throw error;
+    }
+};
