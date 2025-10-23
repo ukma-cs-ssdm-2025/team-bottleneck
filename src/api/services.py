@@ -104,7 +104,10 @@ class BookingNotificationService:
    
     @staticmethod
     def send_cancellation_confirmation(booking):
-        """Sends a booking cancellation confirmation email"""
+        if booking.user is None:
+            logger.warning(f"Skipping cancellation confirmation for {booking.id}. User field is NULL.")
+            return 
+            
         logger.info(f"Sending cancellation confirmation for {booking.id} to {booking.user.email}")
         # TODO: Integrate with email service
         pass
@@ -116,3 +119,15 @@ class BookingNotificationService:
         # TODO: Integrate with email or push notification service
         pass
 
+class CancellationService:
+    @staticmethod
+    def get_operator_cancellation_reason(operator_username: str, comment: str) -> str:
+        return f"Cancelled by Operator ({operator_username}): {comment}"
+    
+class SpotUpdateService:
+    @staticmethod
+    def update_spot(spot, validated_data):
+        for field, value in validated_data.items():
+            setattr(spot, field, value)
+        spot.save()
+        return spot

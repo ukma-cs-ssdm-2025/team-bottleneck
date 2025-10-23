@@ -18,7 +18,7 @@ from .serializers import (
 )
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
-from .services import PaymentService, BookingNotificationService
+from .services import PaymentService, BookingNotificationService, CancellationService, SpotUpdateService
 
 class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingLot.objects.all().prefetch_related("spots").order_by('name') 
@@ -144,6 +144,16 @@ class SpotViewSet(viewsets.ReadOnlyModelViewSet):
 
         self.queryset = qs
         return super().list(request, *args, **kwargs)
+
+    @action(detail=True, methods=["patch"], url_path="operator-update")
+    @transaction.atomic
+    def operator_update(self, request, lot_pk=None, pk=None):
+        spot = self.get_object()
+        serializer = self.get_serializer(spot, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        SpotUpdateService.update_spot(spot, serializer.validated_data)
+        return Response(serializer.data)
+
 
 class BookingViewSet(mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
@@ -377,12 +387,22 @@ class BookingViewSet(mixins.ListModelMixin,
         reason = serializer.validated_data['reason']
         
         refund_result = PaymentService.process_refund(booking)
+        cancellation_error = booking.check_cancellable_error() 
+        
+        if cancellation_error:
+            return Response(
+                {'detail': cancellation_error}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         booking.status = 'cancelled'
-        operator_reason = f"Cancelled by Operator ({request.user.username}): {reason}"
+        operator_reason = CancellationService.get_operator_cancellation_reason(
+            operator_username=request.user.username,
+            comment=reason
+        )
         booking.cancellation_reason = operator_reason
         booking.save(update_fields=['status', 'cancellation_reason'])
-
+        
         BookingNotificationService.send_cancellation_confirmation(booking)
 
         return Response({
