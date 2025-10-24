@@ -150,3 +150,13 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
             'last_name': {'required': False},
         }
 
+class SpotOperatorUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for operators — restricts updates to allowed fields."""
+    class Meta:
+        model = Spot
+        fields = ["is_ev", "is_disabled"]
+
+    def validate(self, attrs):
+        if "number" in self.initial_data:
+            raise serializers.ValidationError({"number": "Operators cannot change the spot number."})
+        return super().validate(attrs)
