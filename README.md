@@ -27,6 +27,25 @@
 
 ## Інструкція запуску (локальне розгортання)
 ### Для запуску потрібно:
+- git pull `https://github.com/ukma-cs-ssdm-2025/team-bottleneck.git`
+- Створити .env і наповнити:
+```
+DJANGO_SECRET_KEY=Ваш-згенерований-код-для-django
+DJANGO_DEBUG=False
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+RDS_DB_NAME=postgres
+RDS_USERNAME=MaFiN
+RDS_PASSWORD=пароль-до-БД
+RDS_HOSTNAME=127.0.0.1
+RDS_PORT=5433
+STRIPE_PUBLIC_KEY=pk_test_публічний_ключ
+STRIPE_SECRET_KEY=sk_test_секретний_ключ
+STRIPE_CURRENCY=ваша_валюта_наприклад_uah
+
+STATIC_ROOT=
+MEDIA_ROOT=
+```
 #### Підключення до БД(перший термінал)
 - ssh -i "Absolute path to .pem key" -N -L 5433:smart-parking-db.cz26seqes6xp.eu-north-1.rds.amazonaws.com:5432 ubuntu@16.170.148.253
 
