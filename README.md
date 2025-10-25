@@ -25,14 +25,31 @@
 - [traceability-matrix.md](docs/architecture/traceability-matrix.md) - відповідність вимог архітектурі
 - [architecture](docs/architecture/) -- папка з усіма файлами архітектури проекту
 
-## Інструкція запуску
+## Інструкція запуску (локальне розгортання)
 ### Для запуску потрібно:
+#### Підключення до БД(перший термінал)
+- ssh -i "Absolute path to .pem key" -N -L 5433:smart-parking-db.cz26seqes6xp.eu-north-1.rds.amazonaws.com:5432 ubuntu@16.170.148.253
+
+#### Запуск django-бекенду(Другий термінал)
 - pip install -r requirements.txt
 - python manage.py makemigrations api
 - python manage.py migrate
+- python manage.py runserver
 
-- **python manage.py runserver**
+*[http://127.0.0.1:8000](http://127.0.0.1:8000) - адреса бекенду (/api/docs для swagger UI)*
 
-- Після цього перейти за адресою http://127.0.0.1:8000/
+#### Запуск react-фронтенду(Третій термінал)
+##### Prerequisites:
+- Встановлено node.js, якщо ні:
+  - Відвідайте сайт [node.js](https://nodejs.org/uk/download) та скачайте node.js v22.21.0 (npm автоматично має завантажитись 10.х.х версії)
+  - Додайте node.js в PATH (Приклад: C:\Program Files\nodejs)
+##### Instructions:
+- cd frontend
+- npm install
+- npm start
+
+*localhost:3000 - адреса локально розгорнутого вебсайту*
+
+## Github Pages
 - [Посилання на GitHub Pages](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/)
 
