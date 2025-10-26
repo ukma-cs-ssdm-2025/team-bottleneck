@@ -35,7 +35,7 @@ The diagram shows the main system components and how they interact with each oth
 - **Frontend:** React  
 - **Backend:** Python, Django  
 - **Database:** PostgreSQL  
-- **Other:** Docker (deployment), psycopg2 (DB access), GitHub Actions (CI/CD)
+- **Other:** Docker (deployment), GitHub Actions (CI/CD)
 
 ## 7. Component Interaction
 - **Frontend** sends HTTP requests to the **Backend** via REST API.  
