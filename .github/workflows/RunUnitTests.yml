@@ -75,6 +75,8 @@ jobs:
           junitxml-path: junit.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }} 
+          DJANGO_DEBUG: True
       
       - name: Generate coverage badge
         if: success() && github.event_name == 'push'
