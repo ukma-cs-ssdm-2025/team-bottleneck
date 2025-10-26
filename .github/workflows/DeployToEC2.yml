@@ -1,5 +1,4 @@
-name: Deploy to EC2 with Archive
-
+name: Deploy to EC2
 on:
   push:
     branches: [ main ]
@@ -12,26 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PROJECT_ROOT_DIR: team-bottleneck
-      ARCHIVE_NAME: deploy.tar.gz
-      ALLOWED_HOSTS_PROD: "16.170.148.253"
+      ALLOWED_HOSTS_PROD: "16.170.148.253,localhost,127.0.0.1"
       DEBUG_PROD: "False"
       
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Create deployment archive
-      run: tar -czf ${{ env.ARCHIVE_NAME }} src/
-
-    - name: Upload archive to server (scp)
-      uses: appleboy/scp-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }} 
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: ${{ env.ARCHIVE_NAME }}
-        target: /tmp/
-
     - name: Deploy Backend and Frontend
       uses: appleboy/ssh-action@v1.0.0
       with:
@@ -41,24 +24,41 @@ jobs:
         command_timeout: 30m
         
         script: |
-          set -e  # Exit on any error
+          set -e
           
           export SECRET_KEY_PROD="${{ secrets.DJANGO_SECRET_KEY }}"
-          export GIT_TOKEN_PROD="${{ secrets.GIT_TOKEN }}"
           export ALLOWED_HOSTS="${{ env.ALLOWED_HOSTS_PROD }}"
           export DEBUG="${{ env.DEBUG_PROD }}"
           DEPLOY_PATH="/home/ubuntu/${{ env.PROJECT_ROOT_DIR }}"
           
-          git config --local credential.helper store
-          echo "https://$GIT_TOKEN_PROD@github.com" > /home/ubuntu/.git-credentials
-
+          echo "Pulling latest code from main..."
+          cd $DEPLOY_PATH
+          git fetch origin
+          git reset --hard origin/main
+          
+          echo "Creating .env file..."
           echo "DJANGO_SECRET_KEY=$SECRET_KEY_PROD" > $DEPLOY_PATH/.env
           echo "DJANGO_DEBUG=$DEBUG" >> $DEPLOY_PATH/.env
           echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> $DEPLOY_PATH/.env
           echo "RDS_DB_NAME=" >> $DEPLOY_PATH/.env
+          echo "RDS_USERNAME=" >> $DEPLOY_PATH/.env
+          echo "RDS_PASSWORD=" >> $DEPLOY_PATH/.env
+          echo "RDS_HOSTNAME=" >> $DEPLOY_PATH/.env
+          echo "RDS_PORT=" >> $DEPLOY_PATH/.env
+          
+          echo "Installing Python dependencies..."
+          source $DEPLOY_PATH/venv/bin/activate
+          pip install -r $DEPLOY_PATH/requirements.txt
+          
+          echo "Running migrations..."
+          python $DEPLOY_PATH/manage.py migrate --noinput
+          
+          echo "Collecting static files..."
+          python $DEPLOY_PATH/manage.py collectstatic --noinput
           
           echo "Building Frontend..."
           cd $DEPLOY_PATH/frontend
+          npm install
           rm -rf build
           npm run build
           
