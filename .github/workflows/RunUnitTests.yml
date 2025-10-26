@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
       - 'src/api/**'
       - '.github/workflows/RunUnitTests.yml'
@@ -13,15 +14,21 @@ on:
       - develop
     paths:
       - 'src/api/**'
-      - '.github/workflows/run_tests.yml'
+      - '.github/workflows/RunUnitTests.yml'
+
 jobs:
   test:
     name: Run Django API Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,13 +41,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest-django
+          pip install pytest-django pytest-cov
       
-      - name: Run Pytest for API
+      - name: Run Pytest with Coverage
         env:
           DJANGO_SETTINGS_MODULE: src.parking.settings
         run: |
-          pytest src/api/tests/ -v --tb=short
+          pytest src/api/tests/ \
+            --cov=src/api \
+            --cov-report=html \
+            --cov-report=xml \
+            --cov-report=term-missing:skip-covered \
+            --junitxml=junit.xml \
+            -v --tb=short
       
       - name: Upload test results
         if: always()
@@ -50,4 +63,30 @@ jobs:
           path: |
             .pytest_cache/
             htmlcov/
+            coverage.xml
+            junit.xml
           retention-days: 7
+      
+      - name: PR coverage comment
+        if: success() && github.event_name == 'pull_request'
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: coverage.xml
+          junitxml-path: junit.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate coverage badge
+        if: success() && github.event_name == 'push'
+        uses: tj-actions/coverage-badge-py@v2
+        with:
+          output: coverage.svg
+          overwrite: true
+      
+      - name: Commit coverage badge
+        if: success() && github.event_name == 'push'
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          add: coverage.svg
+          message: "chore(ci): update coverage badge [skip ci]"
+          default_author: github_actions
