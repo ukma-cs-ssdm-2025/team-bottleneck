@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'src/**'
+      - 'frontend/**'
 
 jobs:
   deploy:
@@ -12,7 +13,7 @@ jobs:
     env:
       PROJECT_ROOT_DIR: team-bottleneck
       ARCHIVE_NAME: deploy.tar.gz
-      ALLOWED_HOSTS_PROD: "16.170.148.253,127.0.0.1"
+      ALLOWED_HOSTS_PROD: "16.170.148.253"
       DEBUG_PROD: "False"
       
     steps:
@@ -31,14 +32,17 @@ jobs:
         source: ${{ env.ARCHIVE_NAME }}
         target: /tmp/
 
-    - name: Deploy and Restart Services (ssh)
+    - name: Deploy Backend and Frontend
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
+        command_timeout: 30m
         
         script: |
+          set -e  # Exit on any error
+          
           export SECRET_KEY_PROD="${{ secrets.DJANGO_SECRET_KEY }}"
           export GIT_TOKEN_PROD="${{ secrets.GIT_TOKEN }}"
           export ALLOWED_HOSTS="${{ env.ALLOWED_HOSTS_PROD }}"
@@ -51,8 +55,14 @@ jobs:
           echo "DJANGO_SECRET_KEY=$SECRET_KEY_PROD" > $DEPLOY_PATH/.env
           echo "DJANGO_DEBUG=$DEBUG" >> $DEPLOY_PATH/.env
           echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> $DEPLOY_PATH/.env
-
           echo "RDS_DB_NAME=" >> $DEPLOY_PATH/.env
+          
+          echo "Building Frontend..."
+          cd $DEPLOY_PATH/frontend
+          rm -rf build
+          npm run build
+          
+          echo "Restarting services..."
           sudo systemctl daemon-reload
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
