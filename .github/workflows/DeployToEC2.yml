@@ -13,6 +13,11 @@ jobs:
       PROJECT_ROOT_DIR: team-bottleneck
       ALLOWED_HOSTS_PROD: "16.170.148.253,localhost,127.0.0.1"
       DEBUG_PROD: "False"
+      RDS_DB_NAME: "postgres"
+      RDS_USERNAME: "MaFiN"
+      RDS_PORT: "5432"
+      STRIPE_PUBLIC_KEY: "pk_test_51SKjS5HtnK8GZIavQHUhE48lrRc4PvyMVd8BmTafOijozdGrcx2GU4Rb812Ml4xeqs9a8RsviSaODAxSGjFoBy5b00DaJziTKU"
+      STRIPE_CURRENCY: "uah"
       
     steps:
     - name: Deploy Backend and Frontend
@@ -25,26 +30,28 @@ jobs:
         
         script: |
           set -e
-          
-          export SECRET_KEY_PROD="${{ secrets.DJANGO_SECRET_KEY }}"
-          export ALLOWED_HOSTS="${{ env.ALLOWED_HOSTS_PROD }}"
-          export DEBUG="${{ env.DEBUG_PROD }}"
+
           DEPLOY_PATH="/home/ubuntu/${{ env.PROJECT_ROOT_DIR }}"
-          
+
           echo "Pulling latest code from main..."
           cd $DEPLOY_PATH
           git fetch origin
           git reset --hard origin/main
-          
-          echo "Creating .env file..."
-          echo "DJANGO_SECRET_KEY=$SECRET_KEY_PROD" > $DEPLOY_PATH/.env
-          echo "DJANGO_DEBUG=$DEBUG" >> $DEPLOY_PATH/.env
-          echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> $DEPLOY_PATH/.env
-          echo "RDS_DB_NAME=" >> $DEPLOY_PATH/.env
-          echo "RDS_USERNAME=" >> $DEPLOY_PATH/.env
-          echo "RDS_PASSWORD=" >> $DEPLOY_PATH/.env
-          echo "RDS_HOSTNAME=" >> $DEPLOY_PATH/.env
-          echo "RDS_PORT=" >> $DEPLOY_PATH/.env
+
+           echo "Creating .env file with all configuration..."
+           cat > $DEPLOY_PATH/.env << EOF
+           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+           DJANGO_DEBUG=${{ env.DEBUG_PROD }}
+           ALLOWED_HOSTS=${{ env.ALLOWED_HOSTS_PROD }}
+           RDS_DB_NAME=${{ env.RDS_DB_NAME }}
+           RDS_USERNAME=${{ env.RDS_USERNAME }}
+           RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+           RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
+           RDS_PORT=${{ env.RDS_PORT }}
+           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+           STRIPE_PUBLIC_KEY=${{ env.STRIPE_PUBLIC_KEY }}
+           STRIPE_CURRENCY=${{ env.STRIPE_CURRENCY }}
+           EOF
           
           echo "Installing Python dependencies..."
           source $DEPLOY_PATH/venv/bin/activate
