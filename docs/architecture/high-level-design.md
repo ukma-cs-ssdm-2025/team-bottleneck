@@ -23,13 +23,13 @@ A **three-tier architecture** was chosen because it offers:
 - **External Systems:** payment gateway, Email/SMS providers.
 
 ## 4. Component Diagram
-![Component Diagram](/uml/component_diagram.puml)  
+![Component Diagram](./component_diagram.puml)  
 The diagram shows the main system components and how they interact with each other and with external services.
 
 ## 5. Key Architectural Decisions
 - **PostgreSQL** was selected as the main database due to strong integration with Django ORM and ACID compliance.  
 - A **monolithic three-tier architecture** was chosen instead of microservices for easier maintenance by a small team.  
-- **React** was chosen for the frontend because it is widely adopted, community-supported, and easily integrates with REST APIs (see details in [ADR](./adr/)).
+- **React** was chosen for the frontend because it is widely adopted, community-supported, and easily integrates with REST APIs (see details in [ADR](./decisions/)).
 
 ## 6. Technology Stack
 - **Frontend:** React  
