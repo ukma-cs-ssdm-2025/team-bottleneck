@@ -185,8 +185,6 @@ class SpotViewSet(mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
 
         spot = serializer.save(lot=lot, created_by=request.user)
-        spot.created_by = request.user  # 🔑 нове поле
-        spot.save(update_fields=["created_by"])
 
         response_data = serializer.data
         response_data["lot_name"] = lot.name

@@ -7,11 +7,11 @@ from rest_framework.validators import UniqueTogetherValidator
 
 
 class SpotSerializer(serializers.ModelSerializer):
-    created_by = serializers.StringRelatedField(read_only=True)
+    created_by_username = serializers.CharField(source="created_by.username", read_only=True)
 
     class Meta:
         model = Spot
-        fields = ["id", "number", "is_ev", "is_disabled", "lot", "created_by"]
+        fields = ["id", "number", "is_ev", "is_disabled", "lot", "created_by", "created_by_username"]
         read_only_fields = ["lot", "created_by"]
 
     def get_created_by(self, obj):
