@@ -42,6 +42,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest-django pytest-cov
+      
       - name: Create .env file
         run: |
           cat > .env << EOF
@@ -92,10 +93,11 @@ jobs:
           output: coverage.svg
           overwrite: true
       
-      - name: Commit coverage badge
+      - name: Commit coverage badge to coverage-badge branch
         if: success() && github.event_name == 'push'
         uses: EndBug/add-and-commit@v9.1.4
         with:
           add: coverage.svg
           message: "chore(ci): update coverage badge [skip ci]"
-          default_author: github_actions
+          new_branch: coverage-badge
+          push: origin coverage-badge --force
