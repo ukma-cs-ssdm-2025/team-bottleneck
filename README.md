@@ -21,7 +21,7 @@ This project is developed for educational purposes as part of the course "Softwa
 
 * [requirements.md](docs/requirements/requirements.md) -- functional and non-functional requirements
 * [user-stories.md](docs/requirements/user-stories.md) -- user stories
-* [use-cases.md](docs/requirements/use-case.md) -- use cases
+* [use-cases.md](docs/requirements/use-cases.md) -- use cases
 * [rtm.md](docs/requirements/rtm.md) -- rtm.md
   
 ## Project Architecture
