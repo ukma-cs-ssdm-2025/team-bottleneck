@@ -1,7 +1,7 @@
-| № | Критерій | Так/Ні | Коментар |
-|:-:|-----------|:------:|-----------|
-| 1 | Охоплені ключові вимоги та критичні шляхи | Так |  |
-| 2 | Чітко сформульовані критерії прийняття | Ні | Не сформульовані критерії прийняття та як саме має працювати тест  |
-| 3 | Є тести для негативних сценаріїв | Так |  |
-| 4 | Простежується зв’язок із вимогами (Lab 02) | Так |  |
-| 5 | План реалістичний і виконуваний у CI | Так |  |
+|  №  | Criterion                                        | Yes/No | Comment                                                       |
+| :-: | ------------------------------------------------ | :----: | ------------------------------------------------------------- |
+|  1  | Key requirements and critical paths are covered  |   Yes  |                                                               |
+|  2  | Acceptance criteria are clearly defined          |   No   | Acceptance criteria and exact test behavior are not specified |
+|  3  | Tests for negative scenarios exist               |   Yes  |                                                               |
+|  4  | Traceability to requirements (Lab 02) is ensured |   Yes  |                                                               |
+|  5  | Plan is realistic and executable in CI           |   Yes  |                                                               |
