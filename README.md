@@ -105,5 +105,6 @@ MEDIA_ROOT=
 
 ## Github Pages
 
-* [GitHub Pages Link](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/)
+* [Swagger UI](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/)
+* [Coverage](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/htmlcov/)
 
