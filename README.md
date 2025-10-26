@@ -1,5 +1,5 @@
 [![Deploy to EC2](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml)
-
+[![Tests Coverage](coverage.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/RunUnitTests.yml)
 # Team Project: Smart Parking
 
 This project is developed for educational purposes as part of the course "Software Systems Development Methods." The goal is to create a smart parking booking and payment system for drivers that tracks spot availability.
