@@ -23,7 +23,7 @@ A **three-tier architecture** was chosen because it offers:
 - **External Systems:** payment gateway, Email/SMS providers.
 
 ## 4. Component Diagram
-![Component Diagram](./component_diagram.puml)  
+![Component Diagram](./uml/component_diagram.md)  
 The diagram shows the main system components and how they interact with each other and with external services.
 
 ## 5. Key Architectural Decisions
