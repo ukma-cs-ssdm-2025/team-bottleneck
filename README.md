@@ -1,5 +1,5 @@
 [![Deploy to EC2](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml)
-
+[![Tests Coverage](coverage.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/RunUnitTests.yml)
 # Командний проект: Smart Parking
 
 Цей проект виконується в навчальних цілях в рамках курсу "Методи розробки програмних систем". Мета проекту — розробити систему розумного бронювання та оплати парковок для водіїв, що відстежує доступність місць.
