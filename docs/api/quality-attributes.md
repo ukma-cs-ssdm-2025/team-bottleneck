@@ -1,130 +1,107 @@
-# API Quality Attributes
+### API Quality Attributes
 
-## Performance
+### Performance
 
-- **Target**: Список доступних паркомісць, історії оплат або парковки на карті мають відображатися ≤ 3 секунд після запиту
+- **Target**: The list of available parking spots, payment history, or parking map must be displayed within ≤ 3 seconds after a request.  
 - **Implementation**:
-    - Використовується ORM із `select_related()` у `SpotViewSet` та `BookingViewSet` для зменшення кількості SQL-запитів.
-    - Основні ендпоінти (`/lots/`, `/lots/{id}/spots/`, `/bookings/`) виконують прості фільтраційні операції без складних обчислень.
-    - Серіалізатори DRF формують оптимізовані відповіді без надлишкових вкладених структур.
-    - Вбудована пагінація скорочує обсяг даних у відповіді, що прискорює відображення списків.
-    - `select_related("lot")` використовується для попереднього завантаження пов’язаних даних про паркінг для кожного місця.
+    - ORM with `select_related()` is used in `SpotViewSet` and `BookingViewSet` to reduce the number of SQL queries.
+    - Main endpoints (`/lots/`, `/lots/{id}/spots/`, `/bookings/`) perform simple filtering operations without complex calculations.
+    - DRF serializers create optimized responses without redundant nested structures.
+    - Built-in pagination reduces the response size, improving list rendering speed.
+    - `select_related("lot")` is used to preload related parking lot data for each spot.
 - **Measurement**:
     
-    Перевіряється час виконання запитів через тести:
+    Query execution time is checked through tests:
     
     - `test_list_lots_under_3_seconds`
     - `test_list_spots_under_3_seconds`
     
-    Обидва тести підтверджують, що запити /api/v1/lots/ і /api/v1/lots/{id}/spots/ повертають відповіді ≤ 3 с. При перевищенні часу тест вважається проваленим.
+    Both tests confirm that the `/api/v1/lots/` and `/api/v1/lots/{id}/spots/` requests return responses ≤ 3 seconds. If the time limit is exceeded, the test fails.
 
+---
 
-## Usability
+### Usability
 
-- **Target**: API має зрозумілу структуру та зручну взаємодію для користувачів і розробників:
+- **Target**: The API must have a clear structure and be easy to use for both users and developers.  
 - **Implementation:**
-    - Автоматична документація через **Swagger UI (drf-spectacular)** — усі ендпоінти мають описані параметри, приклади та типи відповідей.
-    - Повідомлення про помилки дружні та зрозумілі нефаховому користувачу, наприклад:
+    - Automatic documentation through **Swagger UI (drf-spectacular)** — all endpoints have described parameters, examples, and response types.
+    - Error messages are user-friendly and understandable, for example:
         
         `"Spot already booked in this interval."`, `"start_at must be before end_at"`.
         
-    - Валідація у серіалізаторах (`ParkingLotSerializer`, `BookingCreateSerializer`) формує зрозумілі тексти помилок.
-    - Підтримується REST-структура маршрутів (`/lots/`, `/lots/{id}/spots/`, `/bookings/`), що спрощує навігацію API.
+    - Validation in serializers (`ParkingLotSerializer`, `BookingCreateSerializer`) provides clear error messages.
+    - REST-based routing (`/lots/`, `/lots/{id}/spots/`, `/bookings/`) simplifies API navigation.
 - **Measurement:**
     
-    Перевіряється наявність зрозумілих повідомлень через тест:
+    The presence of clear messages is verified through the test:
     
     - `test_create_booking_with_invalid_time_window`
     
-    Тест створює бронювання з некоректним часовим інтервалом і перевіряє, що повідомлення про помилку містить "must be before", тобто є зрозумілим користувачу.
-    
+    The test creates a booking with an invalid time window and checks that the error message contains "must be before," confirming it is understandable for users.
 
-## Maintability
+---
 
-- Target: Код API має бути легким у підтримці, розширенні й модифікації без порушення існуючого функціоналу.
-- Implementation:
-    - Проєкт структурований за архітектурою **Model–View–Serializer**, що забезпечує ізоляцію бізнес-логіки.
-    - Кожен клас `ViewSet` має власну логіку CRUD-операцій.
-    - Методи, що містять бізнес-логіку (наприклад, `create_booking`, `cancel`), ізольовані й забезпечені транзакційністю (`@transaction.atomic`).
-    - Документація Swagger генерується автоматично, що полегшує розширення API без ручного редагування описів.
-    - Просте додавання нових фільтрів, параметрів і полів у `serializers` без зміни існуючого коду.
-- Measurments:
-    - `test_transaction_atomic_on_booking_cancel`
-        
-        Перевіряє, що скасування бронювання (/api/v1/bookings/{id}/cancel/) змінює статус на cancelled без порушення цілісності.
-        
-    - `test_nested_routes_exist`
-        
-        Гарантує, що вкладені маршрути (/api/v1/lots/{id}/spots/) коректно зареєстровані у системі URL.
-        
+### Maintainability
 
-## Reliability
-
-- Target: API повинно забезпечувати стабільність і цілісність даних навіть при помилках користувача або одночасних запитах.
+- **Target**: The API code should be easy to maintain, extend, and modify without breaking existing functionality.  
 - **Implementation:**
-    - Транзакційна обробка (`transaction.atomic`) у методах бронювання (`create_booking`) і скасування (`cancel`) запобігає частковим оновленням.
-    - Конфлікти бронювання перевіряються перед створенням (`Spot already booked in this interval`).
-    - Коректна обробка кодів статусу (`400`, `404`, `409`) для прогнозованої поведінки клієнтів.
-    - Валідація часових діапазонів через функцію `validate_booking_window` запобігає некоректним бронюванням.
-    - Використання `select_related` мінімізує кількість SQL-запитів і зменшує ризик блокувань при навантаженні.
-- Measurements:
-    - `test_conflict_booking_returns_409`
-        
-        Перевіряє, що при спробі створити перетинне бронювання API повертає статус 409 Conflict.
-        
-    - `test_cancel_already_cancelled_booking`
-        
-        Переконується, що повторне скасування вже скасованої броні повертає 400 Bad Request.
-        
-    - `test_create_valid_booking`
-        
-        Підтверджує, що при валідних даних створюється успішна бронь зі статусом confirmed.
-        
+    - The project follows the **Model–View–Serializer** architecture, ensuring isolation of business logic.
+    - Each `ViewSet` class contains its own CRUD operation logic.
+    - Business logic methods (such as `create_booking`, `cancel`) are isolated and protected with transactions (`@transaction.atomic`).
+    - Swagger documentation is generated automatically, simplifying API extension without manual editing.
+    - New filters, parameters, and fields can be added to `serializers` without modifying existing code.
+- **Measurements:**
+    - `test_transaction_atomic_on_booking_cancel`  
+      Ensures that booking cancellation (`/api/v1/bookings/{id}/cancel/`) changes the status to "cancelled" without breaking data integrity.
+    - `test_nested_routes_exist`  
+      Verifies that nested routes (`/api/v1/lots/{id}/spots/`) are correctly registered in the URL system.
 
-## **Security**
+---
 
-- **Target:**
-Дані користувача та операції бронювання повинні бути **захищені від несанкціонованого доступу або зміни**, а будь-яка взаємодія з API — безпечна з точки зору автентифікації, валідації та доступу до ресурсів.
+### Reliability
+
+- **Target**: The API must ensure data consistency and stability even when users make errors or send concurrent requests.  
 - **Implementation:**
-    - **Безпечна архітектура DRF:**
-        
-        Всі операції виконуються через Django REST Framework, який реалізує рівень авторизації та валідації запитів на сервері.
-        
-    - **HTTP-коди доступу:**
-        
-        У `swagger.py` задані стандартизовані коди помилок (`401 Unauthorized`, `403 Forbidden`, `404 Not Found`), які використовуються у схемах `@extend_schema` для всіх критичних ендпоінтів (`lots`, `spots`, `bookings`).
-        
-    - **Обмеження доступу до бронювання:**
-        
-        Кожна операція з бронювання (`create_booking`, `cancel`) виконується у межах транзакції (`@transaction.atomic`), щоб запобігти несанкціонованим або частковим змінам.
-        
-    - **Перевірка валідності часу бронювання:**
-        
-        Функція `validate_booking_window()` гарантує, що бронювання не може бути створене у минулому або з некоректним діапазоном часу.
-        
-    - **Захист даних користувача:**
-        
-        Поле `user` у моделі `Booking` заповнюється автоматично через `request.user`, якщо користувач автентифікований, або лишається `null` — що виключає можливість підроблення ідентифікатора користувача у запиті.
-        
-    - **Автоматична документація:**
-        
-        Через **Swagger (drf-spectacular)** користувачі можуть бачити лише відкриті схеми ендпоінтів, не маючи прямого доступу до приватних внутрішніх ресурсів.
-        
-- Measurements:
-    - `test_create_booking_with_invalid_time_window`
-        
-        Перевіряє, що валідація часу працює і система блокує некоректні запити.
-        
-    - `test_conflict_booking_returns_409`
-        
-        Підтверджує, що система не дозволяє дублювати бронювання на той самий часовий інтервал.
-        
-    - `test_cancel_already_cancelled_booking`
-        
-        Гарантує, що неможливо повторно скасувати бронювання, запобігаючи маніпуляціям зі статусами.
-        
-    - `test_transaction_atomic_on_booking_cancel`
-        
-        Перевіряє транзакційність і цілісність даних при зміні стану бронювання.
-        
-        Усі тести доводять, що доступ до операцій бронювання чітко контролюється, а API надійно обробляє помилки та виключення без витоку даних або порушення послідовності.
+    - Transactional handling (`transaction.atomic`) in booking (`create_booking`) and cancellation (`cancel`) prevents partial updates.
+    - Booking conflicts are checked before creation (`Spot already booked in this interval`).
+    - Proper handling of HTTP status codes (`400`, `404`, `409`) ensures predictable client behavior.
+    - Time range validation through `validate_booking_window` prevents invalid bookings.
+    - Use of `select_related` minimizes SQL queries and reduces lock risks under load.
+- **Measurements:**
+    - `test_conflict_booking_returns_409`  
+      Verifies that overlapping bookings return a 409 Conflict status.
+    - `test_cancel_already_cancelled_booking`  
+      Ensures that canceling an already cancelled booking returns 400 Bad Request.
+    - `test_create_valid_booking`  
+      Confirms that valid data results in a successful booking with "confirmed" status.
+
+---
+
+### Security
+
+- **Target:**  
+  User data and booking operations must be protected from unauthorized access or modification, and all API interactions must be secure in terms of authentication, validation, and access control.
+- **Implementation:**
+    - **Secure DRF architecture:**  
+      All operations are handled through Django REST Framework, which enforces authorization and request validation on the server side.
+    - **Standard HTTP status codes:**  
+      In `swagger.py`, standardized error codes (`401 Unauthorized`, `403 Forbidden`, `404 Not Found`) are defined and used in `@extend_schema` for all critical endpoints (`lots`, `spots`, `bookings`).
+    - **Restricted booking access:**  
+      Each booking operation (`create_booking`, `cancel`) is wrapped in a transaction (`@transaction.atomic`) to prevent unauthorized or partial modifications.
+    - **Booking time validation:**  
+      The `validate_booking_window()` function ensures bookings cannot be made in the past or with invalid time ranges.
+    - **User data protection:**  
+      The `user` field in the `Booking` model is automatically populated via `request.user` if authenticated, or remains `null`, preventing user ID spoofing.
+    - **Automatic documentation:**  
+      Through **Swagger (drf-spectacular)**, users can only view public endpoint schemas, with no access to internal private resources.
+- **Measurements:**
+    - `test_create_booking_with_invalid_time_window`  
+      Ensures time validation prevents invalid requests.
+    - `test_conflict_booking_returns_409`  
+      Confirms the system blocks duplicate bookings for the same time interval.
+    - `test_cancel_already_cancelled_booking`  
+      Ensures duplicate cancellations are blocked, preventing status manipulation.
+    - `test_transaction_atomic_on_booking_cancel`  
+      Verifies transactional integrity when changing booking states.  
+
+All tests confirm that booking operations are strictly controlled, and the API reliably handles errors and exceptions without data leaks or logical inconsistencies.
