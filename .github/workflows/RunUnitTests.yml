@@ -42,6 +42,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest-django pytest-cov
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_DEBUG=True
+          ALLOWED_HOSTS=localhost,127.0.0.1
+          EOF
       
       - name: Run Pytest with Coverage
         env:
