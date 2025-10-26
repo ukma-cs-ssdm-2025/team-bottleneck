@@ -5,9 +5,23 @@ class IsLotOperator(permissions.BasePermission):
     message = 'Ви не є оператором або не маєте прав доступу до бронювань на цьому лоті.'
 
     def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
+        user = request.user
+        if not user or not user.is_authenticated:
             return False
-        return OperatorProfile.objects.filter(user=request.user).exists()
+
+        try:
+            profile = user.operator_profile
+        except OperatorProfile.DoesNotExist:
+            return False
+
+        lot_pk = view.kwargs.get("lot_pk")
+        if lot_pk is not None:
+            try:
+                return profile.lot_id == int(lot_pk)
+            except (ValueError, TypeError):
+                return False
+
+        return True
 
     def has_object_permission(self, request, view, obj):
 

@@ -3,12 +3,38 @@ from .models import ParkingLot, Spot, Booking
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 import re
+from rest_framework.validators import UniqueTogetherValidator
+
 
 class SpotSerializer(serializers.ModelSerializer):
+    created_by = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Spot
-        fields = ["id", "number", "is_ev", "is_disabled", "lot"]
-        read_only_fields = ["lot"]
+        fields = ["id", "number", "is_ev", "is_disabled", "lot", "created_by"]
+        read_only_fields = ["lot", "created_by"]
+
+    def get_created_by(self, obj):
+        return obj.created_by.username if hasattr(obj, "created_by") and obj.created_by else None
+
+    def validate(self, attrs):
+        """Ensure unique spot number within the same lot (case-insensitive)."""
+        lot = self.instance.lot if self.instance else self.context.get("lot")
+        number = attrs.get("number") or (self.instance.number if self.instance else None)
+
+        if lot and number:
+            qs = Spot.objects.filter(lot=lot, number__iexact=number)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                existing_numbers = Spot.objects.filter(lot=lot).values_list("number", flat=True)
+                raise serializers.ValidationError(
+                    {
+                        "number": f"This spot number already exists in lot '{lot.name}' (case-insensitive check).",
+                        "existing_numbers": list(existing_numbers),
+                    }
+                )
+        return attrs
        
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
@@ -124,3 +150,13 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
             'last_name': {'required': False},
         }
 
+class SpotOperatorUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for operators — restricts updates to allowed fields."""
+    class Meta:
+        model = Spot
+        fields = ["is_ev", "is_disabled"]
+
+    def validate(self, attrs):
+        if "number" in self.initial_data:
+            raise serializers.ValidationError({"number": "Operators cannot change the spot number."})
+        return super().validate(attrs)
