@@ -1,49 +1,49 @@
-# Архітектура системи паркування
+# Parking System Architecture
 
-## 1. Загальний опис
-Наша система побудована за принципом **багатошарової архітектури(multi-layered)** з використанням REST API.  
-Вона складається з фронтенду (React UI), бекенду (Python/Django) та бази даних (PostgreSQL).  
-Система також інтегрується із зовнішніми сервісами (платіжна система, Email/SMS-провайдер).
+## 1. Overview
+Our system is built using a **multi-layered architecture** with REST API.  
+It consists of a frontend (React UI), backend (Python/Django), and a database (PostgreSQL).  
+The system also integrates with external services such as a payment provider and Email/SMS gateways.
 
-## 2. Архітектурний стиль
-Обрано **3-шарову архітектуру**:
-- простота реалізації та підтримки для невеликої команди,
-- чітке розділення відповідальностей (UI, бізнес-логіка, дані),
-- легка інтеграція з зовнішніми API.
+## 2. Architectural Style
+A **three-tier architecture** was chosen because it offers:
+- simplicity in implementation and maintenance for a small team,  
+- clear separation of concerns (UI, business logic, data),  
+- easy integration with external APIs.
 
-## 3. Основні компоненти
-- **React UI** – інтерфейс користувача (пошук місць, бронювання, оплата).  
-- **REST API** – шлюз між UI та бекендом.  
-- **Python App (Django)** – бізнес-логіка системи:  
-  - Authentication Service (логін/реєстрація),  
-  - Parking Management Service (пошук, бронювання),  
-  - Payment Service (обробка оплат),  
-  - Notification Service (нагадування, повідомлення).  
-- **DAO + PostgreSQL** – збереження даних (користувачі, бронювання, транзакції).  
-- **External Systems**: платіжна система, Email/SMS.
+## 3. Main Components
+- **React UI** – user interface (search, booking, payments).  
+- **REST API** – communication layer between UI and backend.  
+- **Python App (Django)** – business logic of the system:  
+  - Authentication Service (login/registration),  
+  - Parking Management Service (search, booking),  
+  - Payment Service (payment processing),  
+  - Notification Service (reminders, messages).  
+- **DAO + PostgreSQL** – data storage (users, bookings, transactions).  
+- **External Systems:** payment gateway, Email/SMS providers.
 
-## 4. Діаграма компонентів
-![Component Diagram](./uml/component-diagram.puml)
-На діаграмі показано головні компоненти системи, їхню взаємодію між собою та з зовнішніми сервісами.
+## 4. Component Diagram
+![Component Diagram](./uml/component_diagram.md)  
+The diagram shows the main system components and how they interact with each other and with external services.
 
-## 5. Ключові архітектурні рішення
-- Обрано **PostgreSQL** як основну БД через кращу інтеграцію з Django ORM та ACID-надійність.  
-- Обрано **монолітну 3-шарову архітектуру** замість мікросервісів, бо команда невелика і важлива простота підтримки.  
-- Обрано **React** для фронтенду, бо він популярний, має велику спільноту і легко інтегрується з REST API (Деталі [ADR](./adr/)).
+## 5. Key Architectural Decisions
+- **PostgreSQL** was selected as the main database due to strong integration with Django ORM and ACID compliance.  
+- A **monolithic three-tier architecture** was chosen instead of microservices for easier maintenance by a small team.  
+- **React** was chosen for the frontend because it is widely adopted, community-supported, and easily integrates with REST APIs (see details in [ADR](./decisions/)).
 
-## 6. Технологічний стек
-- **Frontend:** React
+## 6. Technology Stack
+- **Frontend:** React  
 - **Backend:** Python, Django  
 - **Database:** PostgreSQL  
-- **Інше:** Docker (деплой), psycopg2 (доступ до БД), GitHub Actions (CI/CD)
+- **Other:** Docker (deployment), GitHub Actions (CI/CD)
 
-## 7. Взаємодія компонентів
-- **Frontend** надсилає HTTP-запити на **Backend** через REST API.  
-- **Backend** зчитує/записує дані у **PostgreSQL**.  
-- **Payment Service** інтегрується з платіжною системою через REST API.  
-- **Notification Service** використовує Email/SMS провайдерів.  
-- Аутентифікація реалізована через JWT-токени.
+## 7. Component Interaction
+- **Frontend** sends HTTP requests to the **Backend** via REST API.  
+- **Backend** reads/writes data in **PostgreSQL**.  
+- **Payment Service** communicates with the payment provider through REST API.  
+- **Notification Service** sends messages using Email/SMS providers.  
+- Authentication is implemented using **JWT tokens**.
 
-## 8. Гнучкість і майбутня еволюція
-Архітектура побудована так, що **Frontend є незалежним клієнтом REST API**.  
-Це означає, що у майбутньому веб-інтерфейс (React) може бути легко замінений або доповнений мобільним застосунком (React Native, Flutter, iOS/Android) без змін у бізнес-логіці чи базі даних.
+## 8. Flexibility and Future Evolution
+The architecture is designed so that the **Frontend acts as an independent REST API client**.  
+This allows easy future extension — the web interface (React) can be replaced or complemented by a mobile app (React Native, Flutter, iOS/Android) without changing the business logic or database layer.

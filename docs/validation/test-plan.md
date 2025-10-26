@@ -1,7 +1,7 @@
-| № | Компонент/функція | Рівень тесту | Тип (позитивний/негативний) | Очікуваний результат / критерій прийняття |
-|:-:|--------------------|---------------|------------------------------|--------------------------------------------|
-| 1 |       Перегляд всіх паркомісць            |     unit       |           позитивний                |        повертається таблиця паркомісць менше наж за 3 сек         
-| 2 |       Перегляд всіх паркомісць            |    integration     |           позитивний                |        повертається таблиця паркомісць всі ті самі як і в бд     
-| 3 |       Повідомлення про помилки та push-сповіщення        |    acceptance    |           негативний                |    перевірка scraper тексту помилку 
-| 4 |       Повідомлення про помилки та push-сповіщення        |    unit   |           негативний                |      endpoint має повертати 500 помилку
-| 5 |       Додавання інформації про паркінг    |    unit  |           позитивний                |      коректне додавання паркомісця оператором
+|  №  | Component/Function                    | Test Level  | Type (Positive/Negative) | Expected Result / Acceptance Criteria                               |
+| :-: | ------------------------------------- | ----------- | ------------------------ | ------------------------------------------------------------------- |
+|  1  | View all parking spots                | unit        | positive                 | Returns the parking spots table in less than 3 seconds              |
+|  2  | View all parking spots                | integration | positive                 | Returns the parking spots table with all data matching the database |
+|  3  | Error messages and push notifications | acceptance  | negative                 | Scraper error text is correctly processed                           |
+|  4  | Error messages and push notifications | unit        | negative                 | Endpoint returns a 500 error                                        |
+|  5  | Adding parking information            | unit        | positive                 | Parking spot is correctly added by the operator                     |

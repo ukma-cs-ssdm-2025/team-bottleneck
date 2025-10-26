@@ -2,120 +2,120 @@
 
 ---
 
-### UC-001: Пошук паркомісця
-- **Primary Actor:** Водій  
-- **Goal:** Знайти вільне місце для паркування  
-- **Preconditions:** Водій увійшов у систему; карта доступна  
-- **Postconditions:** На карті відображається список вільних місць  
+### UC-001: Parking Spot Search
+- **Primary Actor:** Driver  
+- **Goal:** Find an available parking spot  
+- **Preconditions:** Driver is logged in; map is available  
+- **Postconditions:** Available spots are displayed on the map  
 - **Main Success Scenario:**  
-  1. Водій вводить адресу або район.  
-  2. Система відображає карту з усіма місцями.  
-  3. Вільні місця позначені зеленим, зайняті — червоним.  
+  1. Driver enters an address or district.  
+  2. System displays the map with all spots.  
+  3. Free spots are marked green, occupied — red.  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо немає вільних місць → система показує повідомлення "Немає доступних паркомісць".  
-  - E1: Якщо відсутнє з’єднання з сервером → система показує повідомлення про помилку.  
+  - A1: No available spots → system shows "No available parking spots".  
+  - E1: No connection to server → system shows an error message.  
 
 ---
 
-### UC-002: Онлайн-оплата
-- **Primary Actor:** Водій  
-- **Goal:** Оплатити паркування онлайн  
-- **Preconditions:** Водій вибрав вільне місце; є доступ до інтернету  
-- **Postconditions:** Оплата підтверджена; місце позначене як зайняте  
+### UC-002: Online Payment
+- **Primary Actor:** Driver  
+- **Goal:** Pay for parking online  
+- **Preconditions:** Driver selected a free spot; internet is available  
+- **Postconditions:** Payment is confirmed; spot marked as occupied  
 - **Main Success Scenario:**  
-  1. Водій обирає паркомісце.  
-  2. Система пропонує варіанти оплати (картка, Stripe).  
-  3. Водій вводить платіжні дані та підтверджує.  
-  4. Система обробляє транзакцію та надсилає квитанцію.  
+  1. Driver selects a parking spot.  
+  2. System provides payment options (card, Stripe).  
+  3. Driver enters payment data and confirms.  
+  4. System processes the transaction and sends a receipt.  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо картка відхилена → система пропонує повторити або вибрати інший метод.  
-  - E1: Якщо сервер платежів недоступний → система показує повідомлення про помилку.  
+  - A1: Card declined → system prompts to retry or select another method.  
+  - E1: Payment server unavailable → system shows an error message.  
 
 ---
 
-### UC-003: Додавання нових паркінгів
-- **Primary Actor:** Адміністратор  
-- **Goal:** Додати новий паркінг у систему  
-- **Preconditions:** Адміністратор увійшов у кабінет  
-- **Postconditions:** Новий паркінг з’явився на карті  
+### UC-003: Adding New Parking Lots
+- **Primary Actor:** Administrator  
+- **Goal:** Add a new parking lot to the system  
+- **Preconditions:** Administrator is logged in  
+- **Postconditions:** New parking lot appears on the map  
 - **Main Success Scenario:**  
-  1. Адміністратор переходить у меню “Додати паркінг”.  
-  2. Вводить назву, адресу та параметри паркінгу.  
-  3. Система зберігає дані та додає паркінг у базу.  
-  4. Паркінг з’являється на карті користувачів.  
+  1. Administrator navigates to "Add Parking Lot".  
+  2. Enters name, address, and parking parameters.  
+  3. System saves data to the database.  
+  4. Parking lot appears on users’ maps.  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо дані неповні → система не дає зберегти й просить заповнити всі поля.  
-  - E1: Якщо база недоступна → система показує повідомлення про помилку.  
+  - A1: Incomplete data → system prevents saving and asks to fill all fields.  
+  - E1: Database unavailable → system shows an error message.  
 
 ---
 
-### UC-004: Повідомлення про помилки
-- **Primary Actor:** Водій  
-- **Goal:** Отримати зрозуміле повідомлення про помилку  
-- **Preconditions:** Водій виконує дію (пошук, оплата і т.д.)  
-- **Postconditions:** Користувач знає, як виправити дію  
+### UC-004: Error Notifications
+- **Primary Actor:** Driver  
+- **Goal:** Receive clear error messages  
+- **Preconditions:** Driver performs an action (search, payment, etc.)  
+- **Postconditions:** User understands how to fix the action  
 - **Main Success Scenario:**  
-  1. Водій вводить некоректні дані.  
-  2. Система перевіряє введене.  
-  3. Система показує повідомлення з поясненням і підказкою.  
+  1. Driver enters incorrect data.  
+  2. System validates the input.  
+  3. System shows a message with explanation and guidance.  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо помилка критична → система пропонує звернутися у службу підтримки.  
+  - A1: Critical error → system suggests contacting support.  
 
 ---
 
-### UC-005: Push-нагадування
-- **Primary Actor:** Водій  
-- **Goal:** Отримати нагадування про завершення часу паркування  
-- **Preconditions:** Водій забронював місце та вказав час  
-- **Postconditions:** Водій отримує сповіщення за 10 хвилин до завершення  
+### UC-005: Push Reminders
+- **Primary Actor:** Driver  
+- **Goal:** Receive a reminder before parking time ends  
+- **Preconditions:** Driver booked a spot and set a duration  
+- **Postconditions:** Driver receives notification 10 minutes before expiration  
 - **Main Success Scenario:**  
-  1. Водій бронює місце.  
-  2. Система відраховує час.  
-  3. За 10 хвилин до завершення система надсилає push/email повідомлення.  
-  4. Повідомлення містить кнопку “Продовжити паркування”.  
+  1. Driver books a spot.  
+  2. System counts down the time.  
+  3. 10 minutes before expiration, system sends push/email notification.  
+  4. Notification includes a "Extend Parking" button.  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо повідомлення не доставлено (нема інтернету) → система повторює відправку.  
+  - A1: Notification not delivered (no internet) → system retries sending.  
 
 ---
 
-### UC-006: Мобільний доступ
-- **Primary Actor:** Водій  
-- **Goal:** Користуватися сервісом з телефону  
-- **Preconditions:** Сервіс відкритий на мобільному пристрої  
-- **Postconditions:** Сторінки відображаються коректно  
+### UC-006: Mobile Access
+- **Primary Actor:** Driver  
+- **Goal:** Use the service on a mobile device  
+- **Preconditions:** Service is opened on a mobile device  
+- **Postconditions:** Pages display correctly  
 - **Main Success Scenario:**  
-  1. Водій відкриває сайт на смартфоні.  
-  2. Сайт підлаштовується під екран (адаптивна верстка).  
-  3. Водій може натискати на кнопки (мін. 44x44 px).  
+  1. Driver opens the website on a smartphone.  
+  2. Site adjusts to screen (responsive design).  
+  3. Driver can click buttons (minimum 44x44 px).  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо пристрій дуже старий → система показує спрощену версію.  
+  - A1: Very old device → system shows simplified version.  
 
 ---
 
-### UC-007: Збереження даних
-- **Primary Actor:** Адміністратор  
-- **Goal:** Бути впевненим у збереженні даних  
-- **Preconditions:** Дані користувачів і бронювань збережені у БД  
-- **Postconditions:** Дані захищені резервною копією  
+### UC-007: Data Retention
+- **Primary Actor:** Administrator  
+- **Goal:** Ensure data is safely stored  
+- **Preconditions:** User and booking data saved in the DB  
+- **Postconditions:** Data protected via backup  
 - **Main Success Scenario:**  
-  1. Система регулярно зберігає дані у базу.  
-  2. Раз на добу створює резервну копію у хмарне сховище.  
-  3. Адміністратор бачить підтвердження успішного backup.  
+  1. System regularly saves data to the database.  
+  2. Daily backups are created in cloud storage.  
+  3. Administrator sees confirmation of successful backup.  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо backup не вдався → система надсилає адміністратору повідомлення про помилку.  
+  - A1: Backup fails → system sends an error notification to the administrator.  
 
 ---
 
-### UC-008: Історія оплат
-- **Primary Actor:** Водій  
-- **Goal:** Переглянути історію оплат  
-- **Preconditions:** Водій має акаунт із виконаними оплатами  
-- **Postconditions:** Водій бачить список транзакцій  
+### UC-008: Transaction History
+- **Primary Actor:** Driver  
+- **Goal:** View payment history  
+- **Preconditions:** Driver has an account with completed payments  
+- **Postconditions:** Driver sees a list of transactions  
 - **Main Success Scenario:**  
-  1. Водій переходить у профіль.  
-  2. Обирає вкладку “Мої оплати”.  
-  3. Система показує список оплат із датою, часом і сумою.  
-  4. Користувач застосовує фільтрацію за датою.  
+  1. Driver opens the profile.  
+  2. Selects the "My Payments" tab.  
+  3. System displays payments with date, time, and amount.  
+  4. User can filter by date.  
 - **Alternate/Exception Flows:**  
-  - A1: Якщо історія порожня → система показує “Ви ще не здійснювали оплат”.  
-  - E1: Якщо база недоступна → система показує повідомлення про помилку.  
+  - A1: History empty → system shows "No payments yet".  
+  - E1: Database unavailable → system shows an error message.  

@@ -1,7 +1,7 @@
 # Smart Parking API Design Documentation
 
 ## Architecture Overview
-- **Base URL**: http://16.170.148.253:8000/api
+- **Base URL**: http://16.170.148.253/
 - **API Style:** RESTful
 - **Authentication:** JWT Bearer tokens (planned)
 - **Response Format:** JSON
