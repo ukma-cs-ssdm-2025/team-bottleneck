@@ -4,31 +4,50 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/api/**'
+      - '.github/workflows/RunUnitTests.yml'
+  pull_request:
+    branches:
+      - main
       - develop
     paths:
       - 'src/api/**'
       - '.github/workflows/run_tests.yml'
-
 jobs:
   test:
     name: Run Django API Tests
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install dependencies (Assuming a Python/Django Project)
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+      
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requirements.txt
-          pip install django pytest-django
-
+          pip install -r requirements.txt
+          pip install pytest-django
+      
       - name: Run Pytest for API
+        env:
+          DJANGO_SETTINGS_MODULE: src.parking.settings
         run: |
-          export DJANGO_SETTINGS_MODULE=src.parking.settings
-          pytest src/api/tests/
+          pytest src/api/tests/ -v --tb=short
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: |
+            .pytest_cache/
+            htmlcov/
+          retention-days: 7
