@@ -21,14 +21,32 @@ This project is developed for educational purposes as part of the course "Softwa
 
 * [requirements.md](docs/requirements/requirements.md) -- functional and non-functional requirements
 * [user-stories.md](docs/requirements/user-stories.md) -- user stories
-* [use-cases.md](docs/requirements/rtm.md) -- use cases
-
+* [use-cases.md](docs/requirements/use-case.md) -- use cases
+* [rtm.md](docs/requirements/rtm.md) -- rtm.md
+  
 ## Project Architecture
 
 * [high-level-diagram.png](docs/architecture/high-level-diagram.png) -- high-level architecture diagram
 * [high-level-design.md](docs/architecture/high-level-design.md) -- high-level design description
 * [traceability-matrix.md](docs/architecture/traceability-matrix.md) -- mapping requirements to architecture
 * [architecture](docs/architecture/) -- folder with all architecture files
+
+## API Documentation
+
+* [api-design.md](docs/api/api-design.md) – documentation of API design decisions
+* [quality-attributes.md](docs/api/quality-attributes.md) – API Quality Attributes
+* [api](docs/api) - other files related to api documentation
+
+## Code Quality
+
+* [progress.md](docs/code-quality/progress.md) – file showing project progress
+* [code-quality](docs/code-quality) – other files related to code quality
+
+## Testing Documentation
+
+* [debugging-log.md](docs/testing/debugging-log.md) – debugging log
+* [testing-strategy.md](docs/testing/testing-strategy.md) – testing strategy
+
 
 ## Local Deployment Instructions
 
