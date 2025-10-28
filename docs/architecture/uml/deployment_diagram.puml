@@ -1,7 +1,7 @@
 @startuml
 title Deployment Diagram: Parking System (Simplified)
 
-actor "Користувач" as User
+actor "User" as User
 
 node "Client Device" {
   [Web Browser (React UI)]
@@ -9,7 +9,7 @@ node "Client Device" {
 
 node "Application Server" {
   [REST API]
-  [Python App\n(Бізнес-логіка)]
+  [Python App\n(Business logic)]
 }
 
 node "Database Server" {
@@ -23,9 +23,9 @@ node "External Services" {
 
 User --> [Web Browser (React UI)]
 [Web Browser (React UI)] --> [REST API]
-[REST API] --> [Python App\n(Бізнес-логіка)]
-[Python App\n(Бізнес-логіка)] --> [PostgreSQL]
+[REST API] --> [Python App\n(Business logic)]
+[Python App\n(Business logic)] --> [PostgreSQL]
 
-[Python App\n(Бізнес-логіка)] --> [Payment System]
-[Python App\n(Бізнес-логіка)] --> [Email/SMS Provider]
+[Python App\n(Business logic)] --> [Payment System]
+[Python App\n(Business logic)] --> [Email/SMS Provider]
 @enduml

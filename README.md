@@ -1,74 +1,110 @@
 [![Deploy to EC2](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml)
+![Coverage](https://raw.githubusercontent.com/ukma-cs-ssdm-2025/team-bottleneck/coverage-badge/coverage.svg)
 
-# Командний проект: Smart Parking
+# Team Project: Smart Parking
 
-Цей проект виконується в навчальних цілях в рамках курсу "Методи розробки програмних систем". Мета проекту — розробити систему розумного бронювання та оплати парковок для водіїв, що відстежує доступність місць.
+This project is developed for educational purposes as part of the course "Software Systems Development Methods." The goal is to create a smart parking booking and payment system for drivers that tracks spot availability.
 
-## Учасники
-- Анастасія (GitHub: [@anastasiaaq](https://github.com/anastasiaaq))
-- Валентина (GitHub: [@valuuusha](https://github.com/valuuusha))
-- Антон (GitHub: [@MaFiN1337](https://github.com/MaFiN1337))
-- Вікторія (GitHub: [@Victoria7778](https://github.com/Victoria7778))
+## Team Members
 
-## Структура репозиторію
-- [Project-Description.md](Project-Description.md) -- опис проекту
-- [TeamCharter.md](TeamCharter.md) -- командний статут
+* Anastasia (GitHub: [@anastasiaaq](https://github.com/anastasiaaq))
+* Valentina (GitHub: [@valuuusha](https://github.com/valuuusha))
+* Anton (GitHub: [@MaFiN1337](https://github.com/MaFiN1337))
+* Victoria (GitHub: [@Victoria7778](https://github.com/Victoria7778))
 
-## Артефакти вимог
-- [requirements.md](docs/requirements/requirements.md) -- функціональні та нефункціональні вимоги
-- [user-stories.md](docs/requirements/user-stories.md) -- користувацькі історії
-- [use-cases.md](docs/requirements/rtm.md) -- use cases
+## Repository Structure
+
+* [Project-Description.md](Project-Description.md) -- project description
+* [TeamCharter.md](TeamCharter.md) -- team charter
+
+## Requirements Artifacts
+
+* [requirements.md](docs/requirements/requirements.md) -- functional and non-functional requirements
+* [user-stories.md](docs/requirements/user-stories.md) -- user stories
+* [use-cases.md](docs/requirements/use-cases.md) -- use cases
+* [rtm.md](docs/requirements/rtm.md) -- rtm.md
   
-## Архітектура проекту
-- [high-level-diagram.png](docs/architecture/high-level-diagram.png) -- діаграма архітектурного огляду
-- [high-level-design.md](docs/architecture/high-level-design.md) -- опис high-level-design
-- [traceability-matrix.md](docs/architecture/traceability-matrix.md) - відповідність вимог архітектурі
-- [architecture](docs/architecture/) -- папка з усіма файлами архітектури проекту
+## Project Architecture
 
-## Інструкція запуску (локальне розгортання)
-### Для запуску потрібно:
-- git pull `https://github.com/ukma-cs-ssdm-2025/team-bottleneck.git`
-- Створити .env і наповнити:
+* [high-level-diagram.png](docs/architecture/high-level-diagram.png) -- high-level architecture diagram
+* [high-level-design.md](docs/architecture/high-level-design.md) -- high-level design description
+* [traceability-matrix.md](docs/architecture/traceability-matrix.md) -- mapping requirements to architecture
+* [architecture](docs/architecture/) -- folder with all architecture files
+
+## API Documentation
+
+* [api-design.md](docs/api/api-design.md) – documentation of API design decisions
+* [quality-attributes.md](docs/api/quality-attributes.md) – API Quality Attributes
+* [api](docs/api) - other files related to api documentation
+
+## Code Quality
+
+* [progress.md](docs/code-quality/progress.md) – file showing project progress
+* [code-quality](docs/code-quality) – other files related to code quality
+
+## Testing Documentation
+
+* [debugging-log.md](docs/testing/debugging-log.md) – debugging log
+* [testing-strategy.md](docs/testing/testing-strategy.md) – testing strategy
+
+
+## Local Deployment Instructions
+
+### Requirements:
+
+* git pull `https://github.com/ukma-cs-ssdm-2025/team-bottleneck.git`
+* Create a `.env` file and populate it:
+
 ```
-DJANGO_SECRET_KEY=Ваш-згенерований-код-для-django
+DJANGO_SECRET_KEY=Your-generated-django-key
 DJANGO_DEBUG=False
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 RDS_DB_NAME=postgres
 RDS_USERNAME=MaFiN
-RDS_PASSWORD=пароль-до-БД
+RDS_PASSWORD=your-db-password
 RDS_HOSTNAME=127.0.0.1
 RDS_PORT=5433
-STRIPE_PUBLIC_KEY=pk_test_публічний_ключ
-STRIPE_SECRET_KEY=sk_test_секретний_ключ
-STRIPE_CURRENCY=ваша_валюта_наприклад_uah
+STRIPE_PUBLIC_KEY=pk_test_your_public_key
+STRIPE_SECRET_KEY=sk_test_your_secret_key
+STRIPE_CURRENCY=your_currency_example_uah
 
 STATIC_ROOT=
 MEDIA_ROOT=
 ```
-#### Підключення до БД(перший термінал)
-- ssh -i "Absolute path to .pem key" -N -L 5433:smart-parking-db.cz26seqes6xp.eu-north-1.rds.amazonaws.com:5432 ubuntu@16.170.148.253
 
-#### Запуск django-бекенду(Другий термінал)
-- pip install -r requirements.txt
-- python manage.py makemigrations api
-- python manage.py migrate
-- python manage.py runserver
+#### Connecting to the DB (first terminal)
 
-*[http://127.0.0.1:8000](http://127.0.0.1:8000) - адреса бекенду (/api/docs для swagger UI)*
+* ssh -i "Absolute path to .pem key" -N -L 5433:smart-parking-db.cz26seqes6xp.eu-north-1.rds.amazonaws.com:5432 ubuntu@16.170.148.253
 
-#### Запуск react-фронтенду(Третій термінал)
+#### Running Django backend (second terminal)
+
+* pip install -r requirements.txt
+* python manage.py makemigrations api
+* python manage.py migrate
+* python manage.py runserver
+
+*[http://127.0.0.1:8000](http://127.0.0.1:8000) - backend URL (/api/docs for Swagger UI)*
+
+#### Running React frontend (third terminal)
+
 ##### Prerequisites:
-- Встановлено node.js, якщо ні:
-  - Відвідайте сайт [node.js](https://nodejs.org/uk/download) та скачайте node.js v22.21.0 (npm автоматично має завантажитись 10.х.х версії)
-  - Додайте node.js в PATH (Приклад: C:\Program Files\nodejs)
-##### Instructions:
-- cd frontend
-- npm install
-- npm start
 
-*localhost:3000 - адреса локально розгорнутого вебсайту*
+* Node.js installed, if not:
+
+  * Visit [node.js](https://nodejs.org/uk/download) and download Node.js v22.21.0 (npm 10.x.x installs automatically)
+  * Add Node.js to PATH (Example: C:\Program Files\nodejs)
+
+##### Instructions:
+
+* cd frontend
+* npm install
+* npm start
+
+*localhost:3000 - URL of the locally running website*
 
 ## Github Pages
-- [Посилання на GitHub Pages](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/)
+
+* [Swagger UI](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/)
+* [Coverage](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/htmlcov/)
 

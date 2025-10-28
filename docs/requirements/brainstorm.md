@@ -1,44 +1,45 @@
-# Послуги
+# Services
 
-- **Драйвер**  
-- **Заправка**  
-- **Мийка**  
-- **СТО**  
+- **Driver**  
+- **Refueling**  
+- **Car Wash**  
+- **Service Station (STO)**  
 
+---
 
+# Discounts
 
-# Знижки
+1. **Dynamic Pricing**  
+2. **Happy Hours**  
+3. **Family Discount**  
+4. **Refer a Friend**  
+5. **Promo Code Game**  
+6. **Collaborations with Stores**  
+7. **Resale**  
 
-1. **Динамічні ціни**  
-2. **Щасливі години**  
-3. **Сімейна знижка**  
-4. **Запроси друга**  
-5. **Гра за промокод**  
-6. **Колаборації з магазином**  
-7. **Перепродаж**  
+---
 
+# Features
 
-# Фічі
+1. **Parking Map**  
+2. **List / Map View**  
+3. **Reminders**  
+4. **Filters**  
+5. **Navigation**  
+6. **Parking Occupancy Colors**  
+7. **Booking for Emergencies**  
+8. **Distribution during Emergencies**  
 
-1. **Карта парковки**  
-2. **Список / карта**  
-3. **Нагадування**  
-4. **Фільтри**  
-5. **Навігація**  
-6. **Кольори завантаженості парковок**  
-7. **Бронювання на випадок тривог**  
-8. **Розподіл під час тривоги**
+---
 
-# Зручності
+# Amenities
 
-1. **Місця для офісів**  
-2. **Генератори + туалет**  
-3. **Їжа**  
-4. **Вантажівки**  
-5. **Візочки**  
-6. **Міні садочок**  
-7. **Підсвітка місць**  
-
-
-9. **Рейтинг**  
+1. **Office Parking Spots**  
+2. **Generators + Restrooms**  
+3. **Food**  
+4. **Truck Parking**  
+5. **Stroller-Friendly**  
+6. **Mini Kindergarten**  
+7. **Spot Lighting**  
+8. **Ratings**
 

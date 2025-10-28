@@ -1,44 +1,32 @@
-# Звіт про помилку: граничний випадок у перевірці часу
-Примітка: я намагалась ввести якусь неочевидну помилку в нашому коді і вирішила це зробити в граничних випадках, оскільки там досить легко помилитися, але це порушує бізнес-логіку. Після того як я ввела помилку, я зрозуміла що на цей момент в нас не було тесту для перевірки цього випадку, тому я додала ще тест для конкретно цього граничниго випадку
-### 1. Симптом 
 
-Опис:
-Тест test_zero_duration_raises_error не пройшов.
-Валідатор неправильно прийняв бронювання, де час початку дорівнює часу завершення, замість того, щоб викликати очікувану помилку serializers.ValidationError.
 
-### 2. Корінна причина 
+# Error Report: Edge Case in Time Validation
+### 1. Symptom
+Description: The test test_zero_duration_raises_error failed. The validator incorrectly accepted a booking where the start time equals the end time (start == end), instead of raising the expected serializers.ValidationError.
 
-Проблема:
-Логічна помилка у перевірці граничних значень часу.
+###  2. Root Cause
+Problem: Logical error in checking time boundary conditions in the booking validation logic.
 
-Деталі:
-У файлі src/api/validators.py оператор порівняння, який перевіряє, що час завершення настає після часу початку, було змінено з (>=) на (>).
+Details: In the file src/api/validators.py, the comparison operator used to enforce that the end time must strictly occur after the start time was incorrectly set. It was:
 
-Зламаний код:
+Python
 
-if start > end:  # ❌ Помилка: дозволяє випадок start == end
+if start > end:  
+####  ❌ Error: The case start == end was incorrectly allowed.
     raise serializers.ValidationError("Booking end time must be after start time.")
+By using > instead of the necessary >=, the critical edge case where the duration is zero (start == end) was missed, as the condition start > end evaluates to False.
 
+###  3. Fix
+Action: The comparison operator was corrected to >=.
 
-Через використання > замість >= випадок, коли start == end, був помилково пропущений, оскільки умова start > end є хибною.
+Corrected code:
 
-### 3. Виправлення 
+Python
 
-Дія:
-Оператор порівняння було виправлено назад на >=.
-
-Виправлений код:
-
-
-if start >= end:  # ✅ Виправлено: забороняє як start > end, так і start == end
+if start >= end:  
+#### ✅ Fixed: Now correctly prohibits both start > end and start == end.
     raise serializers.ValidationError("Booking end time must be after start time.")
+Verification: After applying the fix and rerunning pytest, all tests successfully passed (PASSED).
 
-
-Перевірка:
-Після внесення виправлення та повторного запуску pytest усі тести успішно пройшли (PASSED).
-
-###  4. Висновки
-
-Критичність граничних випадків:
-Зміна лише одного символу (> замість >=) повністю зламала логіку перевірки для нульової тривалості. Це підкреслює важливість уважної перевірки операторів порівняння у логіці, що стосується часових інтервалів і числових меж.
-Іноді граничні випадки потребують додаткових тестів і перевірки, оскільки їх легко загубити під час тестування основної функції
+###  4. Conclusion
+Criticality of Edge Cases: This incident highlighted that changing only one character (> vs. >=) completely broke the validation logic for zero duration bookings. This emphasizes the vital importance of strictly testing boundary and edge conditions (like zero or maximum duration) in time-based logic.

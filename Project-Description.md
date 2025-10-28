@@ -1,18 +1,21 @@
-# Опис проєкту
+# Project Description
 
-## Ідея
-“Розумний пошук парковки” — це система, що допомагає водіям швидко знаходити вільні паркомісця, бронювати їх та оплачувати заздалегідь.  
-Система дозволяє як планувати паркування наперед, так і знаходити місце «тут і зараз». Для операторів паркінгів система дає можливість ефективно керувати завантаженістю, а для водіїв — прозору й швидку оплату.
+## Idea
 
-## Ролі користувачів
-- **Водій** — пошук і бронювання паркомісць, оплата, перегляд історії.  
-- **Адміністратор** — управління користувачами, моніторинг системи.  
-- **Оператор** — контроль завантаженості конкретного паркінгу, управління бронюваннями.  
+“Smart Parking Finder” is a system that helps drivers quickly locate available parking spots, reserve them, and pay in advance.
+The system allows both planning parking in advance and finding a spot “here and now.” For parking operators, it provides efficient management of occupancy, and for drivers — transparent and fast payment.
 
-## Основні функції
-1. Пошук доступних паркомісць у режимі реального часу (на мапі).  
-2. Резервація місця на певний час.  
-3. Онлайн-оплата паркування.  
-4. Відстеження статусу бронювання та історії оплат.  
-5. Повідомлення й нагадування (наприклад, про завершення часу паркування).  
-6. Адмінпанель для управління користувачами та моніторингу системи.  
+## User Roles
+
+* **Driver** — searching and booking parking spots, making payments, viewing history.
+* **Administrator** — managing users, monitoring the system.
+* **Operator** — controlling occupancy of a specific parking lot, managing bookings.
+
+## Key Features
+
+1. Real-time search of available parking spots (on a map).
+2. Reservation of a spot for a specific time.
+3. Online parking payment.
+4. Tracking booking status and payment history.
+5. Notifications and reminders (e.g., about parking time expiration).
+6. Admin panel for user management and system monitoring.
