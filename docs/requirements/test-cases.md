@@ -1,10 +1,10 @@
-# Test cases
+# Test Cases
 
-- TC001: Виконати пошук → перевірити, що результат відображається ≤ 3 с
-- TC002: Виконати оплату → перевірити в БД відсутність відкритих паролів/даних картки
-- TC003: Додати новий паркінг → перевірити, що інші функції залишаються доступними
-- TC004: Викликати помилку бронювання → перевірити наявність пояснення та підказки
-- TC005: Створити бронювання → перевірити отримання push-сповіщення з інструкцією
-- TC006: Відкрити сайт на смартфоні (5'') → перевірити коректність відображення
-- TC007: Перевірити лог резервного копіювання → підтвердити наявність файлів за 30 днів
-- TC008: Зайти в історію → перевірити, що дані завантажуються ≤ 3 с
+- **TC001:** Perform a search → verify that the results are displayed within ≤ 3 seconds  
+- **TC002:** Make a payment → verify that no plain-text passwords/card data are stored in the database  
+- **TC003:** Add a new parking lot → verify that other functionalities remain accessible  
+- **TC004:** Trigger a booking error → verify that explanation and guidance are shown  
+- **TC005:** Create a booking → verify that a push notification with instructions is received  
+- **TC006:** Open the site on a smartphone (5'') → verify correct display and responsiveness  
+- **TC007:** Check backup logs → confirm files exist for the last 30 days  
+- **TC008:** Access transaction history → verify that data loads within ≤ 3 seconds  

@@ -4,43 +4,43 @@ title Sequence Diagram: Online Parking Payment
 actor Driver as User
 boundary ReactUI
 control RESTAPI
-control PythonApp as "Python App\n(Бізнес-логіка)"
+control PythonApp as "Python App\n(Business Logic)"
 control DAO
 database DB as "PostgreSQL"
-entity PaymentSystem as "Платіжна система"
+entity PaymentSystem as "Payment System"
 
-User -> ReactUI : Відобразити карту паркінгу
-ReactUI -> RESTAPI : Запитати доступність
-RESTAPI -> PythonApp : Виклик методу пошуку
-PythonApp -> DAO : SQL-запит доступних місць
+User -> ReactUI : Display Parking Map
+ReactUI -> RESTAPI : Request Availability
+RESTAPI -> PythonApp : Call Search Method
+PythonApp -> DAO : SQL Query for Available Spots
 DAO -> DB : SELECT * FROM ParkingLots
-DB --> DAO : Результати
-DAO --> PythonApp : Дані паркомісць
-PythonApp --> RESTAPI : Список вільних місць
-RESTAPI --> ReactUI : Дані в JSON
-ReactUI --> User : Відобразити місця на карті
+DB --> DAO : Results
+DAO --> PythonApp : Parking Spot Data
+PythonApp --> RESTAPI : List of Free Spots
+RESTAPI --> ReactUI : Data in JSON
+ReactUI --> User : Display Spots on Map
 
-User -> ReactUI : Обрати вільне місце
-ReactUI -> RESTAPI : Запит на розрахунок вартості
-RESTAPI -> PythonApp : Виклик методу calculatePrice
+User -> ReactUI : Select Free Spot
+ReactUI -> RESTAPI : Request Price Calculation
+RESTAPI -> PythonApp : Call calculatePrice Method
 PythonApp -> DAO : SELECT price FROM ParkingLots WHERE id=...
-DAO -> DB : Отримати ціну місця
-DB --> DAO : Ціна
-DAO --> PythonApp : Ціна
-PythonApp --> RESTAPI : Вартість броні
-RESTAPI --> ReactUI : JSON-ціна
-ReactUI --> User : Відобразити вартість
+DAO -> DB : Get Spot Price
+DB --> DAO : Price
+DAO --> PythonApp : Price
+PythonApp --> RESTAPI : Booking Cost
+RESTAPI --> ReactUI : JSON Price
+ReactUI --> User : Display Cost
 
-User -> ReactUI : Підтвердити оплату
-ReactUI -> RESTAPI : Запит на оплату
-RESTAPI -> PythonApp : Виклик методу createPayment
-PythonApp -> PaymentSystem : API-запит на оплату
-PaymentSystem --> PythonApp : Статус платежу (успіх/відмова)
+User -> ReactUI : Confirm Payment
+ReactUI -> RESTAPI : Request Payment
+RESTAPI -> PythonApp : Call createPayment Method
+PythonApp -> PaymentSystem : API Request for Payment
+PaymentSystem --> PythonApp : Payment Status (Success/Failure)
 PythonApp -> DAO : INSERT INTO Transactions
-DAO -> DB : Зберегти транзакцію
+DAO -> DB : Save Transaction
 DB --> DAO : OK
 DAO --> PythonApp : OK
-PythonApp --> RESTAPI : Квитанція
-RESTAPI --> ReactUI : JSON-квитанція
-ReactUI --> User : Підтвердження оплати
+PythonApp --> RESTAPI : Receipt
+RESTAPI --> ReactUI : JSON Receipt
+ReactUI --> User : Payment Confirmation
 @enduml

@@ -1,26 +1,25 @@
 # Requirements Overview
 
 ## Purpose & Scope
-Система для управління паркуванням, яка дозволяє водіям швидко знаходити вільні місця, оплачувати онлайн та отримувати повідомлення, а адміністраторам – підтримувати актуальність даних і зберігати інформацію.
+A parking management system that allows drivers to quickly find available spots, pay online, and receive notifications, while enabling administrators to maintain up-to-date data and manage backups.
 
 ## Glossary
-- Водій — користувач сервісу для пошуку та оплати паркування.
-- Адміністратор — користувач з правами управління даними (паркінги, резервні копії).
-- Паркомісце — місце для паркування авто.
+- **Driver** — a user of the service for finding and paying for parking.  
+- **Administrator** — a user with privileges to manage data (parking lots, backups).  
+- **Parking Spot** — a location where a vehicle can be parked.
 
 ## Functional Requirements (FR)
-- FR-001: Система повинна відображати список доступних паркомісць на карті після пошуку.
-- FR-002: Система повинна підтримувати оплату карткою (Stripe)
-- FR-003: Система повинна дозволяти додавати/редагувати інформацію про паркінг.
-- FR-004: Система повинна відображати повідомлення про помилки.
-- FR-005: Система повинна надсилати push-сповіщення або email про закінчення бронювання.
-- FR-006: Система повинна автоматично створювати резервні копії БД.
-- FR-007: Система повинна зберігати і відображати історію транзакцій користувача.
+- **FR-001:** The system must display a list of available parking spots on a map after a search.  
+- **FR-002:** The system must support card payments (Stripe).  
+- **FR-003:** The system must allow adding/editing parking lot information.  
+- **FR-004:** The system must display error messages.  
+- **FR-005:** The system must send push notifications or emails when a booking is ending.  
+- **FR-006:** The system must automatically create database backups.  
+- **FR-007:** The system must store and display the user's transaction history.
 
 ## Non-Functional Requirements (NFR)
-
-- NFR-001 (Performance): Список доступних паркомісць, історії оплат або парковки на карті мають відображатися ≤ 3 секунд після запиту.
-- NFR-002 (Security): Паролі та платіжні дані зберігаються у зашифрованому вигляді (AES-256).
-- NFR-003 (Reliability): Резервні копії створюються автоматично кожні 24 години та зберігаються мінімум 30 днів.
-- NFR-004 (Usability): Вебсайт повинен бути адаптивним для мобільних пристроїв (екрани від 5’’ і більше), без горизонтального скролінгу та з повним функціоналом.
-- NFR-005 (Usability): Повідомлення про помилки та push-сповіщення мають бути зрозумілою мовою (щоб користувач, що не розуміється в особливій термінології та технологіях міг зрозуміти в чому помилка) та містити інструкції для вирішення проблеми
+- **NFR-001 (Performance):** The list of available parking spots, payment history, or parking map must load within ≤ 3 seconds after a request.  
+- **NFR-002 (Security):** Passwords and payment data must be stored encrypted (AES-256).  
+- **NFR-003 (Reliability):** Backups are automatically created every 24 hours and retained for at least 30 days.  
+- **NFR-004 (Usability):** The website must be responsive for mobile devices (screens ≥ 5’’), without horizontal scrolling, and provide full functionality.  
+- **NFR-005 (Usability):** Error messages and push notifications must be understandable to non-technical users and provide instructions to resolve the issue.

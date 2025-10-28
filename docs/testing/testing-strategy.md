@@ -1,80 +1,88 @@
-### **1. Опис**
+### **1. Description**
 
-Цей документ визначає обов'язкові для виконання правила та стандарти, спрямовані на забезпечення стабільності, підтримуваності та загальної якості тестів. Дотримання цього регламенту є відповідальністю кожного члена команди.
+This document defines mandatory rules and standards aimed at ensuring the stability, maintainability, and overall quality of tests. Adherence to this guideline is the responsibility of every team member.
 
 ---
 
-### **2. Стандарти написання тестів**
-2.1.  **Дескриптивне іменування.** Назва тестової функції повинна чітко описувати сценарій, що перевіряється, та очікуваний результат.
-**Приклад:** `test_create_booking_fails_if_spot_is_already_taken` замість `test_booking_error`.
+### **2. Test Writing Standards**
 
-2.2.  **Структура "Arrange-Act-Assert" (AAA).** Кожен тест повинен мати чітко відокремлені блоки для підготовки даних (Arrange), виконання дії (Act) та перевірки результату (Assert). Це покращує читабельність та підтримуваність.
+2.1.  **Descriptive Naming.** Test function names should clearly describe the scenario being tested and the expected outcome.
+**Example:** `test_create_booking_fails_if_spot_is_already_taken` instead of `test_booking_error`.
 
-2.3.  **Принцип єдиної відповідальності.** Один тестовий випадок повинен перевіряти один логічний аспект функціональності. Тест повинен мати одну, і тільки одну, причину для падіння.
+2.2.  **Arrange-Act-Assert (AAA) Structure.** Each test should have clearly separated blocks for data preparation (Arrange), action execution (Act), and result verification (Assert). This improves readability and maintainability.
 
-2.4.  **Аналіз граничних значень.** Тестування повинно обов'язково включати перевірку граничних умов: нульові значення (`0`, `None`), порожні рядки, від'ємні числа, максимальні допустимі значення тощо.
+2.3.  **Single Responsibility Principle.** A single test case should check only one logical aspect of functionality. The test should have one, and only one, reason to fail.
 
-### **3. Процес роботи з помилками (Bug Fixing)**
+2.4.  **Edge Case Analysis.** Testing must include verification of boundary conditions: zero values (`0`, `None`), empty strings, negative numbers, maximum allowed values, etc.
 
-Виправлення помилок повинно виконуватися за структурованим процесом для забезпечення якості та запобігання регресіям.
+### **3. Bug Fixing Process**
 
-3.1.  **Крок 1: Відтворення.** Дефект повинен бути стабільно відтворений. Створюється новий тестовий випадок, який імітує умови виникнення помилки і падає.
+Fixing bugs should follow a structured process to ensure quality and prevent regressions.
 
-3.2.  **Крок 2: Ізоляція та Діагностика.** Проводиться аналіз для виявлення точної першопричини проблеми. Використання дебагера та логів є пріоритетним над методом випадкових виправлень.
+3.1.  **Step 1: Reproduction.** The defect must be reliably reproduced. A new test case is created to simulate the conditions of the bug and fail.
 
-3.3.  **Крок 3: Виправлення.** Вноситься мінімально необхідний код для усунення першопричини дефекту.
+3.2.  **Step 2: Isolation and Diagnosis.** Analyze to identify the exact root cause of the problem. Using a debugger and logs is prioritized over random fixes.
 
-3.4.  **Крок 4: Верифікація.** Запускається раніше створений регресійний тест, щоб переконатися, що він тепер проходить. Після цього запускається повний набір тестів, щоб перевірити відсутність побічних ефектів.
+3.3.  **Step 3: Fixing.** Apply the minimal necessary code changes to eliminate the root cause of the defect.
 
-### **4. Підтримка кодової бази та тестів**
+3.4.  **Step 4: Verification.** Run the previously created regression test to ensure it now passes. Then run the full test suite to check for side effects.
 
-4.1.  **Рефакторинг тестів.** Тести є повноцінною частиною кодової бази. До них застосовуються ті ж стандарти чистоти та читабельності, що й до основного коду.
+### **4. Maintaining Codebase and Tests**
 
-4.2.  **Актуалізація тестів.** При зміні або видаленні функціональності відповідні тести повинні бути оновлені або видалені в тому ж Pull Request. 
+4.1.  **Test Refactoring.** Tests are a full part of the codebase. The same standards of cleanliness and readability applied to production code also apply to tests.
 
-4.3. **Регулярне оновлення тестів.** Тестові набори повинні періодично переглядатися та доповнюватися новими сценаріями. Постійний запуск одних і тих самих тестів з часом втрачає ефективність у виявленні нових типів дефектів.
+4.2.  **Test Updating.** When functionality is changed or removed, the corresponding tests must be updated or deleted in the same Pull Request.
 
-4.4.  **Коментування складних сценаріїв.** Якщо тестовий випадок перевіряє складну або неочевидну бізнес-логіку, він повинен супроводжуватися коротким коментарем, що пояснює його призначення.
+4.3. **Regular Test Updates.** Test suites should be periodically reviewed and supplemented with new scenarios. Running the same tests repeatedly over time loses effectiveness in detecting new defect types.
 
-## Інструментарій
+4.4.  **Commenting Complex Scenarios.** If a test case covers complex or non-obvious business logic, it should be accompanied by a short comment explaining its purpose.
 
-**Основний фреймворк для тестування: `pytest`**
+## Tooling
 
-- **Призначення:** Написання та запуск юніт-тестів та інтеграційних тестів.
-- **Обґрунтування:** `pytest` вимагає мінімум шаблонного коду, має потужну систему фікстур для налаштування тестового оточення та широку підтримку плагінів. Це дозволяє писати чисті та читабельні тести.
+**Main testing framework: `pytest`**
 
-**Ізоляція залежностей: `unittest.mock`**
+* **Purpose:** Writing and running unit and integration tests.
+* **Rationale:** `pytest` requires minimal boilerplate code, has a powerful fixture system for test environment setup, and extensive plugin support. This allows writing clean and readable tests.
 
-- **Призначення:** Створення моків (імітацій) для зовнішніх залежностей (наприклад, сторонніх API) під час юніт-тестування.
-- **Обґрунтування:** Дозволяє тестувати компоненти в повній ізоляції, що робить тести швидкими та стабільними.
-- **Вимірювання покриття коду: `pytest-cov`**
-    - **Призначення:** Генерація звітів про покриття коду тестами.
-    - **Обґрунтування:** Легко інтегрується з `pytest` і дозволяє нам вимірювати, які частини коду не охоплені тестами, що є ключовою метрикою якості.
-- **Автоматизація та CI/CD: `GitHub Actions`**
-    - **Призначення:** Автоматичний запуск тестів та перевірок при кожному пуші та створенні Pull Request.
-    - **Обґрунтування:** Інтегровано безпосередньо в GitHub, що спрощує налаштування. Дозволяє реалізувати безперервне тестування, забезпечуючи швидкий зворотний зв'язок для команди.
-- **Тестування на рівні сценаріїв (BDD): `pytest-bdd`**
-    - **Призначення:** Написання системних тестів у форматі, зрозумілому для всієї команди (Gherkin).
-    - **Обґрунтування:** Перетворює критерії приймання на виконувані тести, які слугують "живою документацією" до нашого API.
+**Dependency Isolation: `unittest.mock`**
 
-## Типи перевірок та їх призначення
+* **Purpose:** Creating mocks for external dependencies (e.g., third-party APIs) during unit testing.
+* **Rationale:** Enables testing components in complete isolation, making tests fast and stable.
+* **Code Coverage Measurement: `pytest-cov`**
 
-Наш конвеєр якості (CI pipeline) буде включати кілька рівнів автоматизованих перевірок для забезпечення всебічного контролю.
+  * **Purpose:** Generating reports on code coverage by tests.
+  * **Rationale:** Easily integrates with `pytest` and allows tracking which parts of the code are not covered by tests, which is a key quality metric.
+* **Automation and CI/CD: `GitHub Actions`**
 
-- **Статичний аналіз коду (Linting)**
-    - **Що перевіряє:** Дотримання стилю коду (PEP 8), потенційні помилки, невикористовувані змінні та імпорти.
-    - **Навіщо це потрібно:** Для підтримки чистоти та однорідності кодової бази. Допомагає виявляти дрібні помилки ще до запуску тестів.
-    - **Коли виконується:** При кожному коміті в CI.
-- **Модульні тести (Unit Tests)**
-    - **Що перевіряють:** Коректність роботи окремих функцій та методів в ізоляції.
-    - **Навіщо це потрібно:** Це найшвидший спосіб отримати зворотний зв'язок про те, що основна логіка працює правильно. Вони є основою піраміди тестування.
-    - **Коли виконуються:** При кожному пуші в гілку в CI.
-- **Інтеграційні тести (Integration Tests)**
-    - **Що перевіряють:** Взаємодію між кількома компонентами системи, наприклад, роботу API ендпоінта з базою даних.
-    - **Навіщо це потрібно:** Щоб переконатися, що різні частини нашої системи правильно "спілкуються" між собою. Юніт-тести не можуть виявити такі проблеми.
-    - **Коли виконуються:** При створенні Pull Request в `develop`.
-- **Перевірка покриття коду (Code Coverage Gate)**
-    - **Що перевіряє:** Відсоток коду, який був виконаний під час запуску тестів.
-    - **Навіщо це потрібно:** Слугує як "ворота якості", що не дозволяють вливати код, який не має достатньої кількості тестів. Це допомагає уникнути "сліпих зон" у проєкті.
-    - **Коли виконується:** При створенні Pull Request в `develop`.
+  * **Purpose:** Automatically run tests and checks on every push and Pull Request.
+  * **Rationale:** Integrated directly into GitHub, simplifying setup. Enables continuous testing, providing fast feedback to the team.
+* **Scenario-Level Testing (BDD): `pytest-bdd`**
+
+  * **Purpose:** Writing system tests in a format understandable by the whole team (Gherkin).
+  * **Rationale:** Turns acceptance criteria into executable tests, serving as "living documentation" for our API.
+
+## Types of Checks and Their Purpose
+
+Our CI pipeline will include multiple levels of automated checks to ensure comprehensive control.
+
+* **Static Code Analysis (Linting)**
+
+  * **Checks:** Code style compliance (PEP 8), potential errors, unused variables and imports.
+  * **Purpose:** Maintain code cleanliness and consistency. Helps catch minor issues before running tests.
+  * **When:** On every commit in CI.
+* **Unit Tests**
+
+  * **Checks:** Correctness of individual functions and methods in isolation.
+  * **Purpose:** Fastest way to get feedback that core logic works correctly. Forms the foundation of the testing pyramid.
+  * **When:** On every push to a branch in CI.
+* **Integration Tests**
+
+  * **Checks:** Interaction between multiple components of the system, e.g., API endpoint with the database.
+  * **Purpose:** Ensure different parts of the system communicate correctly. Unit tests cannot detect these issues.
+  * **When:** On Pull Request creation to `develop`.
+* **Code Coverage Gate**
+
+  * **Checks:** Percentage of code executed during test runs.
+  * **Purpose:** Acts as a quality "gate," preventing code from being merged without sufficient test coverage. Helps avoid "blind spots" in the project.
+  * **When:** On Pull Request creation to `develop`.
 

@@ -1,58 +1,75 @@
-name: Deploy to EC2 with Archive
-
+name: Deploy to EC2
 on:
   push:
     branches: [ main ]
     paths:
       - 'src/**'
+      - 'frontend/**'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
       PROJECT_ROOT_DIR: team-bottleneck
-      ARCHIVE_NAME: deploy.tar.gz
-      ALLOWED_HOSTS_PROD: "16.170.148.253,127.0.0.1"
+      ALLOWED_HOSTS_PROD: "16.170.148.253,localhost,127.0.0.1"
       DEBUG_PROD: "False"
+      RDS_DB_NAME: "postgres"
+      RDS_USERNAME: "MaFiN"
+      RDS_PORT: "5432"
+      STRIPE_PUBLIC_KEY: "pk_test_51SKjS5HtnK8GZIavQHUhE48lrRc4PvyMVd8BmTafOijozdGrcx2GU4Rb812Ml4xeqs9a8RsviSaODAxSGjFoBy5b00DaJziTKU"
+      STRIPE_CURRENCY: "uah"
       
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Create deployment archive
-      run: tar -czf ${{ env.ARCHIVE_NAME }} src/
-
-    - name: Upload archive to server (scp)
-      uses: appleboy/scp-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }} 
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: ${{ env.ARCHIVE_NAME }}
-        target: /tmp/
-
-    - name: Deploy and Restart Services (ssh)
+    - name: Deploy Backend and Frontend
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
+        command_timeout: 30m
         
         script: |
-          export SECRET_KEY_PROD="${{ secrets.DJANGO_SECRET_KEY }}"
-          export GIT_TOKEN_PROD="${{ secrets.GIT_TOKEN }}"
-          export ALLOWED_HOSTS="${{ env.ALLOWED_HOSTS_PROD }}"
-          export DEBUG="${{ env.DEBUG_PROD }}"
+          set -e
+
           DEPLOY_PATH="/home/ubuntu/${{ env.PROJECT_ROOT_DIR }}"
+
+          echo "Pulling latest code from main..."
+          cd $DEPLOY_PATH
+          git fetch origin
+          git reset --hard origin/main
+
+           echo "Creating .env file with all configuration..."
+           cat > $DEPLOY_PATH/.env <<- EOF
+           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+           DJANGO_DEBUG=${{ env.DEBUG_PROD }}
+           ALLOWED_HOSTS=${{ env.ALLOWED_HOSTS_PROD }}
+           RDS_DB_NAME=${{ env.RDS_DB_NAME }}
+           RDS_USERNAME=${{ env.RDS_USERNAME }}
+           RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+           RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
+           RDS_PORT=${{ env.RDS_PORT }}
+           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+           STRIPE_PUBLIC_KEY=${{ env.STRIPE_PUBLIC_KEY }}
+           STRIPE_CURRENCY=${{ env.STRIPE_CURRENCY }}
+           EOF
           
-          git config --local credential.helper store
-          echo "https://$GIT_TOKEN_PROD@github.com" > /home/ubuntu/.git-credentials
-
-          echo "DJANGO_SECRET_KEY=$SECRET_KEY_PROD" > $DEPLOY_PATH/.env
-          echo "DJANGO_DEBUG=$DEBUG" >> $DEPLOY_PATH/.env
-          echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> $DEPLOY_PATH/.env
-
-          echo "RDS_DB_NAME=" >> $DEPLOY_PATH/.env
+          echo "Installing Python dependencies..."
+          source $DEPLOY_PATH/venv/bin/activate
+          pip install -r $DEPLOY_PATH/requirements.txt
+          
+          echo "Running migrations..."
+          python $DEPLOY_PATH/manage.py migrate --noinput
+          
+          echo "Collecting static files..."
+          python $DEPLOY_PATH/manage.py collectstatic --noinput
+          
+          echo "Building Frontend..."
+          cd $DEPLOY_PATH/frontend
+          npm install
+          rm -rf build
+          npm run build
+          
+          echo "Restarting services..."
           sudo systemctl daemon-reload
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx

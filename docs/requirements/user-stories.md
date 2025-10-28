@@ -1,102 +1,102 @@
 # User Stories
 
-### US-001: Пошук паркомісця
+### US-001: Parking Spot Search
 **User Story:**  
-Як **водій**, я хочу бачити всі вільні паркомісця на карті парковки, щоб швидко знайти місце.  
+As a **driver**, I want to see all available parking spots on the map so I can quickly find a place.
 
 **Acceptance Criteria:**  
-- [ ] Після введення адреси система показує вільні місця.  
-- [ ] Вільні місця позначені зеленим кольором, а зайняті червоним.
-- [ ] Якщо вільних місць немає → система показує повідомлення “Немає доступних паркомісць” і пропонує переглянути сусідні парковки.
+- [ ] After entering the address, the system shows available spots.  
+- [ ] Free spots are marked green, occupied — red.  
+- [ ] If no spots are available → system shows “No available parking spots” and suggests nearby options.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
 ---
 
-### US-002: Онлайн-оплата
+### US-002: Online Payment
 **User Story:**  
-Як **водій**, я хочу оплатити паркування онлайн, щоб не витрачати час на касу.  
+As a **driver**, I want to pay for parking online so I don’t waste time at a cash desk.
 
 **Acceptance Criteria:**  
-- [ ] Після вибору місця доступна опція онлайн-оплати(картка/Stripe).  
-- [ ] Після підтвердження я отримую квитанцію про оплату.
-- [ ] Якщо платіж не пройшов → система показує повідомлення “Оплата не вдалася, спробуйте інший спосіб”.
+- [ ] After selecting a spot, online payment options are available (card/Stripe).  
+- [ ] Upon confirmation, I receive a payment receipt.  
+- [ ] If payment fails → system shows “Payment failed, please try another method”.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
 ---
 
-### US-003: Додавання нових паркінгів
+### US-003: Adding New Parking Lots
 **User Story:**  
-Як **адміністратор**, я хочу додавати нові паркінги, щоб система залишалась актуальною.  
+As an **administrator**, I want to add new parking lots so the system stays up-to-date.
 
 **Acceptance Criteria:**  
-- [ ] Є кнопка “Додати новий паркінг” у кабінеті адміністратора.
-- [ ] Новий паркінг з’являється на карті після підтвердження.
-- [ ] Якщо сервер недоступний → система зберігає запит і завершує додавання після відновлення.
+- [ ] “Add New Parking Lot” button available in admin panel.  
+- [ ] New parking lot appears on the map after confirmation.  
+- [ ] If server is unavailable → system queues the request and completes addition after recovery.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
 ---
 
-### US-004: Повідомлення про помилки
+### US-004: Error Notifications
 **User Story:**  
-Як **водій**, я хочу отримувати зрозумілі повідомлення про помилки, щоб швидко виправляти дії.  
+As a **driver**, I want to receive clear error messages so I can quickly fix actions.
 
 **Acceptance Criteria:**  
-- [ ] При некоректному вводі система показує повідомлення з поясненням.  
-- [ ] Повідомлення містить інструкцію, як виправити помилку.  
+- [ ] Incorrect input triggers a message with explanation.  
+- [ ] Message includes guidance on how to fix the error.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
 ---
 
-### US-005: Push-нагадування
+### US-005: Push Reminders
 **User Story:**  
-Як **водій**, я хочу отримувати push-сповіщення про завершення часу паркування, щоб уникнути штрафів.  
+As a **driver**, I want to receive push notifications before parking time ends to avoid fines.
 
 **Acceptance Criteria:**  
-- [ ] Система надсилає push- або email-сповіщення за 10 хвилин до завершення часу бронювання паркомісця. 
-- [ ] Повідомлення містить кнопку “Продовжити паркування”.
-- [ ] Якщо push сповіщення вимкнені → система надсилає email як fallback. 
+- [ ] System sends push/email notification 10 minutes before booking ends.  
+- [ ] Notification contains an “Extend Parking” button.  
+- [ ] If push is disabled → system sends email as fallback.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
 ---
 
-### US-006: Мобільний доступ
+### US-006: Mobile Access
 **User Story:**  
-Як **водій**, я хочу користуватися сервісом з телефону, щоб мати доступ будь-де.  
+As a **driver**, I want to use the service on my phone to have access anywhere.
 
 **Acceptance Criteria:**  
-- [ ] Сайт коректно відображається на мобільних пристроях(без горизонтального скролінгу).  
-- [ ] Основні кнопки доступні для кліку на сенсорному екрані (мін. 44x44 px).  
+- [ ] Site displays correctly on mobile devices (no horizontal scrolling).  
+- [ ] Main buttons are clickable on touch screens (min. 44x44 px).
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
 ---
 
-### US-007: Збереження даних
+### US-007: Data Retention
 **User Story:**  
-Як **адміністратор**, я хочу бути впевненим у збереженні даних, щоб уникнути втрати інформації.  
+As an **administrator**, I want to ensure data is safely stored to avoid information loss.
 
 **Acceptance Criteria:**  
-- [ ] Усі дані регулярно зберігаються у базі даних.  
-- [ ] Є автоматичний backup бази даних раз на добу у хмарне сховище.
-- [ ] Якщо backup не вдався → система повідомляє адміністратора і пробує повторити після відновлення доступу. 
+- [ ] All data is regularly saved in the database.  
+- [ ] Automatic daily backup to cloud storage.  
+- [ ] If backup fails → system notifies the admin and retries after recovery.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
 ---
 
-### US-008: Історія оплат
+### US-008: Transaction History
 **User Story:**  
-Як **водій**, я хочу переглядати історію оплат, щоб контролювати свої витрати.  
+As a **driver**, I want to view my payment history to track my expenses.
 
 **Acceptance Criteria:**  
-- [ ] У профілі є вкладка “Мої оплати”.  
-- [ ] Кожна оплата відображає дату, час і суму. 
-- [ ] Присутня фільтрація історії оплат за датою.
-- [ ] Якщо історія порожня → система показує повідомлення “У вас ще немає оплат”. 
+- [ ] Profile includes “My Payments” tab.  
+- [ ] Each payment shows date, time, and amount.  
+- [ ] Filter by date available.  
+- [ ] If history is empty → system shows “You have no payments yet”.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  

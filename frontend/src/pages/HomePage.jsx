@@ -22,7 +22,16 @@ function HomePage() {
         const loadData = async () => {
             try {
                 const data = await fetchParkingLots();
-                setParkings(data);
+                if (Array.isArray(data)) {
+                    setParkings(data);
+                } else {
+                    if (data && Array.isArray(data.results)) {
+                        setParkings(data.results);
+                    } else {
+                        console.warn("Не вдалося отримати масив парковок:", data);
+                        setParkings([]); 
+                    }
+                }
             } catch (err) {
                 setError('Не вдалося завантажити дані. Переконайтесь, що бекенд-сервер запущено.');
             } finally {

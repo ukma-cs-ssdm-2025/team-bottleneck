@@ -1,102 +1,117 @@
-# Командний статут
+# Team Charter
 
-## 1. Основна інформація
-- Назва команди: bottleneck
-- Учасники:
-  - Двойленко Анастасія Іванівна (GitHub: @anastasiaaq, електронна пошта НаУКМА: a.dvoilenko@ukma.edu.ua )
-  - Дерменжи Валентина Сергіївна (GitHub: @valuuusha, електронна пошта НаУКМА: v.dermenzhy@ukma.edu.ua)
-  - Пігуляк Антон Богданович (GitHub: @MaFiN1337, електронна пошта НаУКМА: a.pihuliak@ukma.edu.ua )
-  - Рахманова Вікторія Ігорівна (GitHub: @Victoria7778, електронна пошта НаУКМА: v.rakhmanova@ukma.edu.ua )
+## 1. Basic Information
 
-## 2. Ролі та відповідальності
-- Супроводжувач репозиторію (Lab1), керівник вимог (Lab2), Architecture lead (Lab3), Backend Lead (Lab4), Quality Lead (Lab 5), Test Lead (Lab 6): Дерменжи Валентина Сергіївна
-- Супроводжувач CI (Lab1) , керівник простежуваності (Lab2), Requirements-architecture mapper (Lab3), Integration Lead (Lab4), Code Reviewer (Lab 5), Integration Lead (Lab 6): Пігуляк Антон Богданович
-- Керівник документації (Lab1, Lab2, Lab3, Lab4, Lab5), Debugger (Lab 6): Рахманова Вікторія Ігорівна
-- Керівник трекера завдань (Lab1), керівник якості (Lab2), UML Lead (Lab3), Quality Lead (Lab4), Security Analyst (Lab 5), QA Planner (Lab 6): Двойленко Анастасія Іванівна
+* Team name: bottleneck
+* Members:
 
-## 3. План комунікації
-- Основний канал: Discord та мессенджер
-- Розклад зустрічей: один раз на тиждень в зазначений час в Discord (час може бути перенесений за згодою всіх учасників) + додаткові зустрічі за потребою
-- Очікування щодо відповідей: відповідь на повідомлення протягом 24 годин. Попередження про можливість довготривалої (>24 години) відсутності завчасно.
+  #### Dvoylenko Anastasia Ivanivna (GitHub: @anastasiaaq, NaUKMA email: [a.dvoilenko@ukma.edu.ua](mailto:a.dvoilenko@ukma.edu.ua))
+  #### Dermenzhy Valentina Sergiivna (GitHub: @valuuusha, NaUKMA email: [v.dermenzhy@ukma.edu.ua](mailto:v.dermenzhy@ukma.edu.ua))
+  #### Pihuliak Anton Bohdanovych (GitHub: @MaFiN1337, NaUKMA email: [a.pihuliak@ukma.edu.ua](mailto:a.pihuliak@ukma.edu.ua))
+  #### Rakhmanova Victoria Ihorivna (GitHub: @Victoria7778, NaUKMA email: [v.rakhmanova@ukma.edu.ua](mailto:v.rakhmanova@ukma.edu.ua))
 
-## 4. Співпраця та робочий процес
-- Стратегія гілкування: GitHub Flow
-- Практики комітів: очікувано 2+ коміти на тиждень, повідомлення має містити короткий опис коміту. Відповідальний за Review: Антон (GitHub: @MaFiN1337)
-- Правила огляду коду: злиття вимагають схвалення мінімум однієї людини
-- Робочий процес завдань:  відкрити → призначити (призначає issue @anastasiaaq) → працювати → PR ( тегнути @MaFiN1337, якщо PR створює Антон, він може тегнути будь кого)  → закрити  
-- Перегляд користувацьких історій: користувацькі історії узгоджуються або на спільних зустрічах і комітяться однієї людиною, або можливе додавання додаткових користувацьких історій однією людиною, за умови рецензування Керівником вимог @valuuusha, перед злиттям у гілку main треба тегнути @valuuusha
-- Перевірка нефункціональних вимог: спільна сесія огляду всіма учасниками, для кожної вимоги команда погоджує чіткі метрики та способи їх перевірки, також вони мають належати до категорій ISO 25010, має бути щонайменше одна вимірювану NFR для кожної категорії в requirements.md
-- коміт має містити лінк на задачу (issue), до якої він стосується
+## 2. Roles and Responsibilities
 
-## 5. Вирішення конфліктів
-- План вирішення конфліктів: конфлікти обговорюємо на зустрічі і вирішуємо голосуванням більшості.
+* Repository Maintainer (Lab1), Requirements Lead (Lab2), Architecture Lead (Lab3), Backend Lead (Lab4), Quality Lead (Lab5), Test Lead (Lab6): Dermenzhy Valentina Sergiivna
+* CI Maintainer (Lab1), Traceability Lead (Lab2), Requirements-Architecture Mapper (Lab3), Integration Lead (Lab4), Code Reviewer (Lab5), Integration Lead (Lab6): Pihuliak Anton Bohdanovych
+* Documentation Lead (Lab1–Lab5), Debugger (Lab6): Rakhmanova Victoria Ihorivna
+* Task Tracker Lead (Lab1), Quality Lead (Lab2), UML Lead (Lab3), Quality Lead (Lab4), Security Analyst (Lab5), QA Planner (Lab6): Dvoylenko Anastasia Ivanivna
 
+## 3. Communication Plan
 
-## 6. Доступність та робоче навантаження
-- Доступність учасників: для кожного учасника це 6 годин на тиждень.
-Робоче навантаження має бути розподілено на всіх рівномірно, в разі надмірного навантаження на когось з учасників, ця проблема обговорюється на зустрічі і частина навантаження розподіляється між іншими учасниками.
+* Primary channels: Discord and messenger
+* Meeting schedule: once a week at an agreed time on Discord (time can be rescheduled by mutual agreement) + additional meetings if needed
+* Response expectations: reply within 24 hours; notify in advance about extended absence (>24 hours)
 
-## 7. Етична та професійна поведінка
-- Спільні принципи:
- - ставитися один до одного з повагою
- - дотримуватися академічної доброчесності та кодексу АСМ
- - не плагіатити код та документацію
+## 4. Collaboration and Workflow
 
-## 8. Управління артефактами 
-- всі документи з вимогами зберігаються в каталозі /docs/requirements/ репозиторію
-- відповідальність за підтримку README.md з актуальними посиланнями - @Victoria7778
+* Branching strategy: GitHub Flow
+* Commit practices: at least 2 commits per week, commit messages must include a short description. Review responsible: Anton (GitHub: @MaFiN1337)
+* Code review rules: merges require approval from at least one team member
+* Task workflow: open → assign (assigned by @anastasiaaq) → work → PR (tag @MaFiN1337; if Anton creates PR, he can tag anyone) → close
+* User story review: stories are agreed upon in joint meetings and committed by one person, or new stories can be added by one person if reviewed by Requirements Lead @valuuusha; before merging to main, tag @valuuusha
+* Non-functional requirements verification: joint review session by all members, agree on metrics and methods for each requirement; each requirement must belong to ISO 25010 categories, at least one measurable NFR per category in requirements.md
+* Commits must include a link to the related issue
 
-## 9. Індивідуальна відповідальність 
-- Кожен учасник щотижня записує відео в Loom, де показує свій внесок в роботу, а також коротко розказує, що зробила команда загалом і як саме його внесок допоміг цьому
+## 5. Conflict Resolution
+
+* Conflicts are discussed during meetings and resolved by majority vote
+
+## 6. Availability and Workload
+
+* Member availability: 6 hours per week per member
+* Workload should be distributed evenly; excessive workload on a member is discussed and redistributed
+
+## 7. Ethical and Professional Behavior
+
+* Shared principles:
+
+  * treat each other with respect
+  * maintain academic integrity and ACM code of ethics
+  * do not plagiarize code or documentation
+
+## 8. Artifact Management
+
+* All requirements documents are stored in `/docs/requirements/`
+* Responsibility for maintaining README.md with up-to-date links: @Victoria7778
+
+## 9. Individual Accountability
+
+* Each member records a weekly Loom video showing their contribution and explaining how it helped the team
 
 ## 10. Coding Standards & Quality Policy
 
-### Code style guide
-Ми обрали **PEP 8** як основний орієнтир для Python-коду.
+### Code Style Guide
 
-#### Іменування 
-- **Функції та змінні:** `snake_case` (наприклад, `calculate_total`, `user_id`)  
-- **Класи:** `PascalCase` (наприклад, `UserProfile`)  
-- **Константи:** `UPPER_CASE` (наприклад, `MAX_RETRIES`)  
-- **Імена тестів:** починаються з `test_`  
-- **Максимальна довжина рядка:** 99 символів (узгоджено командою)  
+We follow **PEP 8** for Python code.
 
-####  Документація
-- Документація пояснює **«чому»**, а не лише **«що»**.  
-- Тримати документацію **близько до коду** .  
+#### Naming
+
+* **Functions and variables:** `snake_case` (e.g., `calculate_total`, `user_id`)
+* **Classes:** `PascalCase` (e.g., `UserProfile`)
+* **Constants:** `UPPER_CASE` (e.g., `MAX_RETRIES`)
+* **Test names:** start with `test_`
+* **Max line length:** 99 characters
+
+#### Documentation
+
+* Explain **why**, not just **what**
+* Keep documentation **close to the code**
 
 ---
 
-### Обов’язкові інструменти
-- **Статичний аналіз коду:** використовуємо `bandit` для перевірки безпеки.  
+### Mandatory Tools
+
+* **Static code analysis:** use `bandit` for security checks
 
 ---
 
 ### Peer Review
-Кожен **Pull Request** потребує принаймні одного схвалення перед злиттям.
 
-Під час огляду коду перевіряється:
-1. **Стиль і форматування:** чи код відповідає PEP 8, чи є docstring-и?  
-2. **Читабельність:** чи зрозуміла логіка? чи потрібно розбити функції?  
-3. **Повторення коду:** чи є дублювання?
-4. **Безпека:** перевірка обробки вводу, роботи з файлами, паролями, логування.  
+Each **Pull Request** requires at least one approval before merging.
+
+Code review checks:
+
+1. **Style and formatting:** PEP 8 compliance, presence of docstrings
+2. **Readability:** is the logic clear? Should functions be split?
+3. **Code duplication:** any repeated code?
+4. **Security:** input handling, file operations, passwords, logging
 
 ---
 
 ### Definition of Done (DoD)
-1. **Реалізовано функціональність** — усі вимоги з issue виконано, код працює правильно.  
-2. **Дотримано code style** — форматування відповідає узгодженому стилю, використано автоформатери.  
-3. **Код покритий тестами** — усі тести виконуються успішно, покриття не нижче мінімального рівня.  
-4. **Код пройшов peer review** — PR схвалений хоча б одним учасником, усі зауваження враховані.  
-5. **Оновлена документація** — README, docstring-и або файл `/docs/code-quality/progress.md` актуалізований.  
-6. **Issue закрито** — зміни злиті в основну гілку, завдання позначене як виконане.  
 
+1. **Functionality implemented** — all issue requirements met, code works correctly
+2. **Code style followed** — formatting follows agreed style, autoformatters used
+3. **Code covered by tests** — all tests pass, coverage above minimum
+4. **Peer review passed** — PR approved by at least one member, all comments addressed
+5. **Documentation updated** — README, docstrings, or `/docs/code-quality/progress.md` updated
+6. **Issue closed** — changes merged to main branch, issue marked as done
 
+## 11. Signatures
 
-
-## 10. Підписи
-- [x] Анастасія (GitHub: @anastasiaaq)
-- [x] Валентина (GitHub: @valuuusha)
-- [x] Антон (GitHub: @MaFiN1337)
-- [x] Вікторія (GitHub: @Victoria7778)
+* [x] Anastasia (GitHub: @anastasiaaq)
+* [x] Valentina (GitHub: @valuuusha)
+* [x] Anton (GitHub: @MaFiN1337)
+* [x] Victoria (GitHub: @Victoria7778)
 
