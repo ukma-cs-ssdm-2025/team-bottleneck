@@ -13,11 +13,11 @@
 
 ### Strengths
 
-1.  **Adherence to the pyramid and coverage:** Clear adherence to the recommended testing structure (60/30/10) and setting realistic code coverage goals.
-2.  **Focus on critical paths:** The most important paths are identified and covered at 90%.
-3.  **Inclusion of negative scenarios:** Tests for invalid data, lack of results, and invalid fields are included, demonstrating a thorough understanding of requirements.
+1.   Clear adherence to the recommended testing structure (60/30/10) and setting realistic code coverage goals.
+2.   The most important paths are identified and covered at 90%.
+3.   Tests for invalid data, lack of results, and invalid fields are included, demonstrating a thorough understanding of requirements.
 
 ### Improvement Suggestions
 
-1.  **Detail acceptance criteria:** The Expected Results for each test case need clarification. Replace generic phrases ("Shows error") with specific outcomes ("HTTP 401 response and error message 'Invalid credentials' is displayed").
-2.  **Test level optimization:** Reconsider moving costly E2E tests to the Integration level to significantly speed up your CI/CD pipeline execution
+1.  The Expected Results for each test case need clarification. Replace generic phrases ("Shows error") with specific outcomes ("HTTP 401 response and error message 'Invalid credentials' is displayed").
+2.  Reconsider moving costly E2E tests to the Integration level to significantly speed up your CI/CD pipeline execution
