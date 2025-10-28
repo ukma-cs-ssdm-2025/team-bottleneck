@@ -47,6 +47,10 @@ This project is developed for educational purposes as part of the course "Softwa
 * [debugging-log.md](docs/testing/debugging-log.md) – debugging log
 * [testing-strategy.md](docs/testing/testing-strategy.md) – testing strategy
 
+## Validation Documentation
+* [review_log.md](docs/validation/review_log.md) – Review of the Rate UKMA Test Plan
+* [test-plan.md](docs/validation/test-plan.md) – test plan overview
+  
 
 ## Local Deployment Instructions
 
