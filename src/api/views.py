@@ -1,5 +1,8 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+from django.utils import timezone
+from django.db.models import ProtectedError
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -11,7 +14,7 @@ from django.utils.dateparse import parse_datetime
 from .permissions import IsLotOperator
 from .models import ParkingLot, Spot, Booking, OperatorProfile
 from .serializers import (
-    ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer, 
+    ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer,
     BookingSerializer, BookingCreateSerializer, BookingCancelSerializer,
     UserRegistrationSerializer, UserSerializer, UserProfileUpdateSerializer,
     OperatorBookingCancelSerializer, SpotOperatorUpdateSerializer
@@ -23,13 +26,13 @@ from rest_framework.exceptions import ValidationError
 
 
 class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ParkingLot.objects.all().prefetch_related("spots").order_by('name') 
+    queryset = ParkingLot.objects.all().prefetch_related("spots").order_by('name')
     permission_classes = [AllowAny]
-    
+
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return ParkingLotDetailSerializer
-        return ParkingLotSerializer 
+        return ParkingLotSerializer
 
     @extend_schema(
         summary="List of all lots",
@@ -54,10 +57,10 @@ class ParkingLotViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SpotViewSet(mixins.ListModelMixin,
                   mixins.RetrieveModelMixin,
+                  mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
 
     serializer_class = SpotSerializer
-    permission_classes = [AllowAny]
 
     def get_queryset(self):
         lot_id = self.kwargs.get("lot_pk")
@@ -66,6 +69,13 @@ class SpotViewSet(mixins.ListModelMixin,
             get_object_or_404(ParkingLot, pk=lot_id)
             qs = qs.filter(lot_id=lot_id)
         return qs
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [AllowAny]
+        else:
+            self.permission_classes = [IsAuthenticated, IsLotOperator]
+        return super().get_permissions()
 
     @extend_schema(
         summary="List of parking spots in a parking lot",
@@ -151,7 +161,7 @@ class SpotViewSet(mixins.ListModelMixin,
         return super().list(request, *args, **kwargs)
 
     @action(detail=True, methods=["patch"], url_path="operator-update",
-        permission_classes=[IsAuthenticated, IsLotOperator])
+            permission_classes=[IsAuthenticated, IsLotOperator])
     @transaction.atomic
     def operator_update(self, request, lot_pk=None, pk=None):
         spot = self.get_object()
@@ -185,14 +195,44 @@ class SpotViewSet(mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
 
         spot = serializer.save(lot=lot, created_by=request.user)
-        spot.created_by = request.user  # 🔑 нове поле
-        spot.save(update_fields=["created_by"])
 
         response_data = serializer.data
         response_data["lot_name"] = lot.name
         return Response(response_data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(
+        summary="[Operator] Delete a parking spot",
+        description="Deletes a parking spot. Fails if the spot has any active (confirmed and future) bookings.",
+        responses={
+            204: OpenApiResponse(description="Spot deleted successfully"),
+            400: OpenApiResponse(ErrorSerializer, description="Cannot delete spot with active bookings or past booking history"),
+            403: OpenApiResponse(ErrorSerializer, description="Forbidden - Not an operator for this lot"),
+            404: OpenApiResponse(ErrorSerializer, description="Spot not found"),
+        }
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
+    def perform_destroy(self, instance):
+        active_bookings = Booking.objects.filter(
+            spot=instance,
+            status='confirmed',
+            end_at__gt=timezone.now()
+        )
+
+        if active_bookings.exists():
+            raise ValidationError(
+                {'detail': 'Cannot delete spot. There are active or future bookings associated with it.'},
+                code='active_bookings_exist'
+            )
+
+        try:
+            instance.delete()
+        except ProtectedError:
+            raise ValidationError(
+                {'detail': 'Cannot delete spot. It has a history of past bookings and is protected from deletion.'},
+                code='past_bookings_exist'
+            )
 
 class BookingViewSet(mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
@@ -376,7 +416,7 @@ class BookingViewSet(mixins.ListModelMixin,
         booking.save(update_fields=["status", "cancellation_reason"])
         PaymentService.process_refund(booking)
         return Response(BookingSerializer(booking).data)
-    
+
     @action(detail=False, methods=['get'], url_path='my-lot-bookings',
             permission_classes=[IsAuthenticated, IsLotOperator])
     def my_lot_bookings(self, request):
@@ -384,17 +424,17 @@ class BookingViewSet(mixins.ListModelMixin,
             operator_profile = request.user.operator_profile
             operator_lot_id = operator_profile.lot_id
         except OperatorProfile.DoesNotExist:
-            return Response({'detail': 'Користувач не є оператором (профіль не знайдено).'}, 
+            return Response({'detail': 'Користувач не є оператором (профіль не знайдено).'},
                             status=status.HTTP_403_FORBIDDEN)
-        
+
         if operator_lot_id is None:
-            return Response({'detail': 'За вами не закріплено жодного паркувального лоту.'}, 
+            return Response({'detail': 'За вами не закріплено жодного паркувального лоту.'},
                             status=status.HTTP_403_FORBIDDEN)
 
         queryset = self.get_queryset().filter(
             spot__lot_id=operator_lot_id
         ).order_by('start_at')
-        
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = BookingSerializer(page, many=True)
@@ -409,31 +449,31 @@ class BookingViewSet(mixins.ListModelMixin,
         self.check_object_permissions(self.request, obj)
         return obj
 
-    @action(detail=True, methods=['post'], url_path='cancel-operator', 
+    @action(detail=True, methods=['post'], url_path='cancel-operator',
             permission_classes=[IsAuthenticated, IsLotOperator])
     @transaction.atomic
     def cancel_by_operator(self, request, pk=None):
         try:
-            booking = self.get_object() 
+            booking = self.get_object()
         except Booking.DoesNotExist:
             return Response({'detail': 'Booking not found.'}, status=status.HTTP_404_NOT_FOUND)
-                
+
         if booking.status == 'cancelled':
             return Response({'detail': 'Booking is already cancelled.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         serializer = OperatorBookingCancelSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         reason = serializer.validated_data['reason']
-        
+
         refund_result = PaymentService.process_refund(booking)
-        cancellation_error = booking.check_cancellable_error() 
-        
+        cancellation_error = booking.check_cancellable_error()
+
         if cancellation_error:
             return Response(
-                {'detail': cancellation_error}, 
+                {'detail': cancellation_error},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         booking.status = 'cancelled'
         operator_reason = CancellationService.get_operator_cancellation_reason(
             operator_username=request.user.username,
@@ -441,7 +481,7 @@ class BookingViewSet(mixins.ListModelMixin,
         )
         booking.cancellation_reason = operator_reason
         booking.save(update_fields=['status', 'cancellation_reason'])
-        
+
         BookingNotificationService.send_cancellation_confirmation(booking)
 
         return Response({
@@ -456,7 +496,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
-    
+
     def get_permissions(self):
         if self.action == 'register':
             return [AllowAny()]
@@ -478,7 +518,7 @@ class UserViewSet(viewsets.GenericViewSet):
         request=UserRegistrationSerializer,
         responses={
             201: OpenApiResponse(
-                UserSerializer, 
+                UserSerializer,
                 description="User successfully created"
             ),
             400: OpenApiResponse(
@@ -495,7 +535,7 @@ class UserViewSet(viewsets.GenericViewSet):
         response_serializer = UserSerializer(user)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-    
+
     @extend_schema(
         summary="Get/Update current user profile info",
         description="GET: Returns current authenticated user details (Login check). PATCH: Updates profile data (first_name, last_name).",
@@ -508,8 +548,9 @@ class UserViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
         if request.method == 'GET':
-            return Response(self.get_serializer(request.user).data)
-        
+            user = User.objects.select_related('operator_profile').get(pk=request.user.pk)
+            return Response(self.get_serializer(user).data)
+
         elif request.method == 'PATCH':
             user = request.user
             serializer = self.get_serializer(user, data=request.data, partial=True)

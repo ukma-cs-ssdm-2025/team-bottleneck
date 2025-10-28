@@ -1,38 +1,47 @@
-
-
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // <-- Import useAuth hook
+import { useAuth } from '../../context/AuthContext';
 
 function Header() {
-    // 1. Get authentication state and functions from the context
-    const { isAuthenticated, logout } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
     const navigate = useNavigate();
 
-    // Handler for logging out
     const handleLogout = () => {
-        logout(); // Clears tokens from local storage and updates isAuthenticated to false
-        navigate('/'); // Redirect to the home/map page
+        logout();
+        navigate('/');
     };
+
+    // Check if the current user is an operator assigned to a lot
+    const isOperator = isAuthenticated && user?.is_operator && user?.lot_id;
+    const showMapButton = !isOperator;
 
     return (
         <AppBar position="static">
             <Toolbar>
                 {/* Application Title / Link to Home */}
-                <Typography 
-                    variant="h6" 
-                    component={Link} 
-                    to="/" 
+                <Typography
+                    variant="h6"
+                    component={Link}
+                    to="/"
                     sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}
                 >
                     Розумна Парковка
                 </Typography>
 
                 {/* Navigation Links */}
-                <Button color="inherit" component={Link} to="/">
-                    КАРТА
-                </Button>
+                {showMapButton && (
+                    <Button color="inherit" component={Link} to="/">
+                        КАРТА
+                    </Button>
+                )}
+
+                {/* Operator Panel Link (Only for operators) */}
+                {isOperator && (
+                    <Button color="inherit" component={Link} to="/operator">
+                        ПАНЕЛЬ ОПЕРАТОРА
+                    </Button>
+                )}
 
                 {/* Conditional rendering based on authentication status */}
                 {isAuthenticated ? (

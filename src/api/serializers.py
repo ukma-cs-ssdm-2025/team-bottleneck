@@ -7,11 +7,11 @@ from rest_framework.validators import UniqueTogetherValidator
 
 
 class SpotSerializer(serializers.ModelSerializer):
-    created_by = serializers.StringRelatedField(read_only=True)
+    created_by_username = serializers.CharField(source="created_by.username", read_only=True)
 
     class Meta:
         model = Spot
-        fields = ["id", "number", "is_ev", "is_disabled", "lot", "created_by"]
+        fields = ["id", "number", "is_ev", "is_disabled", "lot", "created_by", "created_by_username"]
         read_only_fields = ["lot", "created_by"]
 
     def get_created_by(self, obj):
@@ -35,18 +35,18 @@ class SpotSerializer(serializers.ModelSerializer):
                     }
                 )
         return attrs
-       
+
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParkingLot
         fields = ['id', 'name', 'city', 'street', 'building']
-       
+
 class ParkingLotDetailSerializer(ParkingLotSerializer):
     spots = SpotSerializer(many=True, read_only=True)
     class Meta:
         model = ParkingLot
         fields = ['id', 'name', 'city', 'street', 'building', 'spots']
-       
+
     def validate_name(self, value):
         if len(value.strip()) < 3:
             raise serializers.ValidationError("Name must contain at least 3 characters.")
@@ -79,7 +79,7 @@ class BookingSerializer(serializers.ModelSerializer):
         read_only_fields = ["status", "created_at", "user", "cancellation_reason", "payment_intent_id"]
 
 class OperatorBookingCancelSerializer(serializers.Serializer):
-    reason = serializers.CharField(max_length=255, required=True, 
+    reason = serializers.CharField(max_length=255, required=True,
                                    help_text="Причина скасування бронювання оператором.")
 
 class BookingCreateSerializer(serializers.ModelSerializer):
@@ -93,7 +93,7 @@ class BookingCancelSerializer(serializers.Serializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-   
+
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'first_name', 'last_name')
@@ -115,7 +115,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-   
+
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'first_name', 'last_name')
@@ -134,12 +134,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', '')
         )
         return user
-   
+
 class UserSerializer(serializers.ModelSerializer):
+    is_operator = serializers.SerializerMethodField()
+    lot_id = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
-        read_only_fields = ('id', 'username', 'email')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_operator', 'lot_id')
+        read_only_fields = ('id', 'username', 'email', 'is_operator', 'lot_id')
+
+    def get_is_operator(self, obj):
+        return hasattr(obj, 'operator_profile')
+
+    def get_lot_id(self, obj):
+        if hasattr(obj, 'operator_profile'):
+            return obj.operator_profile.lot_id
+        return None
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
