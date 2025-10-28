@@ -2,25 +2,38 @@ from rest_framework import permissions
 from src.api.models import OperatorProfile, Booking
 
 class IsLotOperator(permissions.BasePermission):
-    message = "You are not an operator or you lack access to this lot."
+    message = 'Ви не є оператором або не маєте прав доступу до бронювань на цьому лоті.'
 
     def has_permission(self, request, view):
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        return hasattr(user, "operator_profile")
 
-    def has_object_permission(self, request, view, obj):
         try:
-            operator_lot_id = request.user.operator_profile.lot_id
+            profile = user.operator_profile
         except OperatorProfile.DoesNotExist:
             return False
 
+        lot_pk = view.kwargs.get("lot_pk")
+        if lot_pk is not None:
+            try:
+                return profile.lot_id == int(lot_pk)
+            except (ValueError, TypeError):
+                return False
+
+        return True
+
+    def has_object_permission(self, request, view, obj):
+
         if isinstance(obj, Booking):
-            return obj.spot.lot_id == operator_lot_id
+            booking_lot_id = obj.spot.lot_id
+        else:
+            return False 
 
-        lot_id = getattr(obj, "lot_id", None)
-        if lot_id is not None:
-            return lot_id == operator_lot_id
+        try:
+            operator_profile = request.user.operator_profile
+            operator_lot_id = operator_profile.lot_id
+        except OperatorProfile.DoesNotExist:
+            return False 
 
-        return False
+        return booking_lot_id == operator_lot_id
