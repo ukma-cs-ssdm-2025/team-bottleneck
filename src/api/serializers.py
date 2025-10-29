@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ParkingLot, Spot, Booking
+from .models import ParkingLot, Spot, Booking, OperatorProfile
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 import re
@@ -53,8 +53,9 @@ class ParkingLotDetailSerializer(ParkingLotSerializer):
         return value
 
     def validate_city(self, value):
-        if not value.replace('-', '').replace(' ', '').isalpha():
-            raise serializers.ValidationError("City name must contain only letters.")
+        cleaned_value = value.replace('-', '').replace(' ', '')
+        if not cleaned_value.isalpha():
+             raise serializers.ValidationError("City name must contain only letters, spaces, or hyphens.")
         return value.title()
 
     def validate_street(self, value):
@@ -67,10 +68,6 @@ class ParkingLotDetailSerializer(ParkingLotSerializer):
             raise serializers.ValidationError("Invalid building number format.")
         return value
 
-    def validate(self, attrs):
-        if not attrs.get('city') or not attrs.get('street'):
-            raise serializers.ValidationError("City and street are required fields.")
-        return attrs
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -138,10 +135,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     is_operator = serializers.SerializerMethodField()
     lot_id = serializers.SerializerMethodField()
+    is_staff = serializers.BooleanField()
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_operator', 'lot_id')
-        read_only_fields = ('id', 'username', 'email', 'is_operator', 'lot_id')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_operator', 'lot_id', 'is_staff')
+        read_only_fields = ('id', 'username', 'email', 'is_operator', 'lot_id', 'is_staff')
 
     def get_is_operator(self, obj):
         return hasattr(obj, 'operator_profile')
@@ -170,3 +168,11 @@ class SpotOperatorUpdateSerializer(serializers.ModelSerializer):
         if "number" in self.initial_data:
             raise serializers.ValidationError({"number": "Operators cannot change the spot number."})
         return super().validate(attrs)
+
+class OperatorAssignSerializer(serializers.Serializer):
+    lot_id = serializers.IntegerField(required=True)
+
+    def validate_lot_id(self, value):
+        if not ParkingLot.objects.filter(pk=value).exists():
+            raise serializers.ValidationError("Parking lot with this ID does not exist.")
+        return value
