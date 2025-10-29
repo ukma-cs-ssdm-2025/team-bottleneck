@@ -157,3 +157,22 @@ def test_list_spots_performance(db):
 
     assert response.status_code == 200, response.data
     assert elapsed < 3
+
+@pytest.mark.django_db
+def test_delete_nonexistent_spot_returns_404():
+    client = APIClient()
+    admin = User.objects.create_user(username="admin", password="pass", is_staff=True)
+    client.force_authenticate(admin)
+    resp = client.delete("/api/v1/lots/999/spots/999/")
+    assert resp.status_code == 404
+
+def test_spot_list_loads_under_half_second(db):
+    lot = ParkingLot.objects.create(name="PerfLot", city="Kyiv", street="Main")
+    Spot.objects.bulk_create([Spot(number=f"S{i}", lot=lot) for i in range(1000)])
+    client = APIClient()
+    start = time.perf_counter()
+    resp = client.get(f"/api/v1/lots/{lot.id}/spots/")
+    elapsed = time.perf_counter() - start
+    assert resp.status_code == 200
+    assert elapsed < 0.5
+
