@@ -30,28 +30,26 @@ jobs:
         
         script: |
           set -e
-
           DEPLOY_PATH="/home/ubuntu/${{ env.PROJECT_ROOT_DIR }}"
-
           echo "Pulling latest code from main..."
           cd $DEPLOY_PATH
           git fetch origin
           git reset --hard origin/main
-
-           echo "Creating .env file with all configuration..."
-           cat > $DEPLOY_PATH/.env <<- EOF
-           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-           DJANGO_DEBUG=${{ env.DEBUG_PROD }}
-           ALLOWED_HOSTS=${{ env.ALLOWED_HOSTS_PROD }}
-           RDS_DB_NAME=${{ env.RDS_DB_NAME }}
-           RDS_USERNAME=${{ env.RDS_USERNAME }}
-           RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
-           RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
-           RDS_PORT=${{ env.RDS_PORT }}
-           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
-           STRIPE_PUBLIC_KEY=${{ env.STRIPE_PUBLIC_KEY }}
-           STRIPE_CURRENCY=${{ env.STRIPE_CURRENCY }}
-           EOF
+          
+          echo "Creating .env file with all configuration..."
+          cat > $DEPLOY_PATH/.env << 'EOF'
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_DEBUG=${{ env.DEBUG_PROD }}
+          ALLOWED_HOSTS=${{ env.ALLOWED_HOSTS_PROD }}
+          RDS_DB_NAME=${{ env.RDS_DB_NAME }}
+          RDS_USERNAME=${{ env.RDS_USERNAME }}
+          RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+          RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
+          RDS_PORT=${{ env.RDS_PORT }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PUBLIC_KEY=${{ env.STRIPE_PUBLIC_KEY }}
+          STRIPE_CURRENCY=${{ env.STRIPE_CURRENCY }}
+          EOF
           
           echo "Installing Python dependencies..."
           source $DEPLOY_PATH/venv/bin/activate
