@@ -4,6 +4,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from src.api.models import ParkingLot, Spot, Booking, OperatorProfile
 from django.utils import timezone
+import time
 
 @pytest.mark.django_db
 def test_operator_cancels_booking_and_reason_is_detailed():
@@ -140,3 +141,19 @@ def test_operator_cannot_patch_spot_from_other_lot():
 
     assert resp.status_code == status.HTTP_403_FORBIDDEN
     assert spot_other_lot.is_ev is False
+
+def test_list_spots_performance(db):
+    client = APIClient()
+    lot = ParkingLot.objects.create(
+        name="Test Lot",
+        building="Main Tower",
+        city="Kyiv"
+    )
+    Spot.objects.create(lot=lot, number="A1")
+    url = f"/api/v1/lots/{lot.id}/spots/"
+    start = time.perf_counter()
+    response = client.get(url)
+    elapsed = time.perf_counter() - start
+
+    assert response.status_code == 200, response.data
+    assert elapsed < 3
