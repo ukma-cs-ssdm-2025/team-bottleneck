@@ -175,3 +175,4 @@ def test_spot_list_loads_under_half_second(db):
     elapsed = time.perf_counter() - start
     assert resp.status_code == 200
     assert elapsed < 0.5
+

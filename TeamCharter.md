@@ -114,4 +114,3 @@ Code review checks:
 * [x] Valentina (GitHub: @valuuusha)
 * [x] Anton (GitHub: @MaFiN1337)
 * [x] Victoria (GitHub: @Victoria7778)
-
