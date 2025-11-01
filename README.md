@@ -1,5 +1,5 @@
 [![Deploy to EC2](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml/badge.svg)](https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/workflows/DeployToEC2.yml)
-![Coverage](https://raw.githubusercontent.com/ukma-cs-ssdm-2025/team-bottleneck/coverage-badge/coverage.svg)
+![Coverage](https://ukma-cs-ssdm-2025.github.io/team-bottleneck/coverage.svg)
 
 # Team Project: Smart Parking
 
