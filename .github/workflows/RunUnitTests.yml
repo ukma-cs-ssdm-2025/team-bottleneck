@@ -1,5 +1,4 @@
 name: Run API Tests
-
 on:
   push:
     branches:
@@ -15,7 +14,6 @@ on:
     paths:
       - 'src/api/**'
       - '.github/workflows/RunUnitTests.yml'
-
 jobs:
   test:
     name: Run Django API Tests
@@ -63,6 +61,14 @@ jobs:
             --junitxml=junit.xml \
             -v --tb=short
       
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
+      
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -70,7 +76,6 @@ jobs:
           name: pytest-results
           path: |
             .pytest_cache/
-            htmlcov/
             coverage.xml
             junit.xml
           retention-days: 7
