@@ -14,13 +14,17 @@ on:
     paths:
       - 'src/api/**'
       - '.github/workflows/RunUnitTests.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+  pages: write
+  id-token: write
+
 jobs:
   test:
     name: Run Django API Tests
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     
     steps:
       - name: Checkout code
@@ -92,17 +96,37 @@ jobs:
           DJANGO_DEBUG: True
       
       - name: Generate coverage badge
-        if: success() && github.event_name == 'push'
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: tj-actions/coverage-badge-py@v2
         with:
-          output: coverage.svg
+          output: htmlcov/coverage.svg
           overwrite: true
       
-      - name: Commit coverage badge to coverage-badge branch
-        if: success() && github.event_name == 'push'
-        uses: EndBug/add-and-commit@v9.1.4
+      - name: Prepare Pages deployment
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p pages
+          cp docs/index.html pages/
+          cp htmlcov/coverage.svg pages/
+          cp -r htmlcov pages/htmlcov
+      
+      - name: Upload Pages artifact
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
         with:
-          add: coverage.svg
-          message: "chore(ci): update coverage badge [skip ci]"
-          new_branch: coverage-badge
-          push: origin coverage-badge --force
+          path: pages/
+  
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: test
+    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
