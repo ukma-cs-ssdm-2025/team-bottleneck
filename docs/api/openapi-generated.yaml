@@ -1,29 +1,419 @@
-openapi: 3.0.3
+components:
+  schemas:
+    Booking:
+      properties:
+        cancellation_reason:
+          readOnly: true
+          type: string
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        end_at:
+          format: date-time
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        payment_intent_id:
+          nullable: true
+          readOnly: true
+          type: string
+        spot:
+          type: integer
+        start_at:
+          format: date-time
+          type: string
+        status:
+          readOnly: true
+          type: string
+        user:
+          nullable: true
+          readOnly: true
+          type: integer
+      required:
+      - cancellation_reason
+      - created_at
+      - end_at
+      - id
+      - payment_intent_id
+      - spot
+      - start_at
+      - status
+      - user
+      type: object
+    BookingCancel:
+      properties:
+        reason:
+          maxLength: 200
+          type: string
+      type: object
+    BookingCreate:
+      properties:
+        end_at:
+          format: date-time
+          type: string
+        spot:
+          type: integer
+        start_at:
+          format: date-time
+          type: string
+      required:
+      - end_at
+      - spot
+      - start_at
+      type: object
+    Error:
+      properties:
+        code:
+          type: string
+        detail:
+          type: string
+      required:
+      - detail
+      type: object
+    OperatorAssign:
+      properties:
+        lot_id:
+          type: integer
+      required:
+      - lot_id
+      type: object
+    OperatorBookingCancel:
+      properties:
+        reason:
+          description: "\u041F\u0440\u0438\u0447\u0438\u043D\u0430 \u0441\u043A\u0430\
+            \u0441\u0443\u0432\u0430\u043D\u043D\u044F \u0431\u0440\u043E\u043D\u044E\
+            \u0432\u0430\u043D\u043D\u044F \u043E\u043F\u0435\u0440\u0430\u0442\u043E\
+            \u0440\u043E\u043C."
+          maxLength: 255
+          type: string
+      required:
+      - reason
+      type: object
+    PaginatedBookingList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/Booking'
+          type: array
+      required:
+      - count
+      - results
+      type: object
+    PaginatedParkingLotList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/ParkingLot'
+          type: array
+      required:
+      - count
+      - results
+      type: object
+    PaginatedSpotList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/Spot'
+          type: array
+      required:
+      - count
+      - results
+      type: object
+    PaginatedUserList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/User'
+          type: array
+      required:
+      - count
+      - results
+      type: object
+    ParkingLot:
+      properties:
+        building:
+          maxLength: 20
+          nullable: true
+          type: string
+        city:
+          maxLength: 100
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        street:
+          maxLength: 150
+          type: string
+      required:
+      - city
+      - id
+      - name
+      - street
+      type: object
+    ParkingLotDetail:
+      properties:
+        building:
+          maxLength: 20
+          nullable: true
+          type: string
+        city:
+          maxLength: 100
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        spots:
+          items:
+            $ref: '#/components/schemas/Spot'
+          readOnly: true
+          type: array
+        street:
+          maxLength: 150
+          type: string
+      required:
+      - city
+      - id
+      - name
+      - spots
+      - street
+      type: object
+    PatchedParkingLotDetail:
+      properties:
+        building:
+          maxLength: 20
+          nullable: true
+          type: string
+        city:
+          maxLength: 100
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          maxLength: 100
+          type: string
+        spots:
+          items:
+            $ref: '#/components/schemas/Spot'
+          readOnly: true
+          type: array
+        street:
+          maxLength: 150
+          type: string
+      type: object
+    PatchedSpotOperatorUpdate:
+      description: "Serializer for operators \u2014 restricts updates to allowed fields."
+      properties:
+        is_disabled:
+          type: boolean
+        is_ev:
+          type: boolean
+      type: object
+    PatchedUserProfileUpdate:
+      properties:
+        first_name:
+          maxLength: 150
+          type: string
+        last_name:
+          maxLength: 150
+          type: string
+      type: object
+    Spot:
+      properties:
+        created_by:
+          nullable: true
+          readOnly: true
+          type: integer
+        created_by_username:
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        is_disabled:
+          type: boolean
+        is_ev:
+          type: boolean
+        lot:
+          readOnly: true
+          type: integer
+        number:
+          maxLength: 10
+          type: string
+      required:
+      - created_by
+      - created_by_username
+      - id
+      - lot
+      - number
+      type: object
+    SpotOperatorUpdate:
+      description: "Serializer for operators \u2014 restricts updates to allowed fields."
+      properties:
+        is_disabled:
+          type: boolean
+        is_ev:
+          type: boolean
+      type: object
+    User:
+      properties:
+        email:
+          format: email
+          readOnly: true
+          title: Email address
+          type: string
+        first_name:
+          maxLength: 150
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        is_operator:
+          readOnly: true
+          type: string
+        is_staff:
+          type: boolean
+        last_name:
+          maxLength: 150
+          type: string
+        lot_id:
+          readOnly: true
+          type: string
+        username:
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+          type: string
+      required:
+      - email
+      - id
+      - is_operator
+      - is_staff
+      - lot_id
+      - username
+      type: object
+    UserRegistration:
+      properties:
+        email:
+          format: email
+          maxLength: 254
+          title: Email address
+          type: string
+        first_name:
+          maxLength: 150
+          type: string
+        last_name:
+          maxLength: 150
+          type: string
+        password:
+          type: string
+          writeOnly: true
+        username:
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          maxLength: 150
+          pattern: ^[\w.@+-]+$
+          type: string
+      required:
+      - email
+      - password
+      - username
+      type: object
+  securitySchemes:
+    basicAuth:
+      scheme: basic
+      type: http
+    cookieAuth:
+      in: cookie
+      name: sessionid
+      type: apiKey
 info:
+  description: Search lots/spots, book & cancel.
   title: Smart Parking API
   version: 0.1.0
-  description: Search lots/spots, book & cancel.
+openapi: 3.0.3
 paths:
   /api/schema/:
     get:
-      operationId: schema_retrieve
-      description: |-
-        OpenApi3 schema for this API. Format can be selected via content negotiation.
+      description: 'OpenApi3 schema for this API. Format can be selected via content
+        negotiation.
+
 
         - YAML: application/vnd.oai.openapi
-        - JSON: application/vnd.oai.openapi+json
+
+        - JSON: application/vnd.oai.openapi+json'
+      operationId: api_schema_retrieve
       parameters:
       - in: query
         name: format
         schema:
-          type: string
           enum:
           - json
           - yaml
+          type: string
       - in: query
         name: lang
         schema:
-          type: string
           enum:
           - af
           - ar
@@ -124,57 +514,52 @@ paths:
           - vi
           - zh-hans
           - zh-hant
-      tags:
-      - schema
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties: {}
+                type: object
+            application/vnd.oai.openapi:
+              schema:
+                additionalProperties: {}
+                type: object
+            application/vnd.oai.openapi+json:
+              schema:
+                additionalProperties: {}
+                type: object
+            application/yaml:
+              schema:
+                additionalProperties: {}
+                type: object
+          description: ''
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
-      responses:
-        '200':
-          content:
-            application/vnd.oai.openapi:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/yaml:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/vnd.oai.openapi+json:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
+      tags:
+      - api
   /api/v1/bookings/:
     get:
-      operationId: v1_bookings_list
-      description: Returns a list of all bookings for the current user (/api/v1/bookings/).
-      summary: My bookings
+      description: Returns a list of all bookings for the *current authenticated user*.
+      operationId: api_v1_bookings_list
       parameters:
-      - name: page
-        required: false
+      - description: A page number within the paginated result set.
         in: query
-        description: A page number within the paginated result set.
+        name: page
+        required: false
         schema:
           type: integer
-      - in: query
+      - description: Filter by booking status
+        in: query
         name: status
         schema:
-          type: string
           enum:
           - cancelled
           - confirmed
-        description: Filter by booking status
-      tags:
-      - v1
-      security:
-      - cookieAuth: []
-      - basicAuth: []
+          type: string
       responses:
         '200':
           content:
@@ -188,23 +573,117 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Authentication required
-  /api/v1/bookings/{id}/:
-    get:
-      operationId: v1_bookings_retrieve
-      description: Returns detailed information about a specific user booking (/api/v1/bookings/{id}/).
-      summary: Booking details
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this booking.
-        required: true
-      tags:
-      - v1
       security:
       - cookieAuth: []
       - basicAuth: []
+      summary: '[Client] List my bookings'
+      tags:
+      - api
+  /api/v1/bookings/create/:
+    post:
+      description: Creates a new parking spot booking. A mock payment process is initiated
+        upon creation.
+      operationId: api_v1_bookings_create_create
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ValidRequest:
+                summary: Valid request
+                value:
+                  end_at: '2025-10-15T12:00:00Z'
+                  spot: 10
+                  start_at: '2025-10-15T10:00:00Z'
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              examples:
+                ValidRequest:
+                  summary: Valid request
+                  value:
+                    end_at: '2025-10-15T12:00:00Z'
+                    spot: 10
+                    start_at: '2025-10-15T10:00:00Z'
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid time range or data
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Authentication required
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: The spot is already booked for this period
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Client] Create a new booking'
+      tags:
+      - api
+  /api/v1/bookings/my-lot-bookings/:
+    get:
+      description: Returns a list of all bookings for the parking lot *assigned to
+        the authenticated operator*.
+      operationId: api_v1_bookings_my_lot_bookings_list
+      parameters:
+      - description: A page number within the paginated result set.
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookingList'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - You are not an operator or not assigned to a lot
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Operator] List bookings for my lot'
+      tags:
+      - api
+  /api/v1/bookings/{id}/:
+    get:
+      description: Returns detailed information about a specific booking belonging
+        to the *current user*.
+      operationId: api_v1_bookings_retrieve
+      parameters:
+      - description: A unique integer value identifying this booking.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
           content:
@@ -212,63 +691,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/Booking'
           description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Booking not found or belongs to another user
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Authentication required
-  /api/v1/bookings/{id}/cancel/:
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Booking not found or belongs to another user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Client] Get booking details'
+      tags:
+      - api
+  /api/v1/bookings/{id}/cancel-operator/:
     post:
-      operationId: v1_bookings_cancel_create
-      description: Cancels an existing user booking. A mock refund process is triggered.
-        (/api/v1/bookings/{id}/cancel/)
-      summary: Cancel a booking
+      description: Allows an operator to cancel *any* booking within their assigned
+        lot. Requires a reason.
+      operationId: api_v1_bookings_cancel_operator_create
       parameters:
-      - in: path
+      - description: A unique integer value identifying this booking.
+        in: path
         name: id
+        required: true
         schema:
           type: integer
-        description: A unique integer value identifying this booking.
-        required: true
-      tags:
-      - v1
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookingCancel'
-            examples:
-              ValidRequest:
-                value:
-                  reason: Changed plans
-                summary: Valid request
+              $ref: '#/components/schemas/OperatorBookingCancel'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/BookingCancel'
+              $ref: '#/components/schemas/OperatorBookingCancel'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BookingCancel'
-      security:
-      - cookieAuth: []
-      - basicAuth: []
+              $ref: '#/components/schemas/OperatorBookingCancel'
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Booking'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Booking already cancelled or completed
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - You do not have permission for this booking's lot
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Booking not found
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Operator] Cancel a booking in my lot'
+      tags:
+      - api
+  /api/v1/bookings/{id}/cancel/:
+    post:
+      description: Cancels an existing booking *belonging to the current user*. A
+        mock refund is triggered.
+      operationId: api_v1_bookings_cancel_create
+      parameters:
+      - description: A unique integer value identifying this booking.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            examples:
+              ValidRequest:
+                summary: Valid request
+                value:
+                  reason: Changed plans
+            schema:
+              $ref: '#/components/schemas/BookingCancel'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingCancel'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingCancel'
+      responses:
+        '200':
+          content:
+            application/json:
               examples:
                 ValidRequest:
+                  summary: Valid request
                   value:
                     reason: Changed plans
-                  summary: Valid request
+              schema:
+                $ref: '#/components/schemas/Booking'
           description: ''
         '400':
           content:
@@ -288,149 +822,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Booking not found or belongs to another user
-  /api/v1/bookings/{id}/cancel-operator/:
-    post:
-      operationId: v1_bookings_cancel_operator_create
-      description: |-
-        - GET /api/v1/bookings/
-        - GET /api/v1/bookings/{id}/
-        - POST /api/v1/bookings/create/
-        - POST /api/v1/bookings/{id}/cancel/
-        - GET /api/v1/bookings/my-lot-bookings/
-        - POST /api/v1/bookings/{id}/cancel-operator/
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this booking.
-        required: true
-      tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Booking'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Booking'
-        required: true
       security:
       - cookieAuth: []
       - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Booking'
-          description: ''
-  /api/v1/bookings/create/:
-    post:
-      operationId: v1_bookings_create_create
-      description: Creates a new parking spot booking. After successful creation,
-        a mock Stripe payment process is initiated. (/api/v1/bookings/create/)
-      summary: Create a booking
+      summary: '[Client] Cancel my booking'
       tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BookingCreate'
-            examples:
-              ValidRequest:
-                value:
-                  spot: 10
-                  start_at: '2025-10-15T10:00:00Z'
-                  end_at: '2025-10-15T12:00:00Z'
-                summary: Valid request
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/BookingCreate'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/BookingCreate'
-        required: true
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Booking'
-              examples:
-                ValidRequest:
-                  value:
-                    spot: 10
-                    start_at: '2025-10-15T10:00:00Z'
-                    end_at: '2025-10-15T12:00:00Z'
-                  summary: Valid request
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Invalid time range or data
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Authentication required
-        '409':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: The spot is already booked for the selected period
-  /api/v1/bookings/my-lot-bookings/:
-    get:
-      operationId: v1_bookings_my_lot_bookings_retrieve
-      description: |-
-        - GET /api/v1/bookings/
-        - GET /api/v1/bookings/{id}/
-        - POST /api/v1/bookings/create/
-        - POST /api/v1/bookings/{id}/cancel/
-        - GET /api/v1/bookings/my-lot-bookings/
-        - POST /api/v1/bookings/{id}/cancel-operator/
-      tags:
-      - v1
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Booking'
-          description: ''
+      - api
   /api/v1/lots/:
     get:
-      operationId: v1_lots_list
       description: Return list of all available lots with base info (/api/v1/lots/).
-      summary: List of all lots
+      operationId: api_v1_lots_list
       parameters:
-      - name: page
-        required: false
+      - description: A page number within the paginated result set.
         in: query
-        description: A page number within the paginated result set.
+        name: page
+        required: false
         schema:
           type: integer
-      tags:
-      - v1
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -438,50 +846,194 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedParkingLotList'
           description: ''
-  /api/v1/lots/{lot_pk}/spots/:
-    get:
-      operationId: v1_lots_spots_list
-      description: List of all parking spots in a specific parking lot. You can filter
-        by type (EV, for disabled) and availability.
-      summary: List of parking spots in a parking lot
-      parameters:
-      - in: query
-        name: available_from
-        schema:
-          type: string
-        description: ISO datetime - show only available spots from this time
-      - in: query
-        name: available_to
-        schema:
-          type: string
-        description: ISO datetime - show only available spots until this time
-      - in: query
-        name: is_disabled
-        schema:
-          type: boolean
-        description: 'Filter: spots for people with disabilities (true/false)'
-      - in: query
-        name: is_ev
-        schema:
-          type: boolean
-        description: 'Filter: spots with EV charging (true/false)'
-      - in: path
-        name: lot_pk
-        schema:
-          type: integer
-        required: true
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      tags:
-      - v1
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
+      summary: List of all lots
+      tags:
+      - api
+    post:
+      operationId: api_v1_lots_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingLotDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParkingLotDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParkingLotDetail'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLotDetail'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Create a new lot'
+      tags:
+      - api
+  /api/v1/lots/{id}/:
+    delete:
+      operationId: api_v1_lots_destroy
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No response body
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Delete a lot'
+      tags:
+      - api
+    get:
+      description: Returns detailed information about a specific parking lot, including
+        a list of parking spots (/api/v1/lots/{id}/).
+      operationId: api_v1_lots_retrieve
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLotDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Lot not found
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Detailed info about lot
+      tags:
+      - api
+    patch:
+      operationId: api_v1_lots_partial_update
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingLotDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingLotDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParkingLotDetail'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLotDetail'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Partially update a lot'
+      tags:
+      - api
+    put:
+      operationId: api_v1_lots_update
+      parameters:
+      - description: A unique integer value identifying this parking lot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingLotDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParkingLotDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParkingLotDetail'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLotDetail'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Update a lot'
+      tags:
+      - api
+  /api/v1/lots/{lot_pk}/spots/:
+    get:
+      description: List of all parking spots in a specific parking lot. You can filter
+        by type (EV, for disabled) and availability.
+      operationId: api_v1_lots_spots_list
+      parameters:
+      - description: ISO datetime - show only available spots from this time
+        in: query
+        name: available_from
+        schema:
+          type: string
+      - description: ISO datetime - show only available spots until this time
+        in: query
+        name: available_to
+        schema:
+          type: string
+      - description: 'Filter: spots for people with disabilities (true/false)'
+        in: query
+        name: is_disabled
+        schema:
+          type: boolean
+      - description: 'Filter: spots with EV charging (true/false)'
+        in: query
+        name: is_ev
+        schema:
+          type: boolean
+      - in: path
+        name: lot_pk
+        required: true
+        schema:
+          type: integer
+      - description: A page number within the paginated result set.
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
       responses:
         '200':
           content:
@@ -501,83 +1053,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Parking lot not found
-  /api/v1/lots/{lot_pk}/spots/{id}/:
-    get:
-      operationId: v1_lots_spots_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this spot.
-        required: true
-      - in: path
-        name: lot_pk
-        schema:
-          type: integer
-        required: true
-      tags:
-      - v1
       security:
       - cookieAuth: []
       - basicAuth: []
       - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Spot'
-          description: ''
-  /api/v1/lots/{lot_pk}/spots/{id}/operator-update/:
-    patch:
-      operationId: v1_lots_spots_operator_update_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this spot.
-        required: true
-      - in: path
-        name: lot_pk
-        schema:
-          type: integer
-        required: true
+      summary: List of parking spots in a lot
       tags:
-      - v1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedSpot'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedSpot'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedSpot'
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Spot'
-          description: ''
+      - api
   /api/v1/lots/{lot_pk}/spots/create/:
     post:
-      operationId: v1_lots_spots_create_create
+      description: Allows an operator to create a new parking spot within their assigned
+        lot.
+      operationId: api_v1_lots_spots_create_create
       parameters:
       - in: path
         name: lot_pk
+        required: true
         schema:
           type: integer
-        required: true
-      tags:
-      - v1
       requestBody:
         content:
           application/json:
@@ -590,59 +1083,190 @@ paths:
             schema:
               $ref: '#/components/schemas/Spot'
         required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spot'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Validation Error (e.g., duplicate number)
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Not an operator for this lot
       security:
       - cookieAuth: []
       - basicAuth: []
+      summary: '[Operator] Create a new spot'
+      tags:
+      - api
+  /api/v1/lots/{lot_pk}/spots/{id}/:
+    delete:
+      description: Deletes a parking spot. Fails if the spot has any active (confirmed
+        and future) bookings or protected past bookings.
+      operationId: api_v1_lots_spots_destroy
+      parameters:
+      - description: A unique integer value identifying this spot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: lot_pk
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Spot deleted successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Cannot delete spot with active/past bookings
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Not an operator for this lot
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Spot not found
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Operator] Delete a parking spot'
+      tags:
+      - api
+    get:
+      description: Returns detailed information for a single parking spot.
+      operationId: api_v1_lots_spots_retrieve
+      parameters:
+      - description: A unique integer value identifying this spot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: lot_pk
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Spot'
-          description: ''
-  /api/v1/lots/{id}/:
-    get:
-      operationId: v1_lots_retrieve
-      description: Returns detailed information about a specific parking lot, including
-        a list of parking spots (/api/v1/lots/{id}/).
-      summary: Detailed info about lot (free spots/services)
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this parking lot.
-        required: true
-      tags:
-      - v1
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ParkingLotDetail'
           description: ''
         '404':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Lot not found
-  /api/v1/users/me/:
-    get:
-      operationId: v1_users_me_retrieve
-      description: 'GET: Returns current authenticated user details (Login check).
-        PATCH: Updates profile data (first_name, last_name).'
-      summary: Get/Update current user profile info
-      tags:
-      - v1
+          description: Spot not found or Lot not found
       security:
       - cookieAuth: []
       - basicAuth: []
+      - {}
+      summary: Get parking spot details
+      tags:
+      - api
+  /api/v1/lots/{lot_pk}/spots/{id}/operator-update/:
+    patch:
+      description: Allows an operator to update limited fields of a spot (e.g., 'is_ev',
+        'is_disabled').
+      operationId: api_v1_lots_spots_operator_update_partial_update
+      parameters:
+      - description: A unique integer value identifying this spot.
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: lot_pk
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSpotOperatorUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSpotOperatorUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSpotOperatorUpdate'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpotOperatorUpdate'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Validation Error (e.g., trying to change number)
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Not an operator for this lot
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Operator] Update spot properties'
+      tags:
+      - api
+  /api/v1/users/:
+    get:
+      operationId: api_v1_users_list
+      parameters:
+      - description: A page number within the paginated result set.
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      tags:
+      - api
+  /api/v1/users/me/:
+    get:
+      description: 'GET: Returns current user details (and checks if they are an operator).
+        PATCH: Updates profile data (first_name, last_name).'
+      operationId: api_v1_users_me_retrieve
       responses:
         '200':
           content:
@@ -656,13 +1280,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Authentication required
-    patch:
-      operationId: v1_users_me_partial_update
-      description: 'GET: Returns current authenticated user details (Login check).
-        PATCH: Updates profile data (first_name, last_name).'
-      summary: Get/Update current user profile info
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: Get/Update current user profile
       tags:
-      - v1
+      - api
+    patch:
+      description: 'GET: Returns current user details (and checks if they are an operator).
+        PATCH: Updates profile data (first_name, last_name).'
+      operationId: api_v1_users_me_partial_update
       requestBody:
         content:
           application/json:
@@ -674,9 +1301,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedUserProfileUpdate'
-      security:
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -690,14 +1314,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
           description: Authentication required
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: Get/Update current user profile
+      tags:
+      - api
   /api/v1/users/register/:
     post:
-      operationId: v1_users_register_create
-      description: Creates a new user account with hashing the password. After registration,
-        the user can use Basic Auth to log in.
-      summary: Registration of a new user
-      tags:
-      - v1
+      description: Creates a new user account. After registration, the user can log
+        in.
+      operationId: api_v1_users_register_create
       requestBody:
         content:
           application/json:
@@ -710,10 +1337,6 @@ paths:
             schema:
               $ref: '#/components/schemas/UserRegistration'
         required: true
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
       responses:
         '201':
           content:
@@ -726,323 +1349,206 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Validation error (e.g., username already exists, weak password)
-components:
-  schemas:
-    Booking:
-      type: object
-      properties:
-        id:
+          description: Validation error (e.g., username exists, weak password)
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      summary: Register a new user
+      tags:
+      - api
+  /api/v1/users/{id}/:
+    get:
+      description: Returns details for a specific user by ID.
+      operationId: api_v1_users_retrieve
+      parameters:
+      - description: A unique integer value identifying this user.
+        in: path
+        name: id
+        required: true
+        schema:
           type: integer
-          readOnly: true
-        user:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Get any user details'
+      tags:
+      - api
+  /api/v1/users/{id}/make-admin/:
+    post:
+      description: Grants staff privileges to a user (user.is_staff = True).
+      operationId: api_v1_users_make_admin_create
+      parameters:
+      - description: A unique integer value identifying this user.
+        in: path
+        name: id
+        required: true
+        schema:
           type: integer
-          readOnly: true
-          nullable: true
-        spot:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Make a user an Admin'
+      tags:
+      - api
+  /api/v1/users/{id}/make-operator/:
+    post:
+      description: Assigns a user to manage a specific lot. Replaces existing assignment.
+      operationId: api_v1_users_make_operator_create
+      parameters:
+      - description: A unique integer value identifying this user.
+        in: path
+        name: id
+        required: true
+        schema:
           type: integer
-        start_at:
-          type: string
-          format: date-time
-        end_at:
-          type: string
-          format: date-time
-        status:
-          type: string
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        cancellation_reason:
-          type: string
-          readOnly: true
-        payment_intent_id:
-          type: string
-          readOnly: true
-          nullable: true
-      required:
-      - cancellation_reason
-      - created_at
-      - end_at
-      - id
-      - payment_intent_id
-      - spot
-      - start_at
-      - status
-      - user
-    BookingCancel:
-      type: object
-      properties:
-        reason:
-          type: string
-          maxLength: 200
-    BookingCreate:
-      type: object
-      properties:
-        spot:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorAssign'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OperatorAssign'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OperatorAssign'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Assign a user as Lot Operator'
+      tags:
+      - api
+  /api/v1/users/{id}/remove-admin/:
+    delete:
+      description: Revokes staff privileges from a user (user.is_staff = False).
+      operationId: api_v1_users_remove_admin_destroy
+      parameters:
+      - description: A unique integer value identifying this user.
+        in: path
+        name: id
+        required: true
+        schema:
           type: integer
-        start_at:
-          type: string
-          format: date-time
-        end_at:
-          type: string
-          format: date-time
-      required:
-      - end_at
-      - spot
-      - start_at
-    Error:
-      type: object
-      properties:
-        detail:
-          type: string
-        code:
-          type: string
-      required:
-      - detail
-    PaginatedBookingList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Remove Admin role'
+      tags:
+      - api
+  /api/v1/users/{id}/remove-operator/:
+    delete:
+      description: Removes the operator profile from a user, revoking their operator
+        access.
+      operationId: api_v1_users_remove_operator_destroy
+      parameters:
+      - description: A unique integer value identifying this user.
+        in: path
+        name: id
+        required: true
+        schema:
           type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Booking'
-    PaginatedParkingLotList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/ParkingLot'
-    PaginatedSpotList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Spot'
-    ParkingLot:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 100
-        city:
-          type: string
-          maxLength: 100
-        street:
-          type: string
-          maxLength: 150
-        building:
-          type: string
-          nullable: true
-          maxLength: 20
-      required:
-      - city
-      - id
-      - name
-      - street
-    ParkingLotDetail:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 100
-        city:
-          type: string
-          maxLength: 100
-        street:
-          type: string
-          maxLength: 150
-        building:
-          type: string
-          nullable: true
-          maxLength: 20
-        spots:
-          type: array
-          items:
-            $ref: '#/components/schemas/Spot'
-          readOnly: true
-      required:
-      - city
-      - id
-      - name
-      - spots
-      - street
-    PatchedSpot:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        number:
-          type: string
-          maxLength: 10
-        is_ev:
-          type: boolean
-        is_disabled:
-          type: boolean
-        lot:
-          type: integer
-          readOnly: true
-        created_by:
-          type: integer
-          readOnly: true
-          nullable: true
-        created_by_username:
-          type: string
-          readOnly: true
-    PatchedUserProfileUpdate:
-      type: object
-      properties:
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-    Spot:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        number:
-          type: string
-          maxLength: 10
-        is_ev:
-          type: boolean
-        is_disabled:
-          type: boolean
-        lot:
-          type: integer
-          readOnly: true
-        created_by:
-          type: integer
-          readOnly: true
-          nullable: true
-        created_by_username:
-          type: string
-          readOnly: true
-      required:
-      - created_by
-      - created_by_username
-      - id
-      - lot
-      - number
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        username:
-          type: string
-          readOnly: true
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-        email:
-          type: string
-          format: email
-          readOnly: true
-          title: Email address
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-      required:
-      - email
-      - id
-      - username
-    UserRegistration:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        email:
-          type: string
-          format: email
-          title: Email address
-          maxLength: 254
-        password:
-          type: string
-          writeOnly: true
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-      required:
-      - email
-      - password
-      - username
-  securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: sessionid
+      responses:
+        '204':
+          description: Role removed
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      summary: '[Admin] Remove Operator role'
+      tags:
+      - api

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios'; // Потрібен для відновлення сесії
+import axios from 'axios';
 import { API_BASE_URL } from '../constants/apiConfig';
 
 // 1. Create the Context object
@@ -14,10 +14,10 @@ const getAuthStatus = () => {
 const fetchUserProfile = async (username, password) => {
     if (!username || !password) return null;
     try {
-        const encodedCredentials = btoa(`${username}:${password}`);
-        const response = await axios.get(`${API_BASE_URL}/users/me/`, {
+        const encodedCredentials = btoa(`${username}:${password}`); // ⭐ ВИПРАВЛЕНО: Бектіки
+        const response = await axios.get(`${API_BASE_URL}/users/me/`, { // ⭐ ВИПРАВЛЕНО: Бектіки
             headers: {
-                Authorization: `Basic ${encodedCredentials}`,
+                Authorization: `Basic ${encodedCredentials}`, // ⭐ ВИПРАВЛЕНО: Бектіки
             },
         });
         return response.data;
@@ -84,6 +84,12 @@ export const AuthProvider = ({ children }) => {
         password: localStorage.getItem('authPassword')
     });
 
+    // 1. Адміністратор: is_staff = True
+    const isAdmin = user?.is_staff === true; 
+    
+    // 2. Оператор: повинен мати профіль оператора І НЕ БУТИ Адміном
+    const isOperator = !isAdmin && !!(user?.operator_profile && user.operator_profile.lot_id); 
+
     return (
         <AuthContext.Provider value={{
             isAuthenticated,
@@ -93,6 +99,8 @@ export const AuthProvider = ({ children }) => {
             getCredentials,
             updateUser,
             loading,
+            isAdmin,
+            isOperator,
         }}>
             {children}
         </AuthContext.Provider>
