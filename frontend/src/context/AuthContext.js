@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import { API_BASE_URL } from '../constants/apiConfig';
 
@@ -14,10 +15,10 @@ const getAuthStatus = () => {
 const fetchUserProfile = async (username, password) => {
     if (!username || !password) return null;
     try {
-        const encodedCredentials = btoa(`${username}:${password}`); // ⭐ ВИПРАВЛЕНО: Бектіки
-        const response = await axios.get(`${API_BASE_URL}/users/me/`, { // ⭐ ВИПРАВЛЕНО: Бектіки
+        const encodedCredentials = btoa(`${username}:${password}`);
+        const response = await axios.get(`${API_BASE_URL}/users/me/`, {
             headers: {
-                Authorization: `Basic ${encodedCredentials}`, // ⭐ ВИПРАВЛЕНО: Бектіки
+                Authorization: `Basic ${encodedCredentials}`,
             },
         });
         return response.data;
@@ -56,56 +57,69 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
 
-    // Function to handle successful login
-    const login = (username, password, userData) => {
+    const login = useCallback((username, password, userData) => {
         localStorage.setItem('authUsername', username);
         localStorage.setItem('authPassword', password);
         setUser(userData);
         setIsAuthenticated(true);
-    };
+    }, []);
 
-    // Function to handle logout
-    const logout = () => {
+    const logout = useCallback(() => {
         localStorage.removeItem('authUsername');
         localStorage.removeItem('authPassword');
         setUser(null);
         setIsAuthenticated(false);
-    };
+    }, []);
 
-    const updateUser = (newUserData) => {
+    const updateUser = useCallback((newUserData) => {
         setUser(prevUser => ({
             ...prevUser,
             ...newUserData
         }));
-    };
+    }, []);
 
-    const getCredentials = () => ({
+    const getCredentials = useCallback(() => ({
         username: localStorage.getItem('authUsername'),
         password: localStorage.getItem('authPassword')
-    });
+    }), []);
 
-    // 1. Адміністратор: is_staff = True
-    const isAdmin = user?.is_staff === true; 
-    
-    // 2. Оператор: повинен мати профіль оператора І НЕ БУТИ Адміном
-    const isOperator = !isAdmin && !!(user?.operator_profile && user.operator_profile.lot_id); 
+    const isAdmin = user?.is_staff === true;
+
+    const isOperator = !isAdmin && !!(user?.operator_profile && user.operator_profile.lot_id);
+
+    const value = useMemo(() => ({
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        getCredentials,
+        updateUser,
+        loading,
+        isAdmin,
+        isOperator,
+    }), [
+        isAuthenticated,
+        user,
+        loading,
+        isAdmin,
+        isOperator,
+        login,
+        logout,
+        getCredentials,
+        updateUser
+    ]);
 
     return (
-        <AuthContext.Provider value={{
-            isAuthenticated,
-            user,
-            login,
-            logout,
-            getCredentials,
-            updateUser,
-            loading,
-            isAdmin,
-            isOperator,
-        }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
 };
+
+AuthProvider.propTypes = {
+    children: PropTypes.node.isRequired,
+};
+
 
 // 3. Custom Hook for easier access to AuthContext values
 export const useAuth = () => {

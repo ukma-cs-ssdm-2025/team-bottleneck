@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // 1. ІМПОРТУЄМО useCallback
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import {
     Typography, Container, Button, Grid, CircularProgress, Alert,
@@ -16,11 +16,11 @@ function SpotSelectionPage() {
     const [spots, setSpots] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+
     const [filterEv, setFilterEv] = useState(false);
     const [filterDisabled, setFilterDisabled] = useState(false);
 
-    const loadSpots = async () => {
+    const loadSpots = useCallback(async () => {
         if (!startTime || !endTime) {
             setError("Помилка: Не вказано час бронювання. Поверніться і оберіть час.");
             setLoading(false);
@@ -31,52 +31,51 @@ function SpotSelectionPage() {
         setError(null);
         try {
             const data = await fetchAvailableSpots(lotId, startTime, endTime);
-            
-            
+
             const spotsList = data.results && Array.isArray(data.results) ? data.results : [];
-            setSpots(spotsList); 
+            setSpots(spotsList);
         } catch (err) {
-            setError('Не вдалося завантажити доступні місця. Перевірте підключення до бекенду.');
+            console.error('Failed to load available spots:', err);
+            const errorMessage = err.response?.data?.detail || 'Не вдалося завантажити доступні місця. Перевірте підключення.';
+            setError(errorMessage);
             setSpots([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [lotId, startTime, endTime]);
 
     useEffect(() => {
         loadSpots();
-    }, [lotId, startTime, endTime]); 
+    }, [loadSpots]);
 
-    const spotsToFilter = Array.isArray(spots) ? spots : []; 
-    
+    const spotsToFilter = Array.isArray(spots) ? spots : [];
+
     const filteredSpots = spotsToFilter.filter(spot => {
-        // Фільтри використовують коректні назви полів: is_ev, is_disabled
         if (filterEv && !spot.is_ev) return false;
         if (filterDisabled && !spot.is_disabled) return false;
         return true;
     });
 
     const handleSelectSpot = (spot) => {
-        // ЗАЛИШАЄМО заглушку 50 тут, оскільки це необхідно для переходу до сторінки створення бронювання
-        const price = 50; 
-        
-        navigate('/booking/create', { 
-            state: { 
-                spotId: spot.id, 
-                spotNumber: spot.number, 
-                price: price, // Використовуємо заглушку
-                lotName, 
-                startTime, 
-                endTime, 
-                lotId 
-            } 
+        const price = 50;
+
+        navigate('/booking/create', {
+            state: {
+                spotId: spot.id,
+                spotNumber: spot.number,
+                price: price,
+                lotName,
+                startTime,
+                endTime,
+                lotId
+            }
         });
     };
 
     if (loading) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Box>;
     }
-    
+
     if (error) {
         return (
             <Container sx={{ mt: 4 }}>
@@ -87,8 +86,12 @@ function SpotSelectionPage() {
     }
 
     if (!startTime || !endTime) {
-         // ... (код для повернення до вибору часу)
-         return null;
+        return (
+            <Container sx={{ mt: 4 }}>
+                <Alert severity="warning">Не вказано час бронювання.</Alert>
+                <Button onClick={() => navigate(`/lots/${lotId}`)} sx={{ mt: 2 }} variant="outlined">Повернутися до вибору часу</Button>
+            </Container>
+        );
     }
 
     return (
@@ -111,16 +114,16 @@ function SpotSelectionPage() {
                             <Card variant="outlined" sx={{ '&:hover': { boxShadow: 3 } }}>
                                 <CardContent>
                                     <Typography variant="h5">Місце #{spot.number}</Typography>
-                                    
-                                
+
+
                                     <Box sx={{ mt: 1 }}>
                                         {spot.is_ev && <span style={{ marginRight: 8 }}>⚡ EV</span>}
                                         {spot.is_disabled && <span style={{ marginRight: 8 }}>♿ Disabled</span>}
                                     </Box>
-                                    <Button 
-                                        variant="contained" 
-                                        color="success" 
-                                        fullWidth 
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        fullWidth
                                         sx={{ mt: 2 }}
                                         onClick={() => handleSelectSpot(spot)}
                                     >
