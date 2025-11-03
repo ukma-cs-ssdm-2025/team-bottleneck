@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import {
     Typography, Container, Alert, Box, Card, CardContent,
     Button, CircularProgress, Grid, Dialog, DialogTitle,
-    DialogContent, DialogActions, TextField, Divider, IconButton
+    DialogContent, DialogActions, TextField, Divider
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     fetchLotBookings,
@@ -11,26 +13,55 @@ import {
     fetchLotDetails,
     deleteSpot
 } from '../api/operatorAPI';
-import { useNavigate } from 'react-router-dom';
+
 
 const MAX_BOOKINGS_PREVIEW = 3;
 
+
+const CANCEL_REASON_REQUIRED_MSG = 'Причина скасування є обов\'язковою.';
+const DELETE_SPOT_CONFIRM_MSG = (spotId) => `Ви впевнені, що хочете видалити паркомісце #${spotId}? Ця дія незворотна.`;
+
+
+const getBookingStatusKey = (booking) => {
+    const now = new Date().getTime();
+    const startTime = new Date(booking.start_at).getTime();
+    const endTime = new Date(booking.end_at).getTime();
+
+    if (booking.status !== 'confirmed') return 'CANCELLED';
+    if (startTime <= now && endTime > now) return 'ACTIVE';
+    if (startTime > now) return 'UPCOMING';
+    return 'COMPLETED';
+};
+
+const STATUS_PROPERTIES = {
+    CANCELLED: { text: 'СКАСОВАНО', color: 'error.main', bgColor: '#f9f9f9', canCancel: false },
+    ACTIVE: { text: 'АКТИВНЕ ЗАРАЗ', color: 'info.main', bgColor: '#e8f5e9', canCancel: true },
+    UPCOMING: { text: 'МАЙБУТНЄ', color: 'success.main', bgColor: '#e8f5e9', canCancel: true },
+    COMPLETED: { text: 'ЗАВЕРШENE', color: 'warning.main', bgColor: '#f9f9f9', canCancel: false },
+    DEFAULT: { text: 'НЕВІДОМО', color: 'grey.500', bgColor: '#f9f9f9', canCancel: false }
+};
+
+const BookingPropType = PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    status: PropTypes.string.isRequired,
+    start_at: PropTypes.string.isRequired,
+    end_at: PropTypes.string.isRequired,
+    user: PropTypes.shape({ username: PropTypes.string })
+});
+
+const SpotPropType = PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    is_ev: PropTypes.bool,
+    is_disabled: PropTypes.bool
+});
+
 const BookingItem = ({ booking, onCancel }) => {
-    const isConfirmed = booking.status === 'confirmed';
-
-    const endTime = new Date(booking.end_at);
-    const now = new Date();
-
-    const isUpcomingOrActive = endTime.getTime() > now.getTime();
-    const isCurrentlyActive = new Date(booking.start_at).getTime() <= now.getTime() && isUpcomingOrActive;
-
-    const canCancel = isConfirmed && isUpcomingOrActive;
-
-    const statusColor = isConfirmed ? (isCurrentlyActive ? 'info.main' : (isUpcomingOrActive ? 'success.main' : 'warning.main')) : 'error.main';
-    const statusText = isConfirmed ? (isCurrentlyActive ? 'АКТИВНЕ ЗАРАЗ' : (isUpcomingOrActive ? 'МАЙБУТНЄ' : 'ЗАВЕРШЕНЕ')) : 'СКАСОВАНО';
+    const statusKey = getBookingStatusKey(booking);
+    const { text: statusText, color: statusColor, bgColor, canCancel } = STATUS_PROPERTIES[statusKey] || STATUS_PROPERTIES.DEFAULT;
 
     return (
-        <Box sx={{ p: 1, borderLeft: `3px solid ${statusColor}`, mb: 1, borderRadius: 1, backgroundColor: isConfirmed && isUpcomingOrActive ? '#e8f5e9' : '#f9f9f9' }}>
+        <Box sx={{ p: 1, borderLeft: `3px solid ${statusColor}`, mb: 1, borderRadius: 1, backgroundColor: bgColor }}>
             <Grid container spacing={1} alignItems="center">
                 <Grid item xs={12} sm={6}>
                     <Typography variant="body2">
@@ -41,18 +72,11 @@ const BookingItem = ({ booking, onCancel }) => {
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sm={3}>
-                    <Typography variant="body2" sx={{ color: statusColor, fontWeight: 'bold' }}>
-                        {statusText}
-                    </Typography>
+                    <Typography variant="body2" sx={{ color: statusColor, fontWeight: 'bold' }}>{statusText}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={3} sx={{ textAlign: 'right' }}>
                     {canCancel && (
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            onClick={() => onCancel(booking)}
-                        >
+                        <Button variant="outlined" color="error" size="small" onClick={() => onCancel(booking)}>
                             Скасувати
                         </Button>
                     )}
@@ -62,7 +86,14 @@ const BookingItem = ({ booking, onCancel }) => {
     );
 };
 
-const SpotCard = ({ spot, lotId, bookings, onCancelBooking, onDeleteSpot, isDeleting, navigate }) => {
+BookingItem.propTypes = {
+    booking: BookingPropType.isRequired,
+    onCancel: PropTypes.func.isRequired
+};
+
+
+const SpotCard = ({ spot, lotId, bookings, onCancelBooking, onDeleteSpot, isDeleting }) => {
+    const navigate = useNavigate();
     const nowTimestamp = new Date().getTime();
 
     const allBookingsForSpot = bookings
@@ -73,7 +104,6 @@ const SpotCard = ({ spot, lotId, bookings, onCancelBooking, onDeleteSpot, isDele
         .filter(b => b.status === 'confirmed' && new Date(b.end_at).getTime() > nowTimestamp);
 
     const hasConfirmedFutureBookings = activeAndFutureBookings.length > 0;
-
     const bookingsToShow = activeAndFutureBookings.slice(0, MAX_BOOKINGS_PREVIEW);
     const hiddenBookingsCount = activeAndFutureBookings.length - bookingsToShow.length;
 
@@ -85,9 +115,8 @@ const SpotCard = ({ spot, lotId, bookings, onCancelBooking, onDeleteSpot, isDele
         <Card variant="outlined" sx={{ mb: 3, boxShadow: 6 }}>
             <CardContent>
                 <Grid container spacing={2}>
-                    {/* Left Column: Spot Info and Controls */}
                     <Grid item xs={12} md={4}>
-                        <Box sx={{ p: 2, borderRight: {md: '1px solid #eee'} }}>
+                        <Box sx={{ p: 2, borderRight: { md: '1px solid #eee' } }}>
                             <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                                 Місце #{spot.number}
                             </Typography>
@@ -98,14 +127,13 @@ const SpotCard = ({ spot, lotId, bookings, onCancelBooking, onDeleteSpot, isDele
                                 {spot.is_ev && <span style={{ marginRight: 8, color: '#3f51b5' }}>⚡ EV</span>}
                                 {spot.is_disabled && <span style={{ marginRight: 8, color: '#ff9800' }}>♿ Disabled</span>}
                             </Box>
-
                             <Divider sx={{ my: 1 }} />
                             <Button
                                 variant="outlined"
                                 color="error"
                                 fullWidth
                                 size="small"
-                                onClick={() => onDeleteSpot(spot.id, lotId)}
+                                onClick={() => onDeleteSpot(spot.id)}
                                 disabled={isDeleting || hasConfirmedFutureBookings}
                                 sx={{ mt: 1 }}
                             >
@@ -114,47 +142,30 @@ const SpotCard = ({ spot, lotId, bookings, onCancelBooking, onDeleteSpot, isDele
                         </Box>
                     </Grid>
 
-                    {/* Right Column: Active/Future Bookings */}
                     <Grid item xs={12} md={8}>
                         <Box display="flex" justifyContent="space-between" alignItems="center">
                             <Typography variant="h6" sx={{ mb: 1 }}>
-                                Активні та Майбутні Бронювання ({activeAndFutureBookings.length})
+                                Активні та Майбутні ({activeAndFutureBookings.length})
                             </Typography>
-                            <Button
-                                onClick={handleNavigateToDetails}
-                                size="small"
-                                color="primary"
-                                variant="text"
-                                sx={{ whiteSpace: 'nowrap' }}
-                            >
+                            <Button onClick={handleNavigateToDetails} size="small" color="primary" variant="text" sx={{ whiteSpace: 'nowrap' }}>
                                 Деталі &rarr;
                             </Button>
                         </Box>
-
                         <Box sx={{ maxHeight: 200, overflowY: 'auto', pr: 1 }}>
                             {bookingsToShow.map(b => (
                                 <BookingItem key={b.id} booking={b} onCancel={onCancelBooking} />
                             ))}
                         </Box>
-
                         {hiddenBookingsCount > 0 && (
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontWeight: 'bold' }}>
                                 + {hiddenBookingsCount} додаткових майбутніх бронювань
                             </Typography>
                         )}
-
                         {allBookingsForSpot.length === 0 && (
                             <Alert severity="info" size="small" sx={{ mt: 1 }}>Бронювань на це місце немає.</Alert>
                         )}
-
                         {(hiddenBookingsCount > 0 || allBookingsForSpot.length > 0) && (
-                            <Button
-                                variant="text"
-                                size="small"
-                                color="primary"
-                                onClick={handleNavigateToDetails}
-                                sx={{ mt: 1 }}
-                            >
+                            <Button variant="text" size="small" color="primary" onClick={handleNavigateToDetails} sx={{ mt: 1 }}>
                                 Переглянути всі бронювання та історію
                             </Button>
                         )}
@@ -163,6 +174,15 @@ const SpotCard = ({ spot, lotId, bookings, onCancelBooking, onDeleteSpot, isDele
             </CardContent>
         </Card>
     );
+};
+
+SpotCard.propTypes = {
+    spot: SpotPropType.isRequired,
+    lotId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    bookings: PropTypes.arrayOf(BookingPropType).isRequired,
+    onCancelBooking: PropTypes.func.isRequired,
+    onDeleteSpot: PropTypes.func.isRequired,
+    isDeleting: PropTypes.bool.isRequired
 };
 
 function OperatorPage() {
@@ -190,14 +210,14 @@ function OperatorPage() {
         setError(null);
         setLoadingData(true);
         try {
-            const lotData = await fetchLotDetails(lotId);
+            const [lotData, bookingsData] = await Promise.all([
+                fetchLotDetails(lotId),
+                fetchLotBookings()
+            ]);
             setLotDetails(lotData);
-
-            const bookingsData = await fetchLotBookings();
             setBookings(bookingsData);
-
         } catch (err) {
-            const detail = err.response?.data?.detail || 'Не вдалося завантажити дані керування парковкою. Перевірте підключення або права доступу.';
+            const detail = err.response?.data?.detail || 'Не вдалося завантажити дані керування парковкою.';
             setError(detail);
             setBookings([]);
             setLotDetails(null);
@@ -223,11 +243,10 @@ function OperatorPage() {
         if (!bookingToCancel) return;
 
         if (!cancelReason.trim()) {
-            setCancelReasonError('Причина скасування є обов\'язковою.');
+            setCancelReasonError(CANCEL_REASON_REQUIRED_MSG);
             return;
         }
         setCancelReasonError(null);
-
         setIsCancelling(true);
         setError(null);
 
@@ -243,18 +262,18 @@ function OperatorPage() {
         }
     };
 
-    const handleDeleteSpot = async (spotId, currentLotId) => {
-        const confirmDelete = window.confirm(`Ви впевнені, що хочете видалити паркомісце #${spotId}? Ця дія незворотна.`);
+    const handleDeleteSpot = async (spotId) => {
+        const confirmDelete = window.confirm(DELETE_SPOT_CONFIRM_MSG(spotId));
         if (!confirmDelete) return;
 
         setIsDeletingSpot(true);
         setError(null);
 
         try {
-            await deleteSpot(currentLotId, spotId);
+            await deleteSpot(lotId, spotId);
             await loadData();
         } catch (err) {
-            const detail = err.response?.data?.detail || 'Не вдалося видалити паркомісце. Перевірте, чи немає активних бронювань або історії.';
+            const detail = err.response?.data?.detail || 'Не вдалося видалити паркомісце.';
             setError(detail);
         } finally {
             setIsDeletingSpot(false);
@@ -264,6 +283,38 @@ function OperatorPage() {
     const handleCreateSpotClick = () => {
         navigate(`/operator/lots/${lotId}/spots/create`);
     };
+
+    const renderSpotsContent = () => {
+        if (loadingData && lotDetails === null) {
+            return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+                    <CircularProgress />
+                </Box>
+            );
+        }
+        if (spots.length === 0) {
+            return (
+                <Alert severity="info">На вашому лоті немає зареєстрованих паркомісць.</Alert>
+            );
+        }
+        return (
+            <Grid container spacing={3}>
+                {spots.map((spot) => (
+                    <Grid item key={spot.id} xs={12}>
+                        <SpotCard
+                            spot={spot}
+                            lotId={lotId}
+                            bookings={bookings}
+                            onCancelBooking={handleOpenCancelDialog}
+                            onDeleteSpot={handleDeleteSpot}
+                            isDeleting={isDeletingSpot}
+                        />
+                    </Grid>
+                ))}
+            </Grid>
+        );
+    };
+
 
     if (loading) {
         return (
@@ -277,11 +328,10 @@ function OperatorPage() {
     if (!user || !isOperator || !lotId) {
         return (
             <Container sx={{ mt: 4 }}>
-                <Alert severity="error">У вас немає прав доступу до цієї сторінки. Необхідно мати статус оператора та бути закріпленим за лотом.</Alert>
+                <Alert severity="error">У вас немає прав доступу до цієї сторінки.</Alert>
             </Container>
         );
     }
-
 
     return (
         <Container sx={{ mt: 4, mb: 4 }}>
@@ -291,28 +341,25 @@ function OperatorPage() {
 
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-            {/* Lot Info and Control Block */}
             <Card variant="outlined" sx={{ mb: 4, p: 3 }}>
                 <Grid container spacing={3} alignItems="center">
                     <Grid item xs={12} md={7}>
                         <Typography variant="h5" gutterBottom>
                             Обслуговування лоту: <strong>{lotDetails?.name || `ID ${lotId}`}</strong>
                         </Typography>
-                        <Typography variant="body1">
-                            ID Лоту: {lotId}
-                        </Typography>
+                        <Typography variant="body1">ID Лоту: {lotId}</Typography>
                         {lotDetails && (
                             <Typography variant="body2" color="text.secondary">
                                 Адреса: {lotDetails.city}, {lotDetails.street} {lotDetails.building || ''}
                             </Typography>
                         )}
                     </Grid>
-                    <Grid item xs={12} md={5} sx={{ textAlign: {md: 'right', xs: 'left'} }}>
+                    <Grid item xs={12} md={5} sx={{ textAlign: { md: 'right', xs: 'left' } }}>
                         <Button
                             variant="contained"
                             color="success"
                             onClick={handleCreateSpotClick}
-                            sx={{ mr: 2, mb: {xs: 1, md: 0} }}
+                            sx={{ mr: 2, mb: { xs: 1, md: 0 } }}
                         >
                             + Створити Паркомісце
                         </Button>
@@ -327,32 +374,8 @@ function OperatorPage() {
                 Керування Паркомісцями ({spots.length})
             </Typography>
 
-            {loadingData && lotDetails === null ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-                    <CircularProgress />
-                </Box>
-            ) : spots.length === 0 ? (
-                <Alert severity="info">На вашому лоті немає зареєстрованих паркомісць.</Alert>
-            ) : (
-                <Grid container spacing={3}>
-                    {/* Display for each spot card */}
-                    {spots.map((spot) => (
-                        <Grid item key={spot.id} xs={12}>
-                            <SpotCard
-                                spot={spot}
-                                lotId={lotId}
-                                bookings={bookings}
-                                onCancelBooking={handleOpenCancelDialog}
-                                onDeleteSpot={handleDeleteSpot}
-                                isDeleting={isDeletingSpot}
-                                navigate={navigate}
-                            />
-                        </Grid>
-                    ))}
-                </Grid>
-            )}
+            {renderSpotsContent()}
 
-            {/* Cancellation Dialog */}
             <Dialog open={isCancelDialogOpen} onClose={() => setIsCancelDialogOpen(false)}>
                 <DialogTitle>Скасувати Бронювання #{bookingToCancel?.id}</DialogTitle>
                 <DialogContent>
