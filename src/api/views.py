@@ -559,6 +559,7 @@ class BookingViewSet(mixins.ListModelMixin,
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'delete']
     queryset = User.objects.all().order_by('id')

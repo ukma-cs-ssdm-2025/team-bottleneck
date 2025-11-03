@@ -10,8 +10,8 @@ function ChooseLoginPage() {
                     Оберіть Тип Входу
                 </Typography>
                 <Grid container spacing={3} sx={{ width: '100%', maxWidth: 450 }}>
-                    {/* Button 1: User */}
-                    <Grid item xs={12} md={6}>
+                    
+                    <Grid item xs={12} md={4}>
                         <Button
                             component={Link}
                             to="/user/login"
@@ -24,8 +24,8 @@ function ChooseLoginPage() {
                             Я ЗВИЧАЙНИЙ КОРИСТУВАЧ
                         </Button>
                     </Grid>
-                    {/* Button 2: Operator */}
-                    <Grid item xs={12} md={6}>
+                    
+                    <Grid item xs={12} md={4}>
                         <Button
                             component={Link}
                             to="/operator/login"
@@ -36,6 +36,20 @@ function ChooseLoginPage() {
                             sx={{ py: 2, height: '100%', borderColor: 'primary.main', borderWidth: 2, boxShadow: 4, transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-2px)', backgroundColor: 'primary.main', color: 'white' } }}
                         >
                             Я ОПЕРАТОР
+                        </Button>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={4}>
+                        <Button
+                            component={Link}
+                            to="/admin/login" 
+                            variant="contained"
+                            color="secondary" 
+                            fullWidth
+                            size="large"
+                            sx={{ py: 2, height: '100%', boxShadow: 4, transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-2px)' } }}
+                        >
+                            Я АДМІНІСТРАТОР
                         </Button>
                     </Grid>
                 </Grid>

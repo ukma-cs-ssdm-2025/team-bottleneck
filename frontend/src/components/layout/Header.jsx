@@ -4,7 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 function Header() {
-    const { isAuthenticated, user, logout } = useAuth();
+    // ⭐️ ДОДАНО isAdmin ⭐️
+    const { isAuthenticated, user, logout, isAdmin, isOperator: isOperatorContext } = useAuth(); 
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -12,9 +13,11 @@ function Header() {
         navigate('/');
     };
 
-    // Check if the current user is an operator assigned to a lot
-    const isOperator = isAuthenticated && user?.is_operator && user?.lot_id;
-    const showMapButton = !isOperator;
+    // Оскільки ми вже виправили isOperator в AuthContext, краще використовувати його:
+    const isOperator = isOperatorContext; 
+    
+    // Перевірка: КАРТА прихована, якщо це Адмін АБО Оператор
+    const showMapButton = !isOperator && !isAdmin; 
 
     return (
         <AppBar position="static">
@@ -36,6 +39,13 @@ function Header() {
                     </Button>
                 )}
 
+                {/* ⭐️ НОВЕ: ADMIN Panel Link (Видно ТІЛЬКИ Адміну) ⭐️ */}
+                {isAdmin && (
+                    <Button color="inherit" component={Link} to="/admin">
+                        ПАНЕЛЬ АДМІНА
+                    </Button>
+                )}
+                
                 {/* Operator Panel Link (Only for operators) */}
                 {isOperator && (
                     <Button color="inherit" component={Link} to="/operator">
