@@ -1,10 +1,8 @@
 name: Deploy to EC2
+
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'frontend/**'
+  release:
+    types: [published]
 
 jobs:
   deploy:
@@ -31,12 +29,15 @@ jobs:
         script: |
           set -e
           DEPLOY_PATH="/home/ubuntu/${{ env.PROJECT_ROOT_DIR }}"
-          echo "Pulling latest code from main..."
+          
+          # ЗМІНА: Замість 'git reset' ми переключаємось на конкретний тег релізу
+          echo "Fetching all tags and checking out release tag ${{ github.ref_name }}..."
           cd $DEPLOY_PATH
-          git fetch origin
-          git reset --hard origin/main
+          git fetch origin --tags
+          git checkout ${{ github.ref_name }}
           
           echo "Creating .env file with all configuration..."
+          # ... (решта скрипту залишається без змін) ...
           cat > $DEPLOY_PATH/.env << 'EOF'
           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
           DJANGO_DEBUG=${{ env.DEBUG_PROD }}
@@ -72,4 +73,4 @@ jobs:
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
           
-          echo "✅ Deployment completed successfully!"
+          echo "✅ Deployment completed successfully for version ${{ github.ref_name }}!"
