@@ -107,12 +107,8 @@ class SpotViewSet(mixins.ListModelMixin,
     serializer_class = SpotSerializer
 
     def get_queryset(self):
-        lot_id = self.kwargs.get("lot_pk")
-        qs = Spot.objects.select_related("lot").all()
-        if lot_id:
-            get_object_or_404(ParkingLot, pk=lot_id)
-            qs = qs.filter(lot_id=lot_id)
-        return qs
+        lot_pk = self.kwargs.get('lot_pk')
+        return Spot.objects.filter(lot_id=lot_pk).select_related('lot').order_by('id')
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
