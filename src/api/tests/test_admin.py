@@ -3,11 +3,12 @@ from rest_framework.test import APIClient
 from django.contrib.auth.models import User
 from src.api.models import ParkingLot, OperatorProfile
 
+TEST_PASSWORD = "pass"
 
 @pytest.mark.django_db
 def test_admin_can_make_other_user_admin():
-    admin = User.objects.create_user("local_admin", password="123", is_staff=True)
-    user = User.objects.create_user("simple_user", password="123")
+    admin = User.objects.create_user("local_admin", password=TEST_PASSWORD, is_staff=True)
+    user = User.objects.create_user("simple_user", password=TEST_PASSWORD)
     client = APIClient()
     client.force_authenticate(admin)
 
@@ -21,8 +22,8 @@ def test_admin_can_make_other_user_admin():
 
 @pytest.mark.django_db
 def test_admin_can_remove_admin_role():
-    admin = User.objects.create_user("super", password="123", is_staff=True)
-    user = User.objects.create_user("staffer", password="123", is_staff=True)
+    admin = User.objects.create_user("super", password=TEST_PASSWORD, is_staff=True)
+    user = User.objects.create_user("staffer", password=TEST_PASSWORD, is_staff=True)
     client = APIClient()
     client.force_authenticate(admin)
 
@@ -36,8 +37,8 @@ def test_admin_can_remove_admin_role():
 
 @pytest.mark.django_db
 def test_admin_can_assign_operator_to_lot():
-    admin = User.objects.create_user("admin", password="123", is_staff=True)
-    user = User.objects.create_user("new_op", password="123")
+    admin = User.objects.create_user("admin", password=TEST_PASSWORD, is_staff=True)
+    user = User.objects.create_user("new_op", password=TEST_PASSWORD)
     lot = ParkingLot.objects.create(name="Central", city="Kyiv", street="Main")
     client = APIClient()
     client.force_authenticate(admin)
@@ -53,8 +54,8 @@ def test_admin_can_assign_operator_to_lot():
 
 @pytest.mark.django_db
 def test_admin_can_remove_operator():
-    admin = User.objects.create_user("admin", password="123", is_staff=True)
-    user = User.objects.create_user("op_user", password="123")
+    admin = User.objects.create_user("admin", password=TEST_PASSWORD, is_staff=True)
+    user = User.objects.create_user("op_user", password=TEST_PASSWORD)
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=user, lot=lot)
 
@@ -70,7 +71,7 @@ def test_admin_can_remove_operator():
 
 @pytest.mark.django_db
 def test_admin_can_create_and_delete_parking_lot():
-    admin = User.objects.create_user("admin", password="123", is_staff=True)
+    admin = User.objects.create_user("admin", password=TEST_PASSWORD, is_staff=True)
     client = APIClient()
     client.force_authenticate(admin)
 
