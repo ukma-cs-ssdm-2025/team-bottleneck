@@ -179,3 +179,35 @@ def test_spot_list_loads_under_half_second():
     assert resp.status_code == 200
     assert elapsed < 0.5
 
+@pytest.mark.django_db
+def test_operator_can_update_own_spot():
+    client = APIClient()
+    user = User.objects.create_user(username="op", password=TEST_PASSWORD)
+    lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
+    profile = OperatorProfile.objects.create(user=user, lot=lot)
+    spot = Spot.objects.create(number="A1", lot=lot)
+    
+    client.force_authenticate(user=user)
+    
+    url = f"/api/v1/lots/{lot.id}/spots/{spot.id}/operator-update/"
+    
+    response = client.patch(url, {"is_ev": True}, format="json")
+    
+    assert response.status_code == 200
+    
+@pytest.mark.django_db
+def test_operator_cannot_update_other_lot_spot():
+    
+    client = APIClient()
+    op1 = User.objects.create_user(username="op1", password=TEST_PASSWORD)
+    lot1 = ParkingLot.objects.create(name="Lot1", city="Kyiv", street="Main")
+    lot2 = ParkingLot.objects.create(name="Lot2", city="Lviv", street="Other")
+    OperatorProfile.objects.create(user=op1, lot=lot1)
+    spot2 = Spot.objects.create(number="B1", lot=lot2)
+    
+    client.force_authenticate(user=op1)
+    
+    url = f"/api/v1/lots/{lot2.id}/spots/{spot2.id}/operator-update/"
+    response = client.patch(url, {"is_ev": True}, format="json")
+    
+    assert response.status_code == 403
