@@ -64,7 +64,7 @@ class ParkingLotDetailSerializer(ParkingLotSerializer):
         return value.title()
 
     def validate_building(self, value):
-        if value and not re.match(r'^[0-9]+[A-Za-z\-]*$', value):
+        if value and not re.match(r'^\d+[A-Za-z\-]*$', value):
             raise serializers.ValidationError("Invalid building number format.")
         return value
 

@@ -6,7 +6,7 @@ class ParkingLot(models.Model):
     name = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
     street = models.CharField(max_length=150)
-    building = models.CharField(max_length=20, blank=True, null=True)
+    building = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.city}, {self.street} {self.building or ''})"
@@ -44,7 +44,7 @@ class Booking(models.Model):
     status = models.CharField(max_length=16, default="confirmed")
     created_at = models.DateTimeField(auto_now_add=True)
     cancellation_reason = models.CharField(max_length=255, blank=True, default="")
-    payment_intent_id = models.CharField(max_length=100, blank=True, null=True)
+    payment_intent_id = models.CharField(max_length=100, blank=True)
     def check_cancellable_error(self) -> str | None:
         if self.status == 'cancelled':
             return 'Booking is already cancelled.'
