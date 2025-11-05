@@ -51,6 +51,8 @@ jobs:
           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
           DJANGO_DEBUG=True
           ALLOWED_HOSTS=localhost,127.0.0.1
+          TEST_USER_PASSWORD=${{ secrets.TEST_USER_PASSWORD }}
+          STRONG_PASSWORD_FOR_TESTS=${{ secrets.STRONG_PASSWORD_FOR_TESTS }}
           EOF
       
       - name: Run Pytest with Coverage

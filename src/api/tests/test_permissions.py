@@ -10,8 +10,9 @@ from rest_framework import status
 factory = APIRequestFactory()
 from datetime import timedelta
 from unittest.mock import Mock
+from django.conf import settings
 
-TEST_PASSWORD = "pass"
+TEST_PASSWORD = settings.TEST_USER_PASSWORD
 
 @pytest.mark.django_db
 def test_permission_allows_own_lot():
