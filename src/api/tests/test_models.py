@@ -98,7 +98,7 @@ def test_booking_creation_defaults():
 
     assert booking.status == "confirmed"
     assert booking.cancellation_reason == ""
-    assert booking.payment_intent_id is ""
+    assert booking.payment_intent_id == ""
     assert booking.user is None
 
 

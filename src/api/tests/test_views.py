@@ -185,7 +185,7 @@ def test_operator_can_update_own_spot():
     client = APIClient()
     user = User.objects.create_user(username="op")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
-    profile = OperatorProfile.objects.create(user=user, lot=lot)
+    OperatorProfile.objects.create(user=user, lot=lot)
     spot = Spot.objects.create(number="A1", lot=lot)
     
     client.force_authenticate(user=user)
