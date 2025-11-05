@@ -6,16 +6,16 @@ from src.api.models import ParkingLot, Spot, Booking, OperatorProfile
 from django.utils import timezone
 import time
 
-TEST_PASSWORD = "pass"
+TEST_PASSWORD = "pass" # noqa: S105
 
 @pytest.mark.django_db
 def test_operator_cancels_booking_and_reason_is_detailed():
-    operator_user = User.objects.create_user(username="op_test", password=TEST_PASSWORD)
+    operator_user = User.objects.create_user(username="op_test")
     lot = ParkingLot.objects.create(name="LotA", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=operator_user, lot=lot)
     spot = Spot.objects.create(number="A1", lot=lot)
     
-    other_user = User.objects.create_user(username="client_user", password=TEST_PASSWORD)
+    other_user = User.objects.create_user(username="client_user")
     booking = Booking.objects.create(
         user=other_user,
         spot=spot,
@@ -48,7 +48,7 @@ def test_operator_cancels_booking_and_reason_is_detailed():
 def test_operator_can_patch_own_spot():
     client = APIClient()
 
-    operator_user = User.objects.create_user(username="op", password=TEST_PASSWORD)
+    operator_user = User.objects.create_user(username="op")
     lot = ParkingLot.objects.create(name="Mall", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=operator_user, lot=lot)
     spot = Spot.objects.create(number="A1", lot=lot, is_ev=False, is_disabled=False)
@@ -75,7 +75,7 @@ def test_parking_lot_list_and_detail():
 
 @pytest.mark.django_db
 def test_create_and_cancel_booking():
-    user = User.objects.create_user("user", password=TEST_PASSWORD)
+    user = User.objects.create_user("user")
     client = APIClient()
     client.force_authenticate(user)
     lot = ParkingLot.objects.create(name="Test", city="Kyiv", street="Main")
@@ -109,7 +109,7 @@ def test_operator_cannot_change_spot_number():
     from src.api.models import ParkingLot, Spot, OperatorProfile
     from rest_framework import status
 
-    user = User.objects.create_user(username="operator", password=TEST_PASSWORD)
+    user = User.objects.create_user(username="operator")
     lot = ParkingLot.objects.create(name="Mall", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=user, lot=lot)
     spot = Spot.objects.create(number="A1", lot=lot, is_ev=False, is_disabled=False)
@@ -130,7 +130,7 @@ def test_operator_cannot_patch_spot_from_other_lot():
     lot1 = ParkingLot.objects.create(name="Lot 1", city="Kyiv", street="Main")
     lot2 = ParkingLot.objects.create(name="Lot 2", city="Kyiv", street="Side")
 
-    operator = User.objects.create_user(username="op1", password=TEST_PASSWORD)
+    operator = User.objects.create_user(username="op1")
     OperatorProfile.objects.create(user=operator, lot=lot1)
 
     spot_other_lot = Spot.objects.create(number="B2", lot=lot2, is_ev=False, is_disabled=False)
@@ -163,7 +163,7 @@ def test_list_spots_performance(db):
 @pytest.mark.django_db
 def test_delete_nonexistent_spot_returns_404():
     client = APIClient()
-    admin = User.objects.create_user(username="admin", password=TEST_PASSWORD, is_staff=True)
+    admin = User.objects.create_user(username="admin", is_staff=True)
     client.force_authenticate(admin)
     resp = client.delete("/api/v1/lots/999/spots/999/")
     assert resp.status_code == 404
@@ -182,7 +182,7 @@ def test_spot_list_loads_under_half_second():
 @pytest.mark.django_db
 def test_operator_can_update_own_spot():
     client = APIClient()
-    user = User.objects.create_user(username="op", password=TEST_PASSWORD)
+    user = User.objects.create_user(username="op")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
     profile = OperatorProfile.objects.create(user=user, lot=lot)
     spot = Spot.objects.create(number="A1", lot=lot)
@@ -199,7 +199,7 @@ def test_operator_can_update_own_spot():
 def test_operator_cannot_update_other_lot_spot():
     
     client = APIClient()
-    op1 = User.objects.create_user(username="op1", password=TEST_PASSWORD)
+    op1 = User.objects.create_user(username="op1")
     lot1 = ParkingLot.objects.create(name="Lot1", city="Kyiv", street="Main")
     lot2 = ParkingLot.objects.create(name="Lot2", city="Lviv", street="Other")
     OperatorProfile.objects.create(user=op1, lot=lot1)

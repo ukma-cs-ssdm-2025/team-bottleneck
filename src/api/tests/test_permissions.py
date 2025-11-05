@@ -15,7 +15,7 @@ TEST_PASSWORD = "pass"
 
 @pytest.mark.django_db
 def test_permission_allows_own_lot():
-    user = User.objects.create_user(username="op", password=TEST_PASSWORD)
+    user = User.objects.create_user(username="op")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=user, lot=lot)
     
@@ -29,7 +29,7 @@ def test_permission_allows_own_lot():
 
 @pytest.mark.django_db
 def test_permission_denies_other_lot():
-    user = User.objects.create_user(username="op", password=TEST_PASSWORD)
+    user = User.objects.create_user(username="op")
     lot1 = ParkingLot.objects.create(name="Lot1", city="Kyiv", street="Main")
     lot2 = ParkingLot.objects.create(name="Lot2", city="Lviv", street="Other")
     OperatorProfile.objects.create(user=user, lot=lot1)
@@ -45,7 +45,7 @@ def test_permission_denies_other_lot():
 
 @pytest.mark.django_db
 def test_has_permission_for_non_operator():
-    user = User.objects.create_user(username="no_op", password=TEST_PASSWORD)
+    user = User.objects.create_user(username="no_op")
     request = factory.get("/")
     request.user = user
     permission = IsLotOperator()
@@ -54,7 +54,7 @@ def test_has_permission_for_non_operator():
 
 @pytest.mark.django_db
 def test_object_permission_same_lot():
-    user = User.objects.create_user(username="op", password=TEST_PASSWORD)
+    user = User.objects.create_user(username="op")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=user, lot=lot)
     spot = Spot.objects.create(number="A1", lot=lot)
@@ -72,7 +72,7 @@ def test_object_permission_same_lot():
 
 @pytest.mark.django_db
 def test_object_permission_different_lot_denied():
-    user = User.objects.create_user(username="op2", password=TEST_PASSWORD)
+    user = User.objects.create_user(username="op2")
     lot1 = ParkingLot.objects.create(name="Lot1", city="Kyiv", street="Main")
     lot2 = ParkingLot.objects.create(name="Lot2", city="Lviv", street="Street")
     OperatorProfile.objects.create(user=user, lot=lot1)
@@ -96,7 +96,7 @@ def test_permission_denied_for_anonymous():
 
 @pytest.mark.django_db
 def test_operator_cannot_cancel_already_cancelled_booking():
-    operator_user = User.objects.create_user(username="op_cancel_check", password=TEST_PASSWORD)
+    operator_user = User.objects.create_user(username="op_cancel_check")
     lot = ParkingLot.objects.create(name="LotB", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=operator_user, lot=lot)
     spot = Spot.objects.create(number="B1", lot=lot)
@@ -126,7 +126,7 @@ def test_operator_cannot_cancel_already_cancelled_booking():
 
 @pytest.mark.django_db
 def test_operator_cannot_cancel_past_booking():
-    operator_user = User.objects.create_user(username="op_past_cancel", password=TEST_PASSWORD)
+    operator_user = User.objects.create_user(username="op_past_cancel")
     lot = ParkingLot.objects.create(name="LotC", city="Kyiv", street="Main")
     OperatorProfile.objects.create(user=operator_user, lot=lot)
     spot = Spot.objects.create(number="C1", lot=lot)
