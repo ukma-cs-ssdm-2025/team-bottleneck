@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import {
     Typography, Container, Alert, Box, Card, CardContent,
     Button, TextField, CircularProgress, Grid,
@@ -7,11 +8,49 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { updateProfile, fetchUserBookings, cancelBooking } from '../api/parkingAPI';
 
+
+const MESSAGES = {
+    BOOKING_LOAD_ERROR: 'Не вдалося завантажити ваші бронювання. Перевірте підключення.',
+    PROFILE_UPDATE_SUCCESS: 'Профіль успішно оновлено!',
+    PROFILE_UPDATE_ERROR: 'Помилка оновлення профілю.',
+    CANCEL_ERROR_DEFAULT: 'Незрозуміла помилка.',
+};
+
+
+const getBookingStatus = (booking) => {
+    if (booking.status === 'cancelled') {
+        return 'CANCELLED';
+    }
+    if (new Date(booking.end_at) < new Date()) {
+        return 'COMPLETED';
+    }
+    return 'CONFIRMED';
+};
+
+const BOOKING_STATUS_PROPS = {
+    CANCELLED: {
+        text: 'СКАСОВАНО',
+        color: '#f44336',
+        bgColor: '#ffebee',
+        canCancel: false,
+    },
+    COMPLETED: {
+        text: 'ЗАВЕРШЕНО',
+        color: '#ff9800',
+        bgColor: '#fff3e0',
+        canCancel: false,
+    },
+    CONFIRMED: {
+        text: 'ПІДТВЕРДЖЕНО',
+        color: '#4caf50',
+        bgColor: '#e8f5e9',
+        canCancel: true,
+    },
+};
+
 const BookingCard = ({ booking, onCancel }) => {
-    const isCancelled = booking.status === 'cancelled';
-    const isPast = new Date(booking.end_at) < new Date();
-    const isUpcoming = !isCancelled && !isPast;
-    const canCancel = isUpcoming;
+    const statusKey = getBookingStatus(booking);
+    const { text, color, bgColor, canCancel } = BOOKING_STATUS_PROPS[statusKey];
 
     const spotNumber = booking.spot?.number || 'N/A';
     const lotName = booking.spot?.lot?.name || 'Невідомий лот';
@@ -22,7 +61,7 @@ const BookingCard = ({ booking, onCancel }) => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            borderLeft: `5px solid ${isCancelled ? '#f44336' : (isPast ? '#ff9800' : '#4caf50')}`
+            borderLeft: `5px solid ${color}`
         }}>
             <CardContent sx={{ flexGrow: 1 }}>
                 <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
@@ -38,15 +77,15 @@ const BookingCard = ({ booking, onCancel }) => {
                     <strong>До:</strong> {new Date(booking.end_at).toLocaleString()}
                 </Typography>
 
-                <Box sx={{ p: 1, borderRadius: 1, backgroundColor: isCancelled ? '#ffebee' : (isPast ? '#fff3e0' : '#e8f5e9') }}>
+                <Box sx={{ p: 1, borderRadius: 1, backgroundColor: bgColor }}>
                     <Typography variant="subtitle2">
-                        <strong>Статус:</strong> <span style={{ color: isCancelled ? 'red' : (isPast ? 'orange' : 'green'), ml: 1, fontWeight: 'bold' }}>
-                            {isCancelled ? 'СКАСОВАНО' : (isPast ? 'ЗАВЕРШЕНО' : 'ПІДТВЕРДЖЕНО')}
+                        <strong>Статус:</strong> <span style={{ color: color, ml: 1, fontWeight: 'bold' }}>
+                            {text}
                         </span>
                     </Typography>
                 </Box>
 
-                {isCancelled && booking.cancellation_reason && (
+                {statusKey === 'CANCELLED' && booking.cancellation_reason && (
                     <Typography variant="caption" display="block" color="error" sx={{ mt: 1 }}>
                         Причина: {booking.cancellation_reason}
                     </Typography>
@@ -60,7 +99,7 @@ const BookingCard = ({ booking, onCancel }) => {
                         fullWidth
                         onClick={() => onCancel(booking.id)}
                     >
-                        СКАСУВАТИ
+                        СКАСУВATИ
                     </Button>
                 </Box>
             )}
@@ -68,25 +107,46 @@ const BookingCard = ({ booking, onCancel }) => {
     );
 };
 
+const BookingPropType = PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    status: PropTypes.string.isRequired,
+    start_at: PropTypes.string.isRequired,
+    end_at: PropTypes.string.isRequired,
+    cancellation_reason: PropTypes.string,
+    spot: PropTypes.shape({
+        number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        lot: PropTypes.shape({
+            name: PropTypes.string
+        })
+    })
+});
+
+BookingCard.propTypes = {
+    booking: BookingPropType.isRequired,
+    onCancel: PropTypes.func.isRequired
+};
+
 function ProfilePage() {
     const { user, updateUser, loading } = useAuth();
     const [profileData, setProfileData] = useState({
-        first_name: user?.first_name || '',
-        last_name: user?.last_name || ''
+        first_name: '',
+        last_name: ''
     });
 
     const [bookings, setBookings] = useState([]);
     const [loadingBookings, setLoadingBookings] = useState(false);
     const [loadingProfileUpdate, setLoadingProfileUpdate] = useState(false);
-    const [updateStatus, setUpdateStatus] = useState(null);
+
+    const [updateSuccess, setUpdateSuccess] = useState(null);
+    const [updateError, setUpdateError] = useState(null);
+    const [bookingError, setBookingError] = useState(null);
 
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
     const [bookingToCancel, setBookingToCancel] = useState(null);
     const [cancelReason, setCancelReason] = useState('');
     const [isCancelling, setIsCancelling] = useState(false);
-    const [bookingError, setBookingError] = useState(null);
 
-    const loadBookings = async () => {
+    const loadBookings = useCallback(async () => {
         setBookingError(null);
         setLoadingBookings(true);
         try {
@@ -102,17 +162,21 @@ function ProfilePage() {
             });
             setBookings(sortedData);
         } catch (err) {
-            setBookingError('Не вдалося завантажити ваші бронювання. Перевірте підключення.');
+            setBookingError(err.response?.data?.detail || MESSAGES.BOOKING_LOAD_ERROR);
         } finally {
             setLoadingBookings(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         if (user) {
+            setProfileData({
+                first_name: user.first_name || '',
+                last_name: user.last_name || ''
+            });
             loadBookings();
         }
-    }, [user]);
+    }, [user, loadBookings]);
 
     const handleProfileChange = (e) => {
         setProfileData({ ...profileData, [e.target.name]: e.target.value });
@@ -121,17 +185,21 @@ function ProfilePage() {
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
         setLoadingProfileUpdate(true);
-        setUpdateStatus(null);
+        setUpdateSuccess(null);
+        setUpdateError(null);
         try {
             const updatedUser = await updateProfile(profileData);
             updateUser(updatedUser);
-            setUpdateStatus('success');
+            setUpdateSuccess(MESSAGES.PROFILE_UPDATE_SUCCESS);
         } catch (err) {
             console.error('Update failed:', err.response?.data || err);
-            setUpdateStatus('error');
+            setUpdateError(err.response?.data?.detail || MESSAGES.PROFILE_UPDATE_ERROR);
         } finally {
             setLoadingProfileUpdate(false);
-            setTimeout(() => setUpdateStatus(null), 3000);
+            setTimeout(() => {
+                setUpdateSuccess(null);
+                setUpdateError(null);
+            }, 3000);
         }
     };
 
@@ -142,6 +210,13 @@ function ProfilePage() {
         setBookingError(null);
     };
 
+    const handleCloseCancelDialog = () => {
+        if (isCancelling) return;
+        setIsCancelDialogOpen(false);
+        setBookingToCancel(null);
+        setBookingError(null);
+    };
+
     const handleCancelSubmit = async () => {
         if (!bookingToCancel) return;
         setIsCancelling(true);
@@ -149,13 +224,12 @@ function ProfilePage() {
 
         try {
             await cancelBooking(bookingToCancel, cancelReason);
-            loadBookings();
-            setIsCancelDialogOpen(false);
+            await loadBookings();
+            handleCloseCancelDialog();
         } catch (err) {
-            setBookingError('Помилка скасування: ' + (err.response?.data?.detail || 'Незрозуміла помилка.'));
+            setBookingError(err.response?.data?.detail || MESSAGES.CANCEL_ERROR_DEFAULT);
         } finally {
             setIsCancelling(false);
-            setBookingToCancel(null);
         }
     };
 
@@ -182,7 +256,7 @@ function ProfilePage() {
                 Мій Профіль
             </Typography>
 
-            {/* Секція Інформації Профілю */}
+            {/* Profile Info Section */}
             <Card variant="outlined" sx={{ mb: 4 }}>
                 <CardContent>
                     <Typography variant="h5" gutterBottom>
@@ -195,7 +269,7 @@ function ProfilePage() {
                         <strong>Email:</strong> {user.email}
                     </Typography>
                     <Typography variant="body1">
-                        <strong>Ім'я:</strong> {user.first_name || 'Не вказано'}
+                        <strong>Іm'я:</strong> {user.first_name || 'Не вказано'}
                     </Typography>
                     <Typography variant="body1">
                         <strong>Прізвище:</strong> {user.last_name || 'Не вказано'}
@@ -203,7 +277,7 @@ function ProfilePage() {
                 </CardContent>
             </Card>
 
-            {/* Секція Оновлення Профілю */}
+            {/* Profile Update Section */}
             <Card variant="outlined" sx={{ mb: 4, p: 3 }}>
                 <Typography variant="h5" gutterBottom>
                     Оновити Ім'я / Прізвище
@@ -239,18 +313,18 @@ function ProfilePage() {
                             >
                                 {loadingProfileUpdate ? <CircularProgress size={24} /> : 'Зберегти зміни'}
                             </Button>
-                            {updateStatus === 'success' && (
-                                <Alert severity="success" sx={{ mt: 1 }}>Профіль успішно оновлено!</Alert>
+                            {updateSuccess && (
+                                <Alert severity="success" sx={{ mt: 2 }}>{updateSuccess}</Alert>
                             )}
-                            {updateStatus === 'error' && (
-                                <Alert severity="error" sx={{ mt: 1 }}>Помилка оновлення профілю.</Alert>
+                            {updateError && (
+                                <Alert severity="error" sx={{ mt: 2 }}>{updateError}</Alert>
                             )}
                         </Grid>
                     </Grid>
                 </Box>
             </Card>
 
-            {/* Секція Мої Бронювання */}
+            {/* My Bookings Section */}
             <Typography variant="h4" gutterBottom sx={{ mt: 4 }}>
                 Мої Бронювання
             </Typography>
@@ -261,7 +335,10 @@ function ProfilePage() {
                 </Box>
             )}
 
-            {bookingError && <Alert severity="error" sx={{ mb: 2 }}>{bookingError}</Alert>}
+            {/* Main page error for bookings */}
+            {bookingError && !isCancelDialogOpen && (
+                <Alert severity="error" sx={{ mb: 2 }}>{bookingError}</Alert>
+            )}
 
             {!loadingBookings && bookings.length === 0 && !bookingError && (
                 <Alert severity="info">Наразі у вас немає бронювань.</Alert>
@@ -277,8 +354,8 @@ function ProfilePage() {
                 </Grid>
             )}
 
-            {/* Діалог скасування */}
-            <Dialog open={isCancelDialogOpen} onClose={() => setIsCancelDialogOpen(false)}>
+            {/* Cancellation Dialog */}
+            <Dialog open={isCancelDialogOpen} onClose={handleCloseCancelDialog}>
                 <DialogTitle>Скасувати Бронювання #{bookingToCancel}</DialogTitle>
                 <DialogContent>
                     <Typography gutterBottom>
@@ -295,10 +372,13 @@ function ProfilePage() {
                         onChange={(e) => setCancelReason(e.target.value)}
                         disabled={isCancelling}
                     />
-                    {bookingError && <Alert severity="error" sx={{ mt: 1 }}>{bookingError}</Alert>}
+                    {/* Dialog-specific error */}
+                    {bookingError && isCancelDialogOpen && (
+                        <Alert severity="error" sx={{ mt: 2 }}>{bookingError}</Alert>
+                    )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setIsCancelDialogOpen(false)} disabled={isCancelling}>
+                    <Button onClick={handleCloseCancelDialog} disabled={isCancelling}>
                         Ні
                     </Button>
                     <Button onClick={handleCancelSubmit} color="error" variant="contained" disabled={isCancelling}>

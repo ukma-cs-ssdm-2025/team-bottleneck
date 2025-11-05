@@ -8,9 +8,11 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 
+TEST_PASSWORD = "pass"
+
 class BookingTests(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="test", password="pass")
+        self.user = User.objects.create_user(username="test")
         self.client.force_authenticate(user=self.user)
         self.lot = ParkingLot.objects.create(name="River Mall", city="Kyiv", street="Dnipro")
         self.spot = Spot.objects.create(number="P1", lot=self.lot)
@@ -101,7 +103,7 @@ def test_booking_creation_defaults():
 
 @pytest.mark.django_db
 def test_booking_with_user_relationship():
-    user = User.objects.create_user(username="testuser", password="123")
+    user = User.objects.create_user(username="testuser")
     lot = ParkingLot.objects.create(name="LotY", city="Kyiv", street="Street")
     spot = Spot.objects.create(number="Y1", lot=lot)
     booking = Booking.objects.create(
@@ -124,12 +126,12 @@ def test_booking_has_index_fields():
 
 
 # ────────────────────────────────────────────────
-# 🅳 OperatorProfile model
+# OperatorProfile model
 # ────────────────────────────────────────────────
 
 @pytest.mark.django_db
 def test_operator_profile_str_and_relation():
-    user = User.objects.create_user(username="operator1", password="pass")
+    user = User.objects.create_user(username="operator1")
     lot = ParkingLot.objects.create(name="Central", city="Kyiv", street="Main")
     profile = OperatorProfile.objects.create(user=user, lot=lot)
 
@@ -141,7 +143,7 @@ def test_operator_profile_str_and_relation():
 
 @pytest.mark.django_db
 def test_operator_profile_without_lot():
-    user = User.objects.create_user(username="solo", password="pass")
+    user = User.objects.create_user(username="solo")
     profile = OperatorProfile.objects.create(user=user, lot=None)
 
     assert "N/A" in str(profile)
@@ -149,7 +151,7 @@ def test_operator_profile_without_lot():
 
 @pytest.mark.django_db
 def test_operator_profile_user_must_be_unique_fails():
-    user = User.objects.create_user(username="operator_gulliver", password="gulliver")
+    user = User.objects.create_user(username="operator_gulliver")
     lot = ParkingLot.objects.create(name="Central", city="Kyiv", street="Main")
     
     OperatorProfile.objects.create(user=user, lot=lot)

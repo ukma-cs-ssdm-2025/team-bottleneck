@@ -13,27 +13,33 @@ class IsLotOperator(permissions.BasePermission):
             profile = user.operator_profile
         except OperatorProfile.DoesNotExist:
             return False
-
-        lot_pk = view.kwargs.get("lot_pk")
+        
+        if view and hasattr(view, 'kwargs'):
+            lot_pk = view.kwargs.get("lot_pk")
+        else:
+            lot_pk = None
+        
         if lot_pk is not None:
             try:
                 return profile.lot_id == int(lot_pk)
             except (ValueError, TypeError):
                 return False
-
+        
         return True
-
-    def has_object_permission(self, request, view, obj):
-
+    
+    def has_object_permission(self, request, view, obj):      
         if isinstance(obj, Booking):
-            booking_lot_id = obj.spot.lot_id
+            object_lot_id = obj.spot.lot_id
+        elif hasattr(obj, 'lot_id'):
+            object_lot_id = obj.lot_id
+        elif hasattr(obj, 'lot'):
+            object_lot_id = obj.lot.id
         else:
-            return False 
-
+            return False
+        
         try:
-            operator_profile = request.user.operator_profile
-            operator_lot_id = operator_profile.lot_id
+            operator_lot_id = request.user.operator_profile.lot_id
         except OperatorProfile.DoesNotExist:
-            return False 
-
-        return booking_lot_id == operator_lot_id
+            return False
+        
+        return object_lot_id == operator_lot_id

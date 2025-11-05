@@ -11,7 +11,10 @@ const calculateTotal = (startTime, endTime, pricePerHour) => {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const durationMs = end - start;
-    if (durationMs <= 0) return 0;
+
+    if (durationMs <= 0) {
+        return "0.00";
+    }
 
     const durationHours = durationMs / (1000 * 60 * 60);
     const total = durationHours * pricePerHour;

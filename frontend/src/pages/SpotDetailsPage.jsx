@@ -1,28 +1,49 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Typography, Container, Button, CircularProgress, Alert,
-    Box, Card, CardContent, Grid, Switch, FormControlLabel
+    Box, Card, CardContent, Grid, Switch, FormControlLabel,
+    Dialog, DialogTitle, DialogContent, DialogActions, TextField
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
-import { fetchLotBookings, fetchSpotDetails, cancelBookingByOperator, updateSpot, deleteSpot } from '../api/operatorAPI';
+import {
+    fetchLotBookings,
+    fetchSpotDetails,
+    cancelBookingByOperator,
+    updateSpot,
+    deleteSpot
+} from '../api/operatorAPI';
+
+const getSpotBookingStatus = (booking) => {
+    if (booking.status !== 'confirmed') {
+        return 'CANCELLED';
+    }
+    if (new Date(booking.end_at).getTime() > Date.now()) {
+        return 'UPCOMING';
+    }
+    return 'COMPLETED';
+};
+
+const STATUS_PROPS = {
+    UPCOMING: { text: 'МАЙБУТНЄ', color: 'success.main', bgColor: '#e8f5e9' },
+    COMPLETED: { text: 'ЗАВЕРШEНE', color: 'warning.main', bgColor: '#fff3e0' },
+    CANCELLED: { text: 'СКАСОВАНО', color: 'error.main', bgColor: '#ffebee' },
+};
 
 const SpotBookingHistoryItem = ({ booking, onCancel }) => {
-    const isConfirmed = booking.status === 'confirmed';
-    const isUpcoming = new Date(booking.end_at).getTime() > new Date().getTime();
-    const canCancel = isConfirmed && isUpcoming;
-
-    const statusColor = isConfirmed ? (isUpcoming ? 'success.main' : 'warning.main') : 'error.main';
-    const statusText = isConfirmed ? (isUpcoming ? 'МАЙБУТНЄ' : 'ЗАВЕРШЕНЕ') : 'СКАСОВАНО';
+    const statusKey = getSpotBookingStatus(booking);
+    const { text, color, bgColor } = STATUS_PROPS[statusKey];
+    const canCancel = statusKey === 'UPCOMING';
     const userText = `Користувач ID: ${booking.user}`;
 
     return (
-        <Card variant="outlined" sx={{ mb: 2, borderLeft: `5px solid ${statusColor}`, backgroundColor: '#fafafa' }}>
+        <Card variant="outlined" sx={{ mb: 2, borderLeft: `5px solid ${color}`, backgroundColor: bgColor }}>
             <CardContent sx={{ p: 2 }}>
                 <Grid container spacing={1} alignItems="center">
                     <Grid item xs={12} sm={8}>
                         <Typography variant="body1">
-                            <strong>{userText}</strong> ({statusText})
+                            <strong>{userText}</strong> ({text})
                         </Typography>
                         <Typography variant="caption" display="block">
                             З: {new Date(booking.start_at).toLocaleString()} | До: {new Date(booking.end_at).toLocaleString()}
@@ -51,6 +72,20 @@ const SpotBookingHistoryItem = ({ booking, onCancel }) => {
     );
 };
 
+const BookingPropType = PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    status: PropTypes.string.isRequired,
+    start_at: PropTypes.string.isRequired,
+    end_at: PropTypes.string.isRequired,
+    cancellation_reason: PropTypes.string,
+    user: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.object]),
+});
+
+SpotBookingHistoryItem.propTypes = {
+    booking: BookingPropType.isRequired,
+    onCancel: PropTypes.func.isRequired
+};
+
 
 function SpotDetailsPage() {
     const { lotId, spotId } = useParams();
@@ -71,23 +106,30 @@ function SpotDetailsPage() {
         is_disabled: false,
     });
 
-    const spotBookings = allBookings.filter(b => b.spot === parseInt(spotId));
+    const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+    const [bookingToCancel, setBookingToCancel] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const spotBookings = allBookings.filter(b => b.spot === Number.parseInt(spotId, 10));
     const hasConfirmedFutureBookings = spotBookings.some(
-        b => b.status === 'confirmed' && new Date(b.end_at).getTime() > new Date().getTime()
+        b => b.status === 'confirmed' && new Date(b.end_at).getTime() > Date.now()
     );
 
     const loadData = useCallback(async () => {
         setError(null);
         setLoadingData(true);
         try {
-            const spotData = await fetchSpotDetails(lotId, spotId);
+            const [spotData, bookingsData] = await Promise.all([
+                fetchSpotDetails(lotId, spotId),
+                fetchLotBookings()
+            ]);
+
             setSpot(spotData);
             setSpotForm({
                 is_ev: spotData.is_ev,
                 is_disabled: spotData.is_disabled,
             });
-
-            const bookingsData = await fetchLotBookings();
             setAllBookings(bookingsData);
 
         } catch (err) {
@@ -99,12 +141,11 @@ function SpotDetailsPage() {
     }, [lotId, spotId]);
 
     useEffect(() => {
-        if (user?.is_operator && user?.lot_id === parseInt(lotId)) {
+        if (user?.is_operator && user?.lot_id === Number.parseInt(lotId, 10)) {
             loadData();
         }
     }, [user, lotId, loadData]);
 
-    // --- Spot Settings Management ---
     const handleFormChange = (e) => {
         const { name, checked, type } = e.target;
         setSpotForm(prev => ({
@@ -116,13 +157,18 @@ function SpotDetailsPage() {
     const handleUpdateSpot = async () => {
         setIsUpdating(true);
         setUpdateStatus(null);
+        setError(null);
         try {
-            await updateSpot(lotId, spotId, spotForm);
-            setUpdateStatus('success');
-            const updatedSpotData = await fetchSpotDetails(lotId, spotId);
+            const updatedSpotData = await updateSpot(lotId, spotId, spotForm);
             setSpot(updatedSpotData);
+            setSpotForm({
+                is_ev: updatedSpotData.is_ev,
+                is_disabled: updatedSpotData.is_disabled,
+            });
+            setUpdateStatus('success');
         } catch (err) {
             setUpdateStatus('error');
+            setError(err.response?.data?.detail || 'Помилка оновлення.');
             console.error("Update failed:", err);
         } finally {
             setIsUpdating(false);
@@ -148,20 +194,34 @@ function SpotDetailsPage() {
         }
     };
 
-    // --- Booking Management ---
-    const handleCancelBooking = async (booking) => {
-        const reason = prompt(`Введіть причину скасування бронювання #${booking.id}:`);
-        if (!reason) return;
+    const openCancelDialog = (booking) => {
+        setBookingToCancel(booking);
+        setCancelReason('');
+        setError(null);
+        setIsCancelDialogOpen(true);
+    };
 
+    const closeCancelDialog = () => {
+        if (isCancelling) return;
+        setIsCancelDialogOpen(false);
+        setBookingToCancel(null);
+        setCancelReason('');
+    };
+
+    const handleCancelSubmit = async () => {
+        if (!bookingToCancel) return;
+
+        setIsCancelling(true);
         setError(null);
 
         try {
-            await cancelBookingByOperator(booking.id, reason);
-            const bookingsData = await fetchLotBookings();
-            setAllBookings(bookingsData);
-            alert(`Бронювання #${booking.id} скасовано.`);
+            await cancelBookingByOperator(bookingToCancel.id, cancelReason);
+            closeCancelDialog();
+            await loadData();
         } catch (err) {
             setError('Помилка скасування: ' + (err.response?.data?.detail || 'Невідома помилка.'));
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -200,7 +260,6 @@ function SpotDetailsPage() {
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-            {/* Spot Settings Block */}
             <Card variant="outlined" sx={{ mb: 4, p: 3 }}>
                 <Typography variant="h5" sx={{ mb: 2 }}>Налаштування Місця</Typography>
                 <Grid container spacing={3}>
@@ -244,7 +303,6 @@ function SpotDetailsPage() {
                 </Grid>
             </Card>
 
-            {/* Deletion Block */}
             <Card variant="outlined" sx={{ mb: 4, p: 3, borderColor: 'error.main' }}>
                 <Typography variant="h5" color="error.main" sx={{ mb: 1 }}>Зона Ризику</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -260,7 +318,6 @@ function SpotDetailsPage() {
                 </Button>
             </Card>
 
-            {/* Booking History Block */}
             <Typography variant="h4" gutterBottom sx={{ mt: 4, mb: 3 }}>
                 Повна Історія Бронювань ({spotBookings.length})
             </Typography>
@@ -273,11 +330,42 @@ function SpotDetailsPage() {
                         <SpotBookingHistoryItem
                             key={b.id}
                             booking={b}
-                            onCancel={handleCancelBooking}
+                            onCancel={openCancelDialog}
                         />
                     ))
                 )}
             </Box>
+
+            <Dialog open={isCancelDialogOpen} onClose={closeCancelDialog}>
+                <DialogTitle>Скасувати Бронювання #{bookingToCancel?.id}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Причина скасування (обов'язково)"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        disabled={isCancelling}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closeCancelDialog} disabled={isCancelling}>
+                        Ні
+                    </Button>
+                    <Button
+                        onClick={handleCancelSubmit}
+                        color="error"
+                        variant="contained"
+                        disabled={isCancelling || !cancelReason.trim()}
+                    >
+                        {isCancelling ? 'Скасування...' : 'Так, скасувати'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
         </Container>
     );
 }

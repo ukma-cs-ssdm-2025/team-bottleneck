@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios'; // Потрібен для відновлення сесії
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import axios from 'axios';
 import { API_BASE_URL } from '../constants/apiConfig';
 
 // 1. Create the Context object
@@ -56,48 +57,69 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
 
-    // Function to handle successful login
-    const login = (username, password, userData) => {
+    const login = useCallback((username, password, userData) => {
         localStorage.setItem('authUsername', username);
         localStorage.setItem('authPassword', password);
         setUser(userData);
         setIsAuthenticated(true);
-    };
+    }, []);
 
-    // Function to handle logout
-    const logout = () => {
+    const logout = useCallback(() => {
         localStorage.removeItem('authUsername');
         localStorage.removeItem('authPassword');
         setUser(null);
         setIsAuthenticated(false);
-    };
+    }, []);
 
-    const updateUser = (newUserData) => {
+    const updateUser = useCallback((newUserData) => {
         setUser(prevUser => ({
             ...prevUser,
             ...newUserData
         }));
-    };
+    }, []);
 
-    const getCredentials = () => ({
+    const getCredentials = useCallback(() => ({
         username: localStorage.getItem('authUsername'),
         password: localStorage.getItem('authPassword')
-    });
+    }), []);
+
+    const isAdmin = user?.is_staff === true;
+
+    const isOperator = !isAdmin && !!(user?.operator_profile && user.operator_profile.lot_id);
+
+    const value = useMemo(() => ({
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        getCredentials,
+        updateUser,
+        loading,
+        isAdmin,
+        isOperator,
+    }), [
+        isAuthenticated,
+        user,
+        loading,
+        isAdmin,
+        isOperator,
+        login,
+        logout,
+        getCredentials,
+        updateUser
+    ]);
 
     return (
-        <AuthContext.Provider value={{
-            isAuthenticated,
-            user,
-            login,
-            logout,
-            getCredentials,
-            updateUser,
-            loading,
-        }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
 };
+
+AuthProvider.propTypes = {
+    children: PropTypes.node.isRequired,
+};
+
 
 // 3. Custom Hook for easier access to AuthContext values
 export const useAuth = () => {
