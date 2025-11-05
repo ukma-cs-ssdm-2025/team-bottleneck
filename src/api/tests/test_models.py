@@ -7,8 +7,9 @@ from rest_framework.test import APITestCase
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
+from django.conf import settings
 
-TEST_PASSWORD = "pass"
+TEST_PASSWORD = settings.TEST_USER_PASSWORD
 
 class BookingTests(APITestCase):
     def setUp(self):
