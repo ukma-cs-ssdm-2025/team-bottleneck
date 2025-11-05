@@ -6,6 +6,8 @@ on:
       - develop
     paths:
       - 'src/api/**'
+      - 'docs/api/openapi-generated.yaml'
+      - 'docs/index.html'
       - '.github/workflows/RunUnitTests.yml'
   pull_request:
     branches:
@@ -107,8 +109,11 @@ jobs:
         run: |
           mkdir -p pages
           cp docs/index.html pages/
-          cp htmlcov/coverage.svg pages/
-          cp -r htmlcov pages/htmlcov
+          mkdir -p pages/htmlcov
+          cp -r htmlcov/* pages/htmlcov/
+          cp htmlcov/coverage.svg pages/coverage.svg
+          mkdir -p pages/api
+          cp docs/api/openapi-generated.yaml pages/api/
       
       - name: Upload Pages artifact
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
