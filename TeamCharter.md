@@ -32,6 +32,17 @@
 * User story review: stories are agreed upon in joint meetings and committed by one person, or new stories can be added by one person if reviewed by Requirements Lead @valuuusha; before merging to main, tag @valuuusha
 * Non-functional requirements verification: joint review session by all members, agree on metrics and methods for each requirement; each requirement must belong to ISO 25010 categories, at least one measurable NFR per category in requirements.md
 * Commits must include a link to the related issue
+* Commit & PR Naming Policy: each commit must start with one of the allowed prefixes:
+    * feat: new feature
+    * fix: bug fix
+    * refactor: code restructuring without changing behavior
+    * docs: documentation updates
+    * chore: maintenance tasks
+* PR titles must follow the same prefix rules.
+
+
+
+
 
 ## 5. Conflict Resolution
 
