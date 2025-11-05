@@ -234,7 +234,7 @@ class SpotViewSet(mixins.ListModelMixin,
 
         serializer = SpotSerializer(data=request.data, context={"lot": lot})
         serializer.is_valid(raise_exception=True)
-        spot = serializer.save(lot=lot, created_by=request.user)
+        serializer.save(lot=lot, created_by=request.user)
         
         response_data = serializer.data
         response_data["lot_name"] = lot.name
@@ -313,7 +313,6 @@ class BookingViewSet(mixins.ListModelMixin,
         return qs.filter(user=self.request.user)
     
     def get_object(self):
-        queryset = self.get_queryset()
         obj = super().get_object()
         self.check_object_permissions(self.request, obj)
         return obj
@@ -689,7 +688,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         serializer.is_valid(raise_exception=True)
         lot = get_object_or_404(ParkingLot, pk=serializer.validated_data['lot_id'])
 
-        profile, created = OperatorProfile.objects.update_or_create(
+        _, _ = OperatorProfile.objects.update_or_create(
             user=user,
             defaults={'lot': lot}
         )
