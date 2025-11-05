@@ -6,8 +6,6 @@ from src.api.models import ParkingLot, Spot, Booking, OperatorProfile
 from django.utils import timezone
 import time
 
-TEST_PASSWORD = "pass" # noqa: S105
-
 @pytest.mark.django_db
 def test_operator_cancels_booking_and_reason_is_detailed():
     operator_user = User.objects.create_user(username="op_test")

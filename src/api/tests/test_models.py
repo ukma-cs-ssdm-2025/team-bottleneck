@@ -8,8 +8,6 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 
-TEST_PASSWORD = "pass"
-
 class BookingTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="test")

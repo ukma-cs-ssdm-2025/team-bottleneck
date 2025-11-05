@@ -11,7 +11,6 @@ factory = APIRequestFactory()
 from datetime import timedelta
 from unittest.mock import Mock
 
-TEST_PASSWORD = "pass"
 
 @pytest.mark.django_db
 def test_permission_allows_own_lot():
