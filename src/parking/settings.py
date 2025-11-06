@@ -124,6 +124,10 @@ try:
                 "PASSWORD": config("RDS_PASSWORD"),
                 "HOST": config("RDS_HOSTNAME"),
                 "PORT": config("RDS_PORT", "5432"),
+                "OPTIONS": {
+                    "connect_timeout": 5,
+                    "options": "-c statement_timeout=10000"
+                }
             }
         }
     else:
