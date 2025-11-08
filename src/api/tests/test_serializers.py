@@ -1,6 +1,7 @@
 import pytest
 from src.api.serializers import ParkingLotDetailSerializer, UserRegistrationSerializer
 from django.contrib.auth.models import User
+from django.conf import settings
 
 
 @pytest.mark.parametrize("field,value,error", [
@@ -28,7 +29,7 @@ def test_user_registration_serializer_creates_user():
     data = {
         "username": "tester",
         "email": "tester@example.com",
-        "password": "StrongPass123!",
+        "password": settings.STRONG_PASSWORD_FOR_TESTS,
         "first_name": "Valeria",
         "last_name": "QATest"
     }

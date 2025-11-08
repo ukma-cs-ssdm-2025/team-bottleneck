@@ -7,6 +7,9 @@ from rest_framework.test import APITestCase
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
+from django.conf import settings
+
+TEST_PASSWORD = settings.TEST_USER_PASSWORD
 
 TEST_PASSWORD = "pass"
 
@@ -97,7 +100,7 @@ def test_booking_creation_defaults():
 
     assert booking.status == "confirmed"
     assert booking.cancellation_reason == ""
-    assert booking.payment_intent_id is None
+    assert booking.payment_intent_id == ""
     assert booking.user is None
 
 

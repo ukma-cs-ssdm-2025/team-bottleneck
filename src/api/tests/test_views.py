@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 from src.api.models import ParkingLot, Spot, Booking, OperatorProfile
 from django.utils import timezone
 import time
+from django.conf import settings
+
+TEST_PASSWORD = settings.TEST_USER_PASSWORD
 
 TEST_PASSWORD = "pass" # noqa: S105
 
@@ -94,7 +97,7 @@ def test_create_and_cancel_booking():
 @pytest.mark.django_db
 def test_user_register_and_update_me():
     client = APIClient()
-    reg = client.post("/api/v1/users/register/", {"username": "newu", "email": "n@e.com", "password": "StrongPass123!"}, format="json")
+    reg = client.post("/api/v1/users/register/", {"username": "newu", "email": "n@e.com", "password": settings.STRONG_PASSWORD_FOR_TESTS}, format="json")
     assert reg.status_code == 201
     user = User.objects.get(username="newu")
     client.force_authenticate(user)
@@ -184,7 +187,7 @@ def test_operator_can_update_own_spot():
     client = APIClient()
     user = User.objects.create_user(username="op")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
-    profile = OperatorProfile.objects.create(user=user, lot=lot)
+    OperatorProfile.objects.create(user=user, lot=lot)
     spot = Spot.objects.create(number="A1", lot=lot)
     
     client.force_authenticate(user=user)

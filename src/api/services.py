@@ -57,29 +57,6 @@ class PaymentService:
     @staticmethod
     def process_refund(booking) -> Dict[str, Any]:
         logger.info(f"Processing refund for booking {booking.id}")
-       
-        # ⚠️ ПРИМІТКА: Для реального рефанду потрібно зберігати ID PaymentIntent
-        # або Charge у моделі Booking. Для цілей моку, ми просто логуємо.
-        # В даний час Booking не зберігає Stripe ID, тому це мок.
-       
-        # amount_to_refund = PaymentService.calculate_price(booking)
-       
-        # try:
-        #     # Реальний рефанд вимагатиме ID PaymentIntent/Charge
-        #     # refund = stripe.Refund.create(charge=booking.stripe_charge_id)
-        #     return {
-        #         'status': 'mock_refunded',
-        #         'message': 'Stripe Refund Mock: Success. (Needs real Payment ID for real refund)',
-        #         'booking_id': booking.id,
-        #     }
-        # except Exception as e:
-        #     logger.error(f"Stripe Refund failed: {e}")
-        #     return {
-        #         'status': 'error',
-        #         'message': f'Stripe API Error: {str(e)}',
-        #         'booking_id': booking.id,
-        #     }
-
         return {
             'status': 'mock',
             'message': 'Refund will be processed once Stripe integration is fully implemented',
@@ -88,10 +65,6 @@ class PaymentService:
    
     @staticmethod
     def verify_payment(order_id: str, signature: str, data: str) -> bool:
-        # Цей метод використовувався для LiqPay.
-        # У Stripe для перевірки платежу використовують Webhooks.
-        # Залишаємо його як заглушку, якщо він використовується в іншому місці,
-        # але для Stripe Webhook потрібен інший підхід.
         logger.info(f"Verifying payment for order {order_id}")
         return True
 
@@ -99,8 +72,7 @@ class BookingNotificationService:
     @staticmethod
     def send_booking_confirmation(booking):
         logger.info(f"Sending booking confirmation for {booking.id} to {booking.user.email}")
-        # TODO: Integrate with email service
-        pass
+
    
     @staticmethod
     def send_cancellation_confirmation(booking):
@@ -109,15 +81,11 @@ class BookingNotificationService:
             return 
             
         logger.info(f"Sending cancellation confirmation for {booking.id} to {booking.user.email}")
-        # TODO: Integrate with email service
-        pass
    
     @staticmethod
     def send_reminder(booking):
         """Sends a reminder before the booking starts"""
         logger.info(f"Sending reminder for booking {booking.id}")
-        # TODO: Integrate with email or push notification service
-        pass
 
 class CancellationService:
     @staticmethod

@@ -236,7 +236,7 @@ def test_admin_cannot_delete_lot_with_active_bookings():
     spot = Spot.objects.create(number="A1", lot=lot)
     
     user = User.objects.create_user(username="user")
-    booking = Booking.objects.create(
+    Booking.objects.create(
         user=user,
         spot=spot,
         start_at=timezone.now() + timedelta(hours=1),
@@ -250,7 +250,6 @@ def test_admin_cannot_delete_lot_with_active_bookings():
     response = client.delete(f"/api/v1/lots/{lot.id}/")
     
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    # Check that error message mentions bookings
     assert "booking" in response.data["detail"].lower()
 
 
@@ -351,7 +350,7 @@ def test_admin_can_assign_user_as_operator():
 @pytest.mark.django_db
 def test_admin_can_remove_operator_role():
     """Admin can remove operator profile"""
-    admin = User.objects.create_superuser(username="admin")
+    User.objects.create_superuser(username="admin")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
     operator = User.objects.create_user(username="op")
     profile = OperatorProfile.objects.create(user=operator, lot=lot)
@@ -548,7 +547,7 @@ def test_regular_user_cannot_delete_spots():
 @pytest.mark.django_db
 def test_deleting_lot_cascades_to_spots():
     """Deleting a parking lot should cascade to its spots"""
-    admin = User.objects.create_superuser(username="admin")
+    User.objects.create_superuser(username="admin")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
     
     spot1 = Spot.objects.create(number="A1", lot=lot)
