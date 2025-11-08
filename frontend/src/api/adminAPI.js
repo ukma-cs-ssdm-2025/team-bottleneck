@@ -3,62 +3,39 @@
 import apiClient from './apiClient';
 
 export const createParkingLot = async (lotData) => {
-    try {
-        const response = await apiClient.post('/lots/', lotData);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await apiClient.post('/lots/', lotData);
+    return response.data;
 };
 
 export const getAdminParkingLots = async () => {
-    try {
-        const response = await apiClient.get('/lots/');
-        if (response.data && Array.isArray(response.data.results)) {
-            return response.data.results;
-        }
-        return response.data;
-    } catch (error) {
-        throw error;
+    const response = await apiClient.get('/lots/');
+    if (response.data && Array.isArray(response.data.results)) {
+        return response.data.results;
     }
+    return response.data;
+
 };
 
 export const getParkingLotDetails = async (lotId) => {
-    try {
-        const response = await apiClient.get(`/lots/${lotId}/`);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await apiClient.get(`/lots/${lotId}/`);
+    return response.data;
 };
 
 export const updateParkingLot = async (lotId, lotData) => {
-    try {
-        const response = await apiClient.patch(`/lots/${lotId}/`, lotData);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await apiClient.patch(`/lots/${lotId}/`, lotData);
+    return response.data;
 };
 
 export const deleteParkingLot = async (lotId) => {
-    try {
-        await apiClient.delete(`/lots/${lotId}/`);
-    } catch (error) {
-        throw error;
-    }
+    await apiClient.delete(`/lots/${lotId}/`);
 };
 
 export const getAllUsers = async () => {
-    try {
-        const response = await apiClient.get('/users/');
-        if (response.data && Array.isArray(response.data.results)) {
-            return response.data.results;
-        }
-        return response.data;
-    } catch (error) {
-        throw error;
+    const response = await apiClient.get('/users/');
+    if (response.data && Array.isArray(response.data.results)) {
+        return response.data.results;
     }
+    return response.data;
 };
 
 export const makeOperator = async (userId, lotId) => {
