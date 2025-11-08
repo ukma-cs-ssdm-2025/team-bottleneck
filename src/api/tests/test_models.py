@@ -11,6 +11,8 @@ from django.conf import settings
 
 TEST_PASSWORD = settings.TEST_USER_PASSWORD
 
+TEST_PASSWORD = "pass"
+
 class BookingTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="test")

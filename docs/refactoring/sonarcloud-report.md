@@ -1,48 +1,7 @@
 # SonarCloud Report
-**Date:** November 05, 2025  
-## SonarCloud Metrics (Before vs After Refactoring)
-| Metric            | Before | After | 
-| ----------------- | ------ | ----- | 
-| Issues            | 367    | 72    | 
-| Duplications      | 59.9% | 2.7%  | 
-| Security Hotspots | 46      | 0     |
+**Date:** November 04, 2025  
 
-## SonarCloud Screenshots (Before/After)
-
-#### Before Refactoring
-<img width="1280" height="259" alt="image" src="https://github.com/user-attachments/assets/709b15b6-6112-4dc5-ab4a-565e3f60adfb" />
-
-
-
-#### After Refactoring
-<img width="1858" height="352" alt="image" src="https://github.com/user-attachments/assets/7fac2df3-ceb0-4252-b458-903ac563e770" />
-
-
-
-
-## Refactoring Patterns Applied
-
-#### Removed `null=True` Flags
-
-Unnecessary `null=True` options were removed to avoid inconsistent behavior in Django models.
-
-#### Removed Unused Variables
-
-Unused local variables were deleted or replaced with `_` to improve code clarity.
-
-#### Removed Commented-Out Code
-
-Old commented code was removed to reduce clutter and keep files clean.
-
-#### Removed Hardcoded Keys
-
-Hardcoded keys/credentials were eliminated to improve security and maintainability.
-
-#### Fixed Frontend Issues
-
-Several Frontend issues were fixed.
-
-
+---
 
 ## Test execution Summary
 
