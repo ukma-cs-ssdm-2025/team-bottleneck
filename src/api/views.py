@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import transaction, connection
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -24,6 +24,7 @@ from .validators import validate_booking_window
 from .swagger import ErrorSerializer
 from .services import PaymentService, BookingNotificationService, CancellationService, SpotUpdateService
 from rest_framework.exceptions import ValidationError
+from django.db.utils import OperationalError
 
 
 class ParkingLotViewSet(viewsets.ModelViewSet):
@@ -390,33 +391,59 @@ class BookingViewSet(mixins.ListModelMixin,
         end_at = ser.validated_data["end_at"]
 
         validate_booking_window(start_at, end_at)
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL statement_timeout = '5000'") 
+        
+            try:
+                locked_spot = Spot.objects.select_for_update(
+                    nowait=False, 
+                    skip_locked=False
+                ).get(pk=spot.id)
+            except Spot.DoesNotExist:
+                return Response(
+                    {"detail": "Parking spot not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            conflict = Booking.objects.filter(
+                spot=locked_spot,
+                status="confirmed",
+                start_at__lt=end_at,
+                end_at__gt=start_at
+            ).exists()
 
-        conflict = Booking.objects.filter(
-            spot=spot,
-            status="confirmed",
-            start_at__lt=end_at,
-            end_at__gt=start_at
-        ).exists()
+            if conflict:
+                return Response(
+                    {"detail": "This spot is already booked for the specified period."},
+                    status=status.HTTP_409_CONFLICT
+                )
 
-        if conflict:
-            return Response(
-                {"detail": "This spot is already booked for the specified period."},
-                status=status.HTTP_409_CONFLICT
+            booking = Booking.objects.create(
+                user=request.user,
+                spot=locked_spot,
+                start_at=start_at,
+                end_at=end_at,
+                status="confirmed"
             )
 
-        booking = Booking.objects.create(
-            user=request.user,
-            spot=spot,
-            start_at=start_at,
-            end_at=end_at,
-            status="confirmed"
-        )
-
-        payment_data = PaymentService.initiate_payment(booking)
-        response_data = BookingSerializer(booking).data
-        response_data["payment"] = payment_data
-
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            payment_data = PaymentService.initiate_payment(booking)
+            response_data = BookingSerializer(booking).data
+            response_data["payment"] = payment_data
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        except OperationalError as e:
+            return Response(
+                {
+                    "detail": "The booking service is temporarily unavailable. Please try again in a moment.",
+                    "error_code": "DB_TIMEOUT"
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        except Exception as e:
+            return Response(
+                {"detail": "An unexpected error occurred. Please contact support."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @extend_schema(
         summary="[Client] Cancel my booking",
