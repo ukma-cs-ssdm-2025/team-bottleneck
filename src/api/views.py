@@ -108,8 +108,29 @@ class SpotViewSet(mixins.ListModelMixin,
     serializer_class = SpotSerializer
 
     def get_queryset(self):
-        lot_pk = self.kwargs.get('lot_pk')
-        return Spot.objects.filter(lot_id=lot_pk).select_related('lot').order_by('id')
+        lot_id = self.kwargs.get("lot_pk")
+        qs = Spot.objects.select_related("lot").all()
+        if lot_id:
+            get_object_or_404(ParkingLot, pk=lot_id)
+            qs = qs.filter(lot_id=lot_id)
+
+        available_from = self.request.query_params.get("available_from")
+        available_to = self.request.query_params.get("available_to")
+
+        if available_from and available_to:
+            start = parse_datetime(available_from)
+            end = parse_datetime(available_to)
+
+            if start and end:
+                booked_spots = Booking.objects.filter(
+                    status="confirmed",
+                    start_at__lt=end,
+                    end_at__gt=start
+                ).values_list('spot_id', flat=True)
+
+                qs = qs.exclude(id__in=booked_spots)
+
+        return qs
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -180,14 +201,6 @@ class SpotViewSet(mixins.ListModelMixin,
                     {"detail": "Invalid date format. Use ISO 8601 format."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            booked_spots = Booking.objects.filter(
-                status="confirmed",
-                start_at__lt=end,
-                end_at__gt=start
-            ).values_list('spot_id', flat=True)
-
-            qs = qs.exclude(id__in=booked_spots)
 
         self.queryset = qs
         return super().list(request, *args, **kwargs)
