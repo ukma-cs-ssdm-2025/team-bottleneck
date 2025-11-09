@@ -3,7 +3,6 @@ from src.api.serializers import ParkingLotDetailSerializer, UserRegistrationSeri
 from django.contrib.auth.models import User
 from django.conf import settings
 
-
 @pytest.mark.parametrize("field,value,error", [
     ("name", "  a ", "at least 3 characters"),
     ("city", "Ky1v", "only letters"),
@@ -37,5 +36,5 @@ def test_user_registration_serializer_creates_user():
     assert serializer.is_valid(), serializer.errors
     user = serializer.save()
     assert isinstance(user, User)
-    assert user.check_password("StrongPass123!")
+    assert user.check_password(settings.STRONG_PASSWORD_FOR_TESTS)
     assert user.email == "tester@example.com"

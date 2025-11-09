@@ -1,5 +1,3 @@
-# src/api/tests/test_spot_creation.py
-
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -26,7 +24,6 @@ class TestSpotCreation:
             street="Green"
         )
         
-        # Create users (no password needed with force_authenticate)
         self.operator = User.objects.create_user(username="op1")
         self.not_operator = User.objects.create_user(username="u1")
         
