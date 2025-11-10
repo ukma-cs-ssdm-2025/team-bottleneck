@@ -113,7 +113,6 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}
 }
 
-import os
 try:
     if config("RDS_DB_NAME", default=None):
         DATABASES = {

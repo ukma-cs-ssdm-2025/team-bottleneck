@@ -9,10 +9,6 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.conf import settings
 
-TEST_PASSWORD = settings.TEST_USER_PASSWORD
-
-TEST_PASSWORD = "pass"
-
 class BookingTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="test")
@@ -71,7 +67,7 @@ def test_spot_unique_together_same_lot():
     lot = ParkingLot.objects.create(name="Lot B", city="Kyiv", street="Main")
     Spot.objects.create(number="X1", lot=lot)
     with pytest.raises(IntegrityError):
-        Spot.objects.create(number="X1", lot=lot)  # дубль у межах того ж лоту
+        Spot.objects.create(number="X1", lot=lot) 
 
 
 @pytest.mark.django_db

@@ -203,7 +203,15 @@ class SpotViewSet(mixins.ListModelMixin,
                         {"detail": "Invalid date format. Use ISO 8601 format."},
                         status=status.HTTP_400_BAD_REQUEST
                     )
-    
+
+                booked_spots = Booking.objects.filter(
+                    status="confirmed",
+                    start_at__lt=end,
+                    end_at__gt=start
+                ).values_list('spot_id', flat=True)
+
+                qs = qs.exclude(id__in=booked_spots)
+
             self.queryset = qs
             return super().list(request, *args, **kwargs)
         except OperationalError:
@@ -414,10 +422,7 @@ class BookingViewSet(mixins.ListModelMixin,
         end_at = ser.validated_data["end_at"]
 
         validate_booking_window(start_at, end_at)
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SET LOCAL statement_timeout = '5000'") 
-        
+        try: 
             try:
                 locked_spot = Spot.objects.select_for_update(
                     nowait=False, 
@@ -454,7 +459,7 @@ class BookingViewSet(mixins.ListModelMixin,
             response_data = BookingSerializer(booking).data
             response_data["payment"] = payment_data
             return Response(response_data, status=status.HTTP_201_CREATED)
-        except OperationalError as e:
+        except OperationalError:
             return Response(
                 {
                     "detail": "The booking service is temporarily unavailable. Please try again in a moment.",
