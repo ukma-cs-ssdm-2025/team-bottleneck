@@ -148,49 +148,59 @@ class SpotViewSet(mixins.ListModelMixin,
     )
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
-
-        def parse_bool(val, key):
-            if val is None:
-                return None
-            low = val.lower()
-            if low not in ("true", "false"):
-                raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
-            return low == "true"
-
         try:
-            ev = parse_bool(request.query_params.get("is_ev"), "is_ev")
-            dis = parse_bool(request.query_params.get("is_disabled"), "is_disabled")
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL statement_timeout = '20000'")
+            def parse_bool(val, key):
+                if val is None:
+                    return None
+                low = val.lower()
+                if low not in ("true", "false"):
+                    raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
+                return low == "true"
 
-        if ev is not None:
-            qs = qs.filter(is_ev=ev)
-        if dis is not None:
-            qs = qs.filter(is_disabled=dis)
+            try:
+                ev = parse_bool(request.query_params.get("is_ev"), "is_ev")
+                dis = parse_bool(request.query_params.get("is_disabled"), "is_disabled")
+            except ValueError as e:
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        available_from = request.query_params.get("available_from")
-        available_to = request.query_params.get("available_to")
+            if ev is not None:
+                qs = qs.filter(is_ev=ev)
+            if dis is not None:
+                qs = qs.filter(is_disabled=dis)
 
-        if available_from and available_to:
-            start = parse_datetime(available_from)
-            end = parse_datetime(available_to)
+            available_from = request.query_params.get("available_from")
+            available_to = request.query_params.get("available_to")
 
-            if not start or not end:
-                return Response(
-                    {"detail": "Invalid date format. Use ISO 8601 format."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            if available_from and available_to:
+                start = parse_datetime(available_from)
+                end = parse_datetime(available_to)
 
-            booked_spots = Booking.objects.filter(
-                status="confirmed",
-                start_at__lt=end,
-                end_at__gt=start
-            ).values_list('spot_id', flat=True)
+                if not start or not end:
+                    return Response(
+                        {"detail": "Invalid date format. Use ISO 8601 format."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-            qs = qs.exclude(id__in=booked_spots)
+                booked_spots = Booking.objects.filter(
+                    status="confirmed",
+                    start_at__lt=end,
+                    end_at__gt=start
+                ).values_list('spot_id', flat=True)
 
-        self.queryset = qs
-        return super().list(request, *args, **kwargs)
+                qs = qs.exclude(id__in=booked_spots)
+
+            self.queryset = qs
+            return super().list(request, *args, **kwargs)
+        except OperationalError:
+            return Response(
+                {
+                    "detail": "The search query is taking too long to process. Please try narrowing your search criteria.",
+                    "error_code": "QUERY_TIMEOUT"
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
 
     @extend_schema(
         summary="Get parking spot details",
@@ -391,10 +401,7 @@ class BookingViewSet(mixins.ListModelMixin,
         end_at = ser.validated_data["end_at"]
 
         validate_booking_window(start_at, end_at)
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SET LOCAL statement_timeout = '5000'") 
-        
+        try: 
             try:
                 locked_spot = Spot.objects.select_for_update(
                     nowait=False, 
@@ -431,7 +438,7 @@ class BookingViewSet(mixins.ListModelMixin,
             response_data = BookingSerializer(booking).data
             response_data["payment"] = payment_data
             return Response(response_data, status=status.HTTP_201_CREATED)
-        except OperationalError as e:
+        except OperationalError:
             return Response(
                 {
                     "detail": "The booking service is temporarily unavailable. Please try again in a moment.",
