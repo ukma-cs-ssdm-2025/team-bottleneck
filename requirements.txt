@@ -18,4 +18,5 @@ sqlparse==0.5.3
 tzdata==2025.2
 uritemplate==4.2.0
 whitenoise==6.11.0
-
+djangorestframework-simplejwt==5.5.1
+pyjwt==2.10.1
