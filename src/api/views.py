@@ -169,42 +169,52 @@ class SpotViewSet(mixins.ListModelMixin,
     )
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
-
-        def parse_bool(val, key):
-            if val is None:
-                return None
-            low = val.lower()
-            if low not in ("true", "false"):
-                raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
-            return low == "true"
-
         try:
-            ev = parse_bool(request.query_params.get("is_ev"), "is_ev")
-            dis = parse_bool(request.query_params.get("is_disabled"), "is_disabled")
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        if ev is not None:
-            qs = qs.filter(is_ev=ev)
-        if dis is not None:
-            qs = qs.filter(is_disabled=dis)
-
-        available_from = request.query_params.get("available_from")
-        available_to = request.query_params.get("available_to")
-
-        if available_from and available_to:
-            start = parse_datetime(available_from)
-            end = parse_datetime(available_to)
-
-            if not start or not end:
-                return Response(
-                    {"detail": "Invalid date format. Use ISO 8601 format."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        self.queryset = qs
-        return super().list(request, *args, **kwargs)
-
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL statement_timeout = '20000'")
+            def parse_bool(val, key):
+                if val is None:
+                    return None
+                low = val.lower()
+                if low not in ("true", "false"):
+                    raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
+                return low == "true"
+    
+            try:
+                ev = parse_bool(request.query_params.get("is_ev"), "is_ev")
+                dis = parse_bool(request.query_params.get("is_disabled"), "is_disabled")
+            except ValueError as e:
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+            if ev is not None:
+                qs = qs.filter(is_ev=ev)
+            if dis is not None:
+                qs = qs.filter(is_disabled=dis)
+    
+            available_from = request.query_params.get("available_from")
+            available_to = request.query_params.get("available_to")
+    
+            if available_from and available_to:
+                start = parse_datetime(available_from)
+                end = parse_datetime(available_to)
+    
+                if not start or not end:
+                    return Response(
+                        {"detail": "Invalid date format. Use ISO 8601 format."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+    
+            self.queryset = qs
+            return super().list(request, *args, **kwargs)
+        except OperationalError:
+            return Response(
+                {
+                    "detail": "The search query is taking too long to process. Please try narrowing your search criteria.",
+                    "error_code": "QUERY_TIMEOUT"
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+            
     @extend_schema(
         summary="Get parking spot details",
         description="Returns detailed information for a single parking spot.",
