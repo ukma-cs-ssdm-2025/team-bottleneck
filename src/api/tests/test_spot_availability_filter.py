@@ -4,7 +4,7 @@ from datetime import timedelta
 from rest_framework.test import APIClient
 from src.api.models import ParkingLot, Spot, Booking
 from django.contrib.auth.models import User
-
+from django.conf import settings
 
 class TestSpotAvailabilityFilter(TestCase):
 
@@ -22,7 +22,7 @@ class TestSpotAvailabilityFilter(TestCase):
         self.spot2 = Spot.objects.create(number="P2", lot=self.lot, is_ev=False, is_disabled=False)
         self.spot3 = Spot.objects.create(number="P3", lot=self.lot, is_ev=True, is_disabled=False)
 
-        self.user = User.objects.create_user(username="testuser", password="testpass")
+        self.user = User.objects.create_user(username="testuser", password=settings.TEST_USER_PASSWORD)
 
     def test_booked_spot_excluded_from_results(self):
         start = timezone.now() + timedelta(hours=1)
