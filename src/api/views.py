@@ -108,8 +108,29 @@ class SpotViewSet(mixins.ListModelMixin,
     serializer_class = SpotSerializer
 
     def get_queryset(self):
-        lot_pk = self.kwargs.get('lot_pk')
-        return Spot.objects.filter(lot_id=lot_pk).select_related('lot').order_by('id')
+        lot_id = self.kwargs.get("lot_pk")
+        qs = Spot.objects.select_related("lot").all()
+        if lot_id:
+            get_object_or_404(ParkingLot, pk=lot_id)
+            qs = qs.filter(lot_id=lot_id)
+
+        available_from = self.request.query_params.get("available_from")
+        available_to = self.request.query_params.get("available_to")
+
+        if available_from and available_to:
+            start = parse_datetime(available_from)
+            end = parse_datetime(available_to)
+
+            if start and end:
+                booked_spots = Booking.objects.filter(
+                    status="confirmed",
+                    start_at__lt=end,
+                    end_at__gt=start
+                ).values_list('spot_id', flat=True)
+
+                qs = qs.exclude(id__in=booked_spots)
+
+        return qs
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -158,25 +179,25 @@ class SpotViewSet(mixins.ListModelMixin,
                 if low not in ("true", "false"):
                     raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
                 return low == "true"
-
+    
             try:
                 ev = parse_bool(request.query_params.get("is_ev"), "is_ev")
                 dis = parse_bool(request.query_params.get("is_disabled"), "is_disabled")
             except ValueError as e:
                 return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+    
             if ev is not None:
                 qs = qs.filter(is_ev=ev)
             if dis is not None:
                 qs = qs.filter(is_disabled=dis)
-
+    
             available_from = request.query_params.get("available_from")
             available_to = request.query_params.get("available_to")
-
+    
             if available_from and available_to:
                 start = parse_datetime(available_from)
                 end = parse_datetime(available_to)
-
+    
                 if not start or not end:
                     return Response(
                         {"detail": "Invalid date format. Use ISO 8601 format."},
@@ -201,7 +222,7 @@ class SpotViewSet(mixins.ListModelMixin,
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
-
+            
     @extend_schema(
         summary="Get parking spot details",
         description="Returns detailed information for a single parking spot.",
