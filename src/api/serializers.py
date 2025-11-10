@@ -141,10 +141,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'is_operator', 'lot_id', 'is_staff')
         read_only_fields = ('id', 'username', 'email', 'is_operator', 'lot_id', 'is_staff')
 
-    def get_is_operator(self, obj):
+    def get_is_operator(self, obj) -> bool:
         return hasattr(obj, 'operator_profile')
 
-    def get_lot_id(self, obj):
+    def get_lot_id(self, obj) -> int | None:
         if hasattr(obj, 'operator_profile'):
             return obj.operator_profile.lot_id
         return None

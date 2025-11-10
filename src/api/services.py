@@ -6,13 +6,17 @@ import stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 logger = logging.getLogger(__name__)
 
-class PaymentService:
-    BASE_PRICE_PER_HOUR = Decimal('30.00')
-   
+class PaymentService:   
     @staticmethod
     def calculate_price(booking) -> Decimal:
         duration_hours = (booking.end_at - booking.start_at).total_seconds() / 3600
-        price_per_hour = PaymentService.BASE_PRICE_PER_HOUR
+        price_per_hour = booking.spot.lot.base_price_per_hour
+
+        if booking.spot.is_ev:
+            price_per_hour *= Decimal('1.30')
+            
+        if booking.spot.is_disabled:
+            price_per_hour *= Decimal('0.80')
        
         total = price_per_hour * Decimal(str(duration_hours))
    
