@@ -5,9 +5,9 @@ import {
 } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { loginUser } from '../api/parkingAPI';
+import { getTokensAndProfile } from '../api/parkingAPI'; 
 
-function UserLoginPage() {
+function SingleLoginPage() { 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
@@ -17,10 +17,12 @@ function UserLoginPage() {
     const navigate = useNavigate();
 
     const renderErrorMessage = (err) => {
-        if (err.response && err.response.status === 401) {
-            return 'Невірне ім\'я користувача або пароль.';
+        if (err.response?.status === 401) {
+            if (err.response.data?.detail === "No active account found with the given credentials") {
+                return 'Невірне ім\'я користувача або пароль.';
+            }
         }
-        if (err.response && err.response.data && err.response.data.detail) {
+        if (err.response?.data?.detail) {
             return err.response.data.detail;
         }
         return 'Виникла невідома помилка під час входу. Перевірте мережу та облікові дані.';
@@ -32,12 +34,23 @@ function UserLoginPage() {
         setLoading(true);
 
         try {
-            const userData = await loginUser({ username, password });
-            login(username, password, userData);
-            navigate('/profile');
+            const { tokens, userData } = await getTokensAndProfile({ username, password }); 
+            
+            login(tokens, userData);
+            
+            if (userData.is_staff) {
+                navigate('/admin', { replace: true });
+                
+            } else if (userData.operator_profile && userData.operator_profile.lot_id) {
+                navigate('/operator', { replace: true });
+
+            } else {
+                navigate('/profile', { replace: true }); 
+            }
+            
         } catch (err) {
             setError(renderErrorMessage(err));
-            console.error('Login failed with error:', err.response || err);
+            console.error('Login failed with error:', err.response?.data || err);
         } finally {
             setLoading(false);
         }
@@ -47,7 +60,7 @@ function UserLoginPage() {
         <Container component="main" maxWidth="xs">
             <Paper elevation={3} sx={{ mt: 8, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-                    Вхід для Користувачів
+                    УВІЙТИ
                 </Typography>
                 {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
@@ -87,9 +100,6 @@ function UserLoginPage() {
                         {loading ? <CircularProgress size={24} color="inherit" /> : 'УВІЙТИ'}
                     </Button>
                     <Box sx={{ textAlign: 'center', mt: 2 }}>
-                        <Link to="/operator/login" style={{ textDecoration: 'none' }}>
-                            <Button variant="text" size="small">Вхід для оператора</Button>
-                        </Link>
                         <Typography variant="body2" sx={{ mt: 1 }}>
                             Немає облікового запису? <Link to="/register">Зареєструватися</Link>
                         </Typography>
@@ -100,4 +110,4 @@ function UserLoginPage() {
     );
 }
 
-export default UserLoginPage;
+export default SingleLoginPage;
