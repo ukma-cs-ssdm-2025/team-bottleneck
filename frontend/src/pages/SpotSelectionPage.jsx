@@ -35,9 +35,18 @@ function SpotSelectionPage() {
             const spotsList = data.results && Array.isArray(data.results) ? data.results : [];
             setSpots(spotsList);
         } catch (err) {
-            console.error('Failed to load available spots:', err);
-            const errorMessage = err.response?.data?.detail || 'Не вдалося завантажити доступні місця. Перевірте підключення.';
-            setError(errorMessage);
+            console.error('Error fetching spots:', err);
+            if (err.response && err.response.status === 404) {
+                setError('Парковку не знайдено. Перевірте правильність посилання.');
+            } else if (err.response && err.response.status === 400) {
+                setError('Некоректні параметри пошуку. Перевірте обраний час.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.');
+            } else {
+                setError('Не вдалося завантажити доступні місця. Спробуйте оновити сторінку.');
+            }
             setSpots([]);
         } finally {
             setLoading(false);

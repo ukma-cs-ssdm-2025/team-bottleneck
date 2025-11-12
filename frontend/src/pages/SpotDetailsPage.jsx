@@ -133,8 +133,18 @@ function SpotDetailsPage() {
             setAllBookings(bookingsData);
 
         } catch (err) {
-            setError('Не вдалося завантажити деталі місця або бронювання.');
-            console.error(err);
+            console.error('Error loading spot details:', err);
+            if (err.response && err.response.status === 404) {
+                setError('Паркомісце не знайдено.');
+            } else if (err.response && err.response.status === 403) {
+                setError('У вас немає доступу до цього паркомісця.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.');
+            } else {
+                setError('Не вдалося завантажити деталі місця або бронювання.');
+            }
         } finally {
             setLoadingData(false);
         }
@@ -168,8 +178,18 @@ function SpotDetailsPage() {
             setUpdateStatus('success');
         } catch (err) {
             setUpdateStatus('error');
-            setError(err.response?.data?.detail || 'Помилка оновлення.');
             console.error("Update failed:", err);
+            if (err.response && err.response.status === 400) {
+                setError('Некоректні дані. Перевірте введену інформацію.');
+            } else if (err.response && err.response.status === 404) {
+                setError('Паркомісце не знайдено.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером.');
+            } else {
+                setError('Не вдалося оновити паркомісце.');
+            }
         } finally {
             setIsUpdating(false);
             setTimeout(() => setUpdateStatus(null), 3000);
@@ -187,8 +207,21 @@ function SpotDetailsPage() {
             await deleteSpot(lotId, spotId);
             navigate('/operator', { state: { successMessage: `Місце #${spot.number} видалено.` } });
         } catch (err) {
-            const detail = err.response?.data?.detail || 'Не вдалося видалити паркомісце.';
-            setError(detail);
+            console.error('Delete error:', err);
+            if (err.response && err.response.status === 400) {
+                const detail = err.response?.data?.detail || 'Не вдалося видалити паркомісце.';
+                setError(detail);
+            } else if (err.response && err.response.status === 403) {
+                setError('У вас немає доступу до видалення цього паркомісця.');
+            } else if (err.response && err.response.status === 404) {
+                setError('Паркомісце не знайдено.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.');
+            } else {
+                setError('Помилка при видаленні паркомісця.');
+            }
         } finally {
             setIsDeleting(false);
         }
@@ -219,7 +252,20 @@ function SpotDetailsPage() {
             closeCancelDialog();
             await loadData();
         } catch (err) {
-            setError('Помилка скасування: ' + (err.response?.data?.detail || 'Невідома помилка.'));
+            console.error('Cancel error:', err);
+            if (err.response && err.response.status === 400) {
+                setError('Це бронювання вже скасовано або не може бути скасовано.');
+            } else if (err.response && err.response.status === 404) {
+                setError('Бронювання не знайдено.');
+            } else if (err.response && err.response.status === 403) {
+                setError('У вас немає доступу до цього бронювання.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.');
+            } else {
+                setError('Помилка скасування: ' + (err.response?.data?.detail || 'Спробуйте ще раз.'));
+            }
         } finally {
             setIsCancelling(false);
         }
