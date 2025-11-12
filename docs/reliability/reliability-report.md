@@ -4,12 +4,14 @@
 
 ## 1. Table of All Identified Issues and Severity Assessment
 
-|   #   | Issue Description                                                                                                                                             | Potential Impact                                                                              | Severity | Status  |
-| :---: | :------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------- | :------- | :------ |
-| **1** | **Unreliable Booking Creation Transaction:** Lack of timeouts and race condition in core business logic (fixed by adding DB timeouts and exception handling). | Data inconsistency (double booking), Monetary Loss, Full System DoS.                          | **High** | ✅ fixed |
-| **2** | **Slow Spot Search and Thread Blocking:** Full Table Scan on a critical endpoint without a query timeout.                                                     | Poor User Experience, High Customer Loss, Partial DoS due to resource exhaustion.             | **High** | unfixed |
-| **3** | **Redundant Exception Catching (Client Code):** Unnecessary `try...catch` block re-throwing the same error.                                                   | Increased Maintainability Debt, Risk of Silent Failure, Diagnostic Failure.                   | **Low**  | unfixed |
-| **4** | **Silent Failure in Parking Spot Availability Filter:** Availability filter did not exclude already booked spots.                                             | Semantic Data Inconsistency, Booking Conflicts (409 errors), Loss of Trust, User Frustration. | **High** | ✅ fixed |
+|   #   | Issue Description                                                                                                                    | Potential Impact                                                                         | Severity     | Status  |
+| :---: | :----------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- | :----------- | :------ |
+| **1** | **Unreliable Booking Creation Transaction:** Lack of timeouts and race condition in core business logic.                             | Data inconsistency, Monetary Loss, Full System DoS.                                      | **High**     | ✅ fixed |
+| **2** | **Slow Spot Search and Thread Blocking:** Full Table Scan on a critical endpoint without query timeout.                              | Poor Performance, Customer Loss, Partial DoS.                                            | **High**     | unfixed |
+| **3** | **Redundant Exception Catching (Client Code):** Unnecessary `try...catch` block re-throwing the same error.                          | Maintainability issues, Diagnostic Failure.                                              | **Low**      | unfixed |
+| **4** | **Silent Failure in Parking Spot Availability Filter:** Already booked spots were not excluded.                                      | Semantic Data Corruption, 409 conflicts, Loss of Trust.                                  | **High**     | ✅ fixed |
+| **5** | **Infinite Token Refresh Loop:** Missing guard clause and missing token cleanup caused repeated refresh attempts and redirect loops. | Infinite retry loop, User lockout, Full UI freeze, Authentication subsystem instability. | **High** | ✅ fixed |
+
 
 ---
 
@@ -129,12 +131,72 @@ class SpotViewSet(...):
         return qs
 ```
 
-**Why it was dangerous:**
-This was a **silent failure** — the endpoint returned a `200 OK` but with semantically incorrect data.
-Because `super().list()` internally re-called `get_queryset()`, the filtered dataset was lost.
-The issue produced booking conflicts and degraded user trust.
+##  Issue 5 — Infinite Token Refresh Loop 
+
+
+###  Before (Fault: No Retry Limit, No Cleanup)
+
+```javascript
+// Condition checks 401 but does NOT limit retry attempts
+if (error.response?.status === 401 && originalRequest.url !== '/token/refresh/') {
+    // ...
+    // no _retry flag
+    // no cleanup
+    // infinite loop possible
+}
+```
+
+**Catch block — also incorrect:**
+
+```javascript
+} catch (_error) {
+    isRefreshing = false;
+    processQueue(_error, null); 
+    // Tokens NOT reliably cleared
+    return Promise.reject(_error);
+}
+```
 
 ---
+
+### After (Resilient: Guard Clause + Cleanup + Redirect)
+
+```javascript
+// Guard Clause: allow only one retry attempt
+if (error.response?.status === 401 && originalRequest.url !== '/token/refresh/') {
+
+    if (originalRequest._retry) {
+        throw error; // Prevent infinite refresh cycle
+    }
+
+    originalRequest._retry = true; // First retry attempt
+    isRefreshing = true;
+
+    // ... refresh logic ...
+}
+```
+
+**Fixed catch block:**
+
+```javascript
+} catch (_error) {
+    isRefreshing = false;
+    processQueue(_error, null);
+
+    // Clear broken tokens
+    globalThis.localStorage.removeItem('accessToken');
+    globalThis.localStorage.removeItem('refreshToken');
+
+    // Redirect user to login
+    if (typeof globalThis.window !== 'undefined') {
+        globalThis.window.location.href = '/login';
+    }
+
+    throw _error;
+}
+```
+
+
 
 ## 3. Description of Applied Reliability Patterns
 
@@ -157,4 +219,10 @@ The following reliability issues remain unresolved:
 
 * **Redundant Exception Catching (Client Code):**
   Review unnecessary exception wrapping and redundant `try...catch` blocks to improve diagnostic accuracy.
+
+
+
+
+
+
 
