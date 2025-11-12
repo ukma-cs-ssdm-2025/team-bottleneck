@@ -17,12 +17,12 @@ function SingleLoginPage() {
     const navigate = useNavigate();
 
     const renderErrorMessage = (err) => {
-        if (err.response && err.response.status === 401) {
+        if (err.response?.status === 401) {
             if (err.response.data?.detail === "No active account found with the given credentials") {
-                 return 'Невірне ім\'я користувача або пароль.';
+                return 'Невірне ім\'я користувача або пароль.';
             }
         }
-        if (err.response && err.response.data && err.response.data.detail) {
+        if (err.response?.data?.detail) {
             return err.response.data.detail;
         }
         return 'Виникла невідома помилка під час входу. Перевірте мережу та облікові дані.';
@@ -50,7 +50,7 @@ function SingleLoginPage() {
             
         } catch (err) {
             setError(renderErrorMessage(err));
-            console.error('Login failed with error:', err.response || err);
+            console.error('Login failed with error:', err.response?.data || err);
         } finally {
             setLoading(false);
         }

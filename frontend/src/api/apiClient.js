@@ -20,19 +20,16 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    timeout: 10000,
 });
 
 
 apiClient.interceptors.request.use(
     (config) => {
-
-        
         const token = localStorage.getItem('accessToken');
         if (token) {
-  
             config.headers['Authorization'] = `Bearer ${token}`;
         }
-        
         return config;
     },
     (error) => {
@@ -47,9 +44,12 @@ apiClient.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
         
-        if (error.response.status === 401 && originalRequest.url !== '/token/refresh/') {
+        if (error.response?.status === 401 && originalRequest.url !== '/token/refresh/') {
             
-   
+            if (originalRequest._retry) {
+                 return Promise.reject(error);
+            }
+            
             if (isRefreshing) {
                 return new Promise(function(resolve, reject) {
                     failedQueue.push({ resolve, reject });
@@ -70,12 +70,11 @@ apiClient.interceptors.response.use(
                 try {
                     const response = await axios.post(`${API_BASE_URL}/token/refresh/`, {
                         refresh: refreshToken,
-                    });
+                    }, { timeout: 5000 });
 
                     const newAccessToken = response.data.access;
                     localStorage.setItem('accessToken', newAccessToken);
 
-                 
                     originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
                     processQueue(null, newAccessToken); 
                     
@@ -85,15 +84,23 @@ apiClient.interceptors.response.use(
                 } catch (_error) {
                     isRefreshing = false;
                     processQueue(_error, null); 
+                    
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
-                    window.location.href = '/login'; 
+                    
+                    if (typeof window !== 'undefined') {
+                        window.location.href = '/login'; 
+                    }
+                    
                     return Promise.reject(_error);
                 }
+            } else {
+                 if (typeof window !== 'undefined') {
+                    window.location.href = '/login'; 
+                 }
             }
         }
         
-
         return Promise.reject(error);
     }
 );
