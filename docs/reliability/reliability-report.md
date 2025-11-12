@@ -10,8 +10,9 @@
 | **2** | **Slow Spot Search and Thread Blocking:** Full Table Scan on a critical endpoint without query timeout.                              | Poor Performance, Customer Loss, Partial DoS.                                            | **High**     | unfixed |
 | **3** | **Redundant Exception Catching (Client Code):** Unnecessary `try...catch` block re-throwing the same error.                          | Maintainability issues, Diagnostic Failure.                                              | **Low**      | unfixed |
 | **4** | **Silent Failure in Parking Spot Availability Filter:** Already booked spots were not excluded.                                      | Semantic Data Corruption, 409 conflicts, Loss of Trust.                                  | **High**     | ✅ fixed |
-| **5** | **Infinite Token Refresh Loop:** Missing guard clause and missing token cleanup caused repeated refresh attempts and redirect loops. | Infinite retry loop, User lockout, Full UI freeze, Authentication subsystem instability. | **High** | ✅ fixed |
+| **5** | **Infinite Token Refresh Loop:** Missing guard clause and missing token cleanup caused repeated refresh attempts and redirect loops. | Infinite retry loop, User lockout, Full UI freeze, Authentication subsystem instability. | **High**     | ✅ fixed |
 | **6** | **Missing Maximum Duration Validation in Booking Window:** No enforcement of booking duration limits.                                | DoS via unrealistic bookings, Resource exhaustion, Business logic violations.            | **Medium**   | ✅ fixed |
+| **7** | **Missing Exception Handling in User Profile Endpoint:** No handling for `User.DoesNotExist` in critical user endpoints.             | 500 Internal Server Error, Poor UX, Log spam, Monitoring false positives.               | **Medium**   | ✅ fixed |
 
 ---
 
@@ -267,21 +268,123 @@ Each validation uses **guard clauses** with structured error messages and machin
 
 ---
 
+## Issue 7 — Missing Exception Handling in User Profile Endpoint
+
+### Before
+```python
+@action(detail=False, methods=['get', 'patch'], url_path='me')
+def me(self, request):
+    if request.method == 'GET':
+        user = User.objects.select_related('operator_profile').get(pk=request.user.pk)
+        return Response(self.get_serializer(user).data)
+    
+    elif request.method == 'PATCH':
+        user = request.user
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        user.refresh_from_db()
+        user_data = User.objects.select_related('operator_profile').get(pk=user.pk)
+        return Response(UserSerializer(user_data).data)
+```
+
+**Additional occurrences in:**
+- `make_admin()` method
+- `remove_admin()` method  
+- `make_operator()` method
+
+### After
+```python
+from django.http import Http404
+
+class UserViewSet(...):
+    def _get_user_with_profile(self, user_pk):
+        try:
+            return User.objects.select_related('operator_profile').get(pk=user_pk)
+        except User.DoesNotExist:
+            raise Http404("User not found")
+    
+    @action(detail=False, methods=['get', 'patch'], url_path='me')
+    def me(self, request):
+        if request.method == 'GET':
+            user = self._get_user_with_profile(request.user.pk)
+            return Response(self.get_serializer(user).data)
+        
+        elif request.method == 'PATCH':
+            user = request.user
+            serializer = self.get_serializer(user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            user.refresh_from_db()
+            user_data = self._get_user_with_profile(user.pk)
+            return Response(UserSerializer(user_data).data)
+    
+    @action(detail=True, methods=['post'], url_path='make-admin')
+    @transaction.atomic
+    def make_admin(self, request, pk=None):
+        user = self.get_object()
+        # ... business logic ...
+        user_data = self._get_user_with_profile(user.pk)
+        return Response(UserSerializer(user_data).data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['delete'], url_path='remove-admin')
+    @transaction.atomic
+    def remove_admin(self, request, pk=None):
+        user = self.get_object()
+        # ... business logic ...
+        user_data = self._get_user_with_profile(user.pk)
+        return Response(UserSerializer(user_data).data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'], url_path='make-operator')
+    @transaction.atomic
+    def make_operator(self, request, pk=None):
+        user = self.get_object()
+        # ... business logic ...
+        user_data = self._get_user_with_profile(user.pk)
+        return Response(UserSerializer(user_data).data, status=status.HTTP_201_CREATED)
+```
+
+**Explanation:**
+The original implementation used direct `User.objects.get()` calls without exception handling across multiple endpoints. If a user was deleted during request processing (race condition), the system would return 500 Internal Server Error instead of a proper 404 response. The fix introduces:
+
+1. **Helper method `_get_user_with_profile()`**: Centralizes user retrieval logic with proper exception handling
+2. **Guard clause via Http404**: Converts `User.DoesNotExist` into a structured 404 response
+3. **Consistent error handling**: Applied across all user management endpoints (`me()`, `make_admin()`, `remove_admin()`, `make_operator()`)
+4. **Proper HTTP semantics**: Returns 404 Not Found instead of 500 Internal Server Error when user doesn't exist
+
+---
+
 ## 3. Description of Applied Reliability Patterns
 
 | Pattern                                 | Description                                                                      | Applied To                |
 | :-------------------------------------- | :------------------------------------------------------------------------------- | :------------------------ |
 | **Timeout Pattern (Fail-Fast)**         | Enforced timeouts on DB connection and query execution to avoid thread blocking. | `DATABASES["OPTIONS"]`    |
 | **Graceful Degradation**                | Returned structured error (`DB_TIMEOUT`) instead of raw exception.               | Booking creation endpoint |
+| **Guard Clause Pattern**                | Validated input early and handled edge cases with explicit checks.               | Spot availability filter, Booking validation, User profile endpoint |
 | **Query Responsibility Centralization** | Moved filtering logic into `get_queryset()` to ensure consistent query behavior. | SpotViewSet               |
 | **Semantic Integrity Enforcement**      | Ensured API returns only semantically correct, up-to-date data.                  | Availability endpoints    |
 | **Boundary Validation**                 | Enforced both minimum and maximum limits on booking duration and advance period. | `validate_booking_window()` |
 | **Structured Error Responses**          | Used machine-readable error codes and field-specific error messages.             | Booking validation        |
+| **Centralized Exception Handling**      | Created helper method to handle common exception patterns consistently.           | `_get_user_with_profile()` |
 
+---
 
+## 4. Fault → Error → Failure Analysis
 
+### Issue 7 — Missing Exception Handling in User Profile Endpoint
 
-## 4. Remaining Open Issues
+| Stage       | Description                                                                 |
+| :---------- | :-------------------------------------------------------------------------- |
+| **Fault**   | Missing exception handling for `User.DoesNotExist` in multiple user management endpoints |
+| **Error**   | Unhandled exception when authenticated user is deleted during request processing (race condition) |
+| **Failure** | API returns 500 Internal Server Error instead of 404; logs filled with stack traces; monitoring alerts triggered |
+
+**Risk Severity:** Medium  
+**Business Impact:** Poor user experience, false positive monitoring alerts, difficulty in distinguishing real errors from expected edge cases.
+
+---
+
+## 5. Remaining Open Issues
 
 The following reliability issues remain unresolved:
 
