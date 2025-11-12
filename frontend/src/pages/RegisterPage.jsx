@@ -26,35 +26,60 @@ const RegisterPage = () => {
         setIsLoading(true);
 
         if (formData.password !== formData.password2) {
-            setError({ non_field_errors: ['Passwords do not match!'] });
+            setError({ non_field_errors: ['Паролі не співпадають! Будь ласка, переконайтеся, що обидва паролі однакові.'] });
+            setIsLoading(false);
+            return;
+        }
+
+        if (formData.password.length < 8) {
+            setError({ non_field_errors: ['Пароль має містити принаймні 8 символів.'] });
             setIsLoading(false);
             return;
         }
 
         try {
-            const { password2, ...dataToSend } = formData; // Remove password2 before sending to backend
-            
+            const { password2, ...dataToSend } = formData;
+
             await registerUser(dataToSend);
-            
-            alert('Registration successful! You can now log in.');
-            navigate('/login');
+
+            alert('Реєстрація успішна! Тепер ви можете увійти до системи.');
+            navigate('/user/login');
         } catch (err) {
-            // --- IMPROVED ERROR HANDLING ---
             if (err.response && err.response.data) {
-                // Handle Django validation errors (400 Bad Request)
                 if (err.response.status === 400) {
-                    // Store the full validation error object
-                    setError(err.response.data);
-                    // Log full details for debugging
-                    console.error("Django validation error details:", err.response.data); 
+                    const errors = err.response.data;
+                    const friendlyErrors = {};
+
+                    if (errors.username) {
+                        friendlyErrors.username = ['Це ім\'я користувача вже зайняте. Оберіть інше.'];
+                    }
+                    if (errors.email) {
+                        friendlyErrors.email = ['Ця електронна адреса вже використовується. Спробуйте іншу або увійдіть до існуючого акаунту.'];
+                    }
+                    if (errors.password) {
+                        friendlyErrors.password = ['Пароль занадто простий або не відповідає вимогам. Використайте комбінацію літер, цифр та спеціальних символів.'];
+                    }
+                    if (errors.non_field_errors) {
+                        friendlyErrors.non_field_errors = errors.non_field_errors;
+                    }
+
+                    if (Object.keys(friendlyErrors).length === 0) {
+                        friendlyErrors.non_field_errors = ['Помилка при реєстрації. Перевірте правильність введених даних.'];
+                    }
+
+                    setError(friendlyErrors);
+                } else if (err.response.status === 500) {
+                    setError({ non_field_errors: ['Сервер тимчасово недоступний. Спробуйте пізніше або зв\'яжіться з підтримкою.'] });
                 } else {
-                    // Handle other errors (409 Conflict, 500 Internal Server Error)
-                    const genericError = err.response.data.detail || 'A server error occurred. Please try again later.';
+                    const genericError = err.response.data.detail || 'Виникла помилка на сервері. Спробуйте пізніше.';
                     setError({ non_field_errors: [genericError] });
                 }
+            } else if (err.request) {
+                setError({ non_field_errors: ['Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.'] });
             } else {
-                setError({ non_field_errors: ['An unknown network error occurred.'] });
+                setError({ non_field_errors: ['Виникла невідома помилка. Спробуйте ще раз.'] });
             }
+            console.error("Registration error details:", err.response?.data || err);
         } finally {
             setIsLoading(false);
         }

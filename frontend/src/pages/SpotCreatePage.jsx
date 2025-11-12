@@ -53,16 +53,23 @@ function SpotCreatePage() {
             navigate('/operator', { state: { successMessage: `Паркомісце #${formData.number} створено.` } });
 
         } catch (err) {
-            let errorMessage = 'Не вдалося створити паркомісце.';
-            if (err.response && err.response.data) {
-                if (err.response.data.number) {
-                    // Error from Django validator (e.g., duplicate spot number)
-                    errorMessage = err.response.data.number.join(' ');
-                } else if (err.response.data.detail) {
-                    errorMessage = err.response.data.detail;
-                }
+            console.error('Error creating spot:', err);
+            if (err.response && err.response.status === 400) {
+                const detail = err.response?.data?.detail || 'Некоректні дані для створення паркомісця.';
+                setError(detail);
+            } else if (err.response && err.response.status === 403) {
+                setError('У вас немає доступу до створення паркомісць у цій парковці.');
+            } else if (err.response && err.response.status === 404) {
+                setError('Парковку не знайдено.');
+            } else if (err.response && err.response.status === 409) {
+                setError('Паркомісце з таким номером вже існує. Оберіть інший номер.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.');
+            } else {
+                setError('Не вдалося створити паркомісце. Спробуйте ще раз.');
             }
-            setError(errorMessage);
         } finally {
             setLoading(false);
         }
