@@ -1,6 +1,6 @@
 
 
-## 🔎 Resilience Scavenger Hunt
+##  Resilience Scavenger Hunt
 
 ### 1 CRITICAL ISSUE: Unreliable Booking Creation Transaction
 
@@ -21,12 +21,12 @@
 
 
 
-### Slow Spot Search and Thread Blocking (Performance Degradation)
+### 2 Slow Spot Search and Thread Blocking (Performance Degradation)
 
 | Field | Details |
 | :--- | :--- |
 | **Problem** | The **GET /api/v1/lots/{id}/spots/** method (searching for available spots) executes a highly costly query that likely results in a **Full Table Scan** of the `Booking` table without any timeout mechanism. This endpoint is the first step in the sales funnel. |
-| **Code Snippet** | **File:** `views.py`<img width="1376" height="472" alt="image" src="https://github.com/user-attachments/assets/8d315006-4715-446d-90c9-adc9dee1343e" />
+| **Code Snippet** | **File:** `views.py` <img width="1046" height="450" alt="image" src="https://github.com/user-attachments/assets/6038bbad-2bcf-4387-aca1-eeadd4c28513" /> |
 | **Why it is dangerous?** | **Fault:** Lack of a proper **composite index** on the critical time fields (`start_at`, `end_at`, `status`) in the `Booking` table, combined with **no query timeout**. <br> **Error:** As the number of bookings grows (e.g., to 100,000+), the query becomes **extremely slow** (30+ seconds). This leads to an **HTTP timeout** and blocks the handler thread. |
 | **Potential Impact** | **High Severity**. <br> 1. **Customer Loss:** Users cannot view available spots, causing them to **abandon the site** (Failure to Retain User). <br> 2. **Partial DoS:** The long-running query **blocks DB connections** and ties up web server resources, slowing down the entire system for others. <br> 3. **Reputation Damage:** Poor user experience ("The site is laggy/broken"). |
 
@@ -42,14 +42,6 @@
 | **Failure** (System Behavior) | **User abandonment** due to endless waiting screen (Failure to Meet Performance SLA). Resource exhaustion. |
 | **Severity** (Criticality) | **High**. (Directly impacts user experience and revenue funnel.) |
 
-
-
-
-You've correctly identified an issue with the provided JavaScript code snippet. This is a case of **redundant and potentially harmful error handling** in a client-side API service layer.
-
-Here is the analysis of this reliability fault, structured in English for your reports.
-
------
 
 
 
@@ -73,3 +65,61 @@ Here is the analysis of this reliability fault, structured in English for your r
 | **Severity** (Criticality) | **Low**.  |
 
 
+
+
+### **4. Silent Failure in Parking Spot Availability Filter (Incorrect Availability Results)**
+
+| Field                    | Details                                                                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Problem**              | The availability filter did **not exclude booked spots**. Users saw occupied parking spots as available. DRF ignored `self.queryset` in `list()`, silently bypassing the applied filtering. |
+| **Code (Before Fix)**    | <img width="1310" height="830" alt="image" src="https://github.com/user-attachments/assets/ae0bf58f-19d4-476a-946e-01bcbcc1ef89" />  |
+| **Why it is dangerous?** | This is a **silent failure**: API returned 200 OK but the **data was semantically wrong**. No errors, no logs, difficult to detect. |
+| **Potential Impact** | 1. **SLO Violation:** Users face a high number of 409 Conflict errors.<br>2. **Poor User Experience:** Users select “available” spots that are occupied.<br>3. **Cascading Failures:** Multiple users try to book the same spot.<br>4. **Loss of Trust:** System appears unreliable and inconsistent. |
+### Fault → Error → Failure
+
+| Field                         | Explanation                                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Fault (Defect Source)**     | Filtering placed in `list()` instead of `get_queryset()`. `super().list()` bypasses `self.queryset`.     |
+| **Error (Internal State)**    | `get_queryset()` returns full results including booked spots; `self.queryset` ignored.                   |
+| **Failure (System Behavior)** | Incorrect availability data → 409 conflicts. Classified as a **value failure** (Laprie/Rushby taxonomy). |
+| **Severity**                  | High — affects core booking logic and is difficult to diagnose due to being silent.                      |
+
+
+
+### 5 Infinite Token Refresh Loop (Authentication Reliability Failure)
+
+| Field                    | Details                                                                                                                                                                                                                                                                                                        |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Problem**              | The token refresh interceptor lacked a **retry guard clause** and did not clear invalid tokens, causing the application to enter an **infinite refresh loop** whenever the refresh token became invalid. This could freeze the entire UI.                                                                      |
+| **Code Before**                 | `apiClient.js` — <img width="1680" height="684" alt="image" src="https://github.com/user-attachments/assets/241b4538-f3b9-493b-8f7c-2b757ee674d6" /> |
+| **Why it is dangerous?** | **Fault:** No `_retry` flag, no token cleanup, and incorrect error queue handling. <br> **Error:** The interceptor repeatedly attempted the refresh request with no stopping condition. <br> **Failure:** The UI became unresponsive, users were locked out, and the authentication subsystem became unstable. |
+| **Potential Impact**     | 1. **Full UI Freeze** due to infinite retry attempts. <br> 2. **Authentication Subsystem Instability** affecting all authenticated requests. <br> 3. **User Lockout:** The system could not recover without manual localStorage cleanup.                                                                       |
+
+
+
+| Field                         | Explanation                                                                                                                                             |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Fault** (Defect Source)     | Missing retry guard, missing token cleanup, incorrect error propagation in the interceptor.                                                             |
+| **Error** (Internal State)    | The refresh logic recursively retriggered itself via the same interceptor, causing an infinite loop.                                                    |
+| **Failure** (System Behavior) | Endless refresh attempts → UI freeze → redirect loops and complete authentication failure.                                                              |
+| **Fix Summary**               | Added `_retry` guard clause, added token cleanup in the catch block, enforced redirect to `/login`, and ensured the refresh sequence terminates safely. |
+
+
+---
+
+### 6 Missing Maximum Duration Validation in Booking Window
+
+| Field | Details |
+| :--- | :--- |
+| **Problem** | `validate_booking_window()` lacked checks for **maximum booking duration** and **maximum advance booking**, allowing unrealistic bookings. |
+| **Code Before** |<img width="1123" height="195" alt="image" src="https://github.com/user-attachments/assets/4994b81b-8b45-41fe-8688-091e1f2a57c8" /> |
+| **Why it is dangerous?** | Without these checks, spots could be locked for unrealistic durations or far in the future, leading to resource exhaustion. |
+| **Potential Impact** | 1. Resource exhaustion / DoS. <br> 2. Revenue loss. <br> 3. Poor UX. |
+| **Severity** | Medium — impacts user experience and system reliability. |
+
+| Field | Explanation |
+| :--- | :--- |
+| **Fault (Defect Source)** | Missing validation logic for maximum duration and advance booking. |
+| **Error (Internal State)** | Bookings could be created with `end_at` far in the future or excessively long. |
+| **Failure (System Behavior)** | Parking spots unavailable for legitimate users, potential resource exhaustion, degraded reliability. |
+| **Fix Summary** | Added guard clauses enforcing minimum duration, maximum duration, and maximum advance booking with machine-readable error codes. |
