@@ -11,7 +11,6 @@
 | **3** | **Redundant Exception Catching (Client Code):** Unnecessary `try...catch` block re-throwing the same error.                          | Maintainability issues, Diagnostic Failure.                                              | **Low**      | unfixed |
 | **4** | **Silent Failure in Parking Spot Availability Filter:** Already booked spots were not excluded.                                      | Semantic Data Corruption, 409 conflicts, Loss of Trust.                                  | **High**     | ✅ fixed |
 | **5** | **Infinite Token Refresh Loop:** Missing guard clause and missing token cleanup caused repeated refresh attempts and redirect loops. | Infinite retry loop, User lockout, Full UI freeze, Authentication subsystem instability. | **High** | ✅ fixed |
-
 | **6** | **Missing Maximum Duration Validation in Booking Window:** No enforcement of booking duration limits.                                | DoS via unrealistic bookings, Resource exhaustion, Business logic violations.            | **Medium**   | ✅ fixed |
 
 ---
@@ -279,24 +278,10 @@ Each validation uses **guard clauses** with structured error messages and machin
 | **Boundary Validation**                 | Enforced both minimum and maximum limits on booking duration and advance period. | `validate_booking_window()` |
 | **Structured Error Responses**          | Used machine-readable error codes and field-specific error messages.             | Booking validation        |
 
----
 
-## 4. Fault → Error → Failure Analysis
 
-### Issue 6 — Missing Maximum Duration Validation
 
-| Stage       | Description                                                                 |
-| :---------- | :-------------------------------------------------------------------------- |
-| **Fault**   | Missing validation logic in `validate_booking_window()` function            |
-| **Error**   | Booking object created with `end_at` 10+ years in the future               |
-| **Failure** | Parking spot unavailable for legitimate users; potential resource exhaustion |
-
-**Risk Severity:** Medium  
-**Business Impact:** DoS via resource exhaustion, degraded user experience, potential revenue loss from legitimate bookings being blocked.
-
----
-
-## 5. Remaining Open Issues
+## 4. Remaining Open Issues
 
 The following reliability issues remain unresolved:
 
