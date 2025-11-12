@@ -279,24 +279,10 @@ Each validation uses **guard clauses** with structured error messages and machin
 | **Boundary Validation**                 | Enforced both minimum and maximum limits on booking duration and advance period. | `validate_booking_window()` |
 | **Structured Error Responses**          | Used machine-readable error codes and field-specific error messages.             | Booking validation        |
 
----
 
-## 4. Fault → Error → Failure Analysis
 
-### Issue 6 — Missing Maximum Duration Validation
 
-| Stage       | Description                                                                 |
-| :---------- | :-------------------------------------------------------------------------- |
-| **Fault**   | Missing validation logic in `validate_booking_window()` function            |
-| **Error**   | Booking object created with `end_at` 10+ years in the future               |
-| **Failure** | Parking spot unavailable for legitimate users; potential resource exhaustion |
-
-**Risk Severity:** Medium  
-**Business Impact:** DoS via resource exhaustion, degraded user experience, potential revenue loss from legitimate bookings being blocked.
-
----
-
-## 5. Remaining Open Issues
+## 4. Remaining Open Issues
 
 The following reliability issues remain unresolved:
 
