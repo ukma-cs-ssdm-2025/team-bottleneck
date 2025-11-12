@@ -12,6 +12,7 @@
 | **4** | **Silent Failure in Parking Spot Availability Filter:** Already booked spots were not excluded.                                      | Semantic Data Corruption, 409 conflicts, Loss of Trust.                                  | **High**     | ✅ fixed |
 | **5** | **Infinite Token Refresh Loop:** Missing guard clause and missing token cleanup caused repeated refresh attempts and redirect loops. | Infinite retry loop, User lockout, Full UI freeze, Authentication subsystem instability. | **High** | ✅ fixed |
 
+| **6** | **Missing Maximum Duration Validation in Booking Window:** No enforcement of booking duration limits.                                | DoS via unrealistic bookings, Resource exhaustion, Business logic violations.            | **Medium**   | ✅ fixed |
 
 ---
 
@@ -131,11 +132,13 @@ class SpotViewSet(...):
         return qs
 ```
 
-##  Issue 5 — Infinite Token Refresh Loop 
+**Explanation:**
+Moving the availability filter into `get_queryset()` ensures that the filtering logic is consistently applied.
+The guard clause prevents processing invalid datetime values.
 
+## Issue 5 — Infinite Token Refresh Loop 
 
-###  Before (Fault: No Retry Limit, No Cleanup)
-
+### Before (Fault: No Retry Limit, No Cleanup)
 ```javascript
 // Condition checks 401 but does NOT limit retry attempts
 if (error.response?.status === 401 && originalRequest.url !== '/token/refresh/') {
@@ -196,7 +199,74 @@ if (error.response?.status === 401 && originalRequest.url !== '/token/refresh/')
 }
 ```
 
+**Explanation:**
+The `_retry` flag prevents infinite token refresh loops. Token cleanup and forced redirect ensure proper recovery from authentication failures.
 
+---
+
+## Issue 6 — Missing Maximum Duration Validation in Booking Window
+
+### Before
+```python
+def validate_booking_window(start_at, end_at):
+    if start_at >= end_at:
+        raise serializers.ValidationError("start_at must be before end_at")
+    if start_at < timezone.now():
+        raise serializers.ValidationError("start_at must be in the future")
+```
+
+### After
+```python
+MIN_BOOKING_DURATION = timedelta(minutes=30)
+MAX_BOOKING_DURATION = timedelta(days=30)
+MAX_ADVANCE_BOOKING = timedelta(days=90)
+    
+def validate_booking_window(start_at, end_at):
+    """
+    Validates that booking time window is logical and within acceptable limits.
+    """
+    now = timezone.now()
+    
+    if start_at < now:
+        raise ValidationError(
+            {"start_at": "Booking start time cannot be in the past."},
+            code="past_start_time"
+        )
+    
+    if end_at <= start_at:
+        raise ValidationError(
+            {"end_at": "Booking end time must be after start time."},
+            code="invalid_time_range"
+        )
+    
+    if (end_at - start_at) < MIN_BOOKING_DURATION:
+        raise ValidationError(
+            {"end_at": f"Booking duration must be at least {MIN_BOOKING_DURATION.total_seconds() / 60:.0f} minutes."},
+            code="duration_too_short"
+        )
+    
+    if (end_at - start_at) > MAX_BOOKING_DURATION:
+        raise ValidationError(
+            {"end_at": f"Booking duration cannot exceed {MAX_BOOKING_DURATION.days} days."},
+            code="duration_too_long"
+        )
+    
+    if (start_at - now) > MAX_ADVANCE_BOOKING:
+        raise ValidationError(
+            {"start_at": f"Bookings can only be made up to {MAX_ADVANCE_BOOKING.days} days in advance."},
+            code="too_far_in_future"
+        )
+```
+
+**Explanation:**
+The original validator only checked basic constraints (start before end, not in past). The enhanced version enforces business rules:
+- **Minimum duration (30 minutes):** Prevents spam/test bookings
+- **Maximum duration (30 days):** Prevents indefinite spot locking and DoS attacks via unrealistic bookings (e.g., 10-year reservations)
+- **Maximum advance booking (90 days):** Prevents indefinite future locking; aligns with typical parking business models
+
+Each validation uses **guard clauses** with structured error messages and machine-readable error codes, enabling proper client-side error handling.
+
+---
 
 ## 3. Description of Applied Reliability Patterns
 
@@ -204,13 +274,29 @@ if (error.response?.status === 401 && originalRequest.url !== '/token/refresh/')
 | :-------------------------------------- | :------------------------------------------------------------------------------- | :------------------------ |
 | **Timeout Pattern (Fail-Fast)**         | Enforced timeouts on DB connection and query execution to avoid thread blocking. | `DATABASES["OPTIONS"]`    |
 | **Graceful Degradation**                | Returned structured error (`DB_TIMEOUT`) instead of raw exception.               | Booking creation endpoint |
-| **Guard Clause Pattern**                | Validated input dates before filtering.                                          | Spot availability filter  |
 | **Query Responsibility Centralization** | Moved filtering logic into `get_queryset()` to ensure consistent query behavior. | SpotViewSet               |
 | **Semantic Integrity Enforcement**      | Ensured API returns only semantically correct, up-to-date data.                  | Availability endpoints    |
+| **Boundary Validation**                 | Enforced both minimum and maximum limits on booking duration and advance period. | `validate_booking_window()` |
+| **Structured Error Responses**          | Used machine-readable error codes and field-specific error messages.             | Booking validation        |
 
 ---
 
-## 4. Remaining Open Issues
+## 4. Fault → Error → Failure Analysis
+
+### Issue 6 — Missing Maximum Duration Validation
+
+| Stage       | Description                                                                 |
+| :---------- | :-------------------------------------------------------------------------- |
+| **Fault**   | Missing validation logic in `validate_booking_window()` function            |
+| **Error**   | Booking object created with `end_at` 10+ years in the future               |
+| **Failure** | Parking spot unavailable for legitimate users; potential resource exhaustion |
+
+**Risk Severity:** Medium  
+**Business Impact:** DoS via resource exhaustion, degraded user experience, potential revenue loss from legitimate bookings being blocked.
+
+---
+
+## 5. Remaining Open Issues
 
 The following reliability issues remain unresolved:
 
@@ -219,10 +305,3 @@ The following reliability issues remain unresolved:
 
 * **Redundant Exception Catching (Client Code):**
   Review unnecessary exception wrapping and redundant `try...catch` blocks to improve diagnostic accuracy.
-
-
-
-
-
-
-
