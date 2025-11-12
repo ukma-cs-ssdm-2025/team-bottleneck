@@ -217,10 +217,18 @@ function OperatorPage() {
             setLotDetails(lotData);
             setBookings(bookingsData);
         } catch (err) {
-            const detail = err.response?.data?.detail || 'Не вдалося завантажити дані керування парковкою.';
-            setError(detail);
-            setBookings([]);
-            setLotDetails(null);
+            console.error('Error loading operator data:', err);
+            if (err.response && err.response.status === 403) {
+                setError('У вас немає доступу до цієї панелі. Зверніться до адміністратора.');
+            } else if (err.response && err.response.status === 404) {
+                setError('Парковку не знайдено. Можливо, її було видалено.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте оновити сторінку пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.');
+            } else {
+                setError('Не вдалося завантажити дані. Спробуйте оновити сторінку.');
+            }
         } finally {
             setLoadingData(false);
         }

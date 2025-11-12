@@ -23,17 +23,19 @@ const LoginPage = () => {
 
     // Function to render detailed error messages
     const renderErrorMessage = (err) => {
-        // Handle 401 (Unauthorized) errors
         if (err.response && err.response.status === 401) {
-            return 'Incorrect username or password.';
+            return 'Невірне ім\'я користувача або пароль. Перевірте введені дані.';
         }
-        // Handle other errors that include a "detail" field
+        if (err.response && err.response.status === 500) {
+            return 'Сервер тимчасово недоступний. Спробуйте пізніше.';
+        }
         if (err.response && err.response.data && err.response.data.detail) {
             return err.response.data.detail;
         }
-        
-        // General fallback
-        return 'An unknown error occurred during login. Please check your network and credentials.';
+        if (err.request) {
+            return 'Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.';
+        }
+        return 'Виникла невідома помилка під час входу. Спробуйте ще раз.';
     };
 
     const handleSubmit = async (e) => {

@@ -33,7 +33,14 @@ function HomePage() {
                     }
                 }
             } catch (err) {
-                setError('Не вдалося завантажити дані. Переконайтесь, що бекенд-сервер запущено.');
+                console.error('Error loading parking lots:', err);
+                if (err.response && err.response.status === 500) {
+                    setError('Сервер тимчасово недоступний. Спробуйте оновити сторінку пізніше.');
+                } else if (err.request) {
+                    setError('Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання та переконайтесь, що сервер запущено.');
+                } else {
+                    setError('Не вдалося завантажити список парковок. Спробуйте оновити сторінку.');
+                }
             } finally {
                 setLoading(false);
             }

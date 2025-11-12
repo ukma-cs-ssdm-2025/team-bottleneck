@@ -59,13 +59,23 @@ function BookingCreatePage() {
 
             setBookingSuccess(response.id);
 
-
         } catch (err) {
             console.error('Booking creation error:', err.response || err);
-            const detail = err.response?.data?.detail ||
-                err.response?.data?.spot ||
-                'Не вдалося створити бронювання. Можливо, місце вже зайняте.';
-            setError(detail);
+
+            if (err.response && err.response.status === 409) {
+                setError('Це місце вже заброньовано на обраний час. Оберіть інше місце або інший час.');
+            } else if (err.response && err.response.status === 400) {
+                const detail = err.response?.data?.detail || 'Некоректні дані бронювання.';
+                setError(`Помилка: ${detail}. Перевірте обраний час бронювання.`);
+            } else if (err.response && err.response.status === 401) {
+                setError('Ваша сесія закінчилася. Увійдіть до системи знову.');
+            } else if (err.response && err.response.status === 500) {
+                setError('Сервер тимчасово недоступний. Спробуйте створити бронювання пізніше.');
+            } else if (err.request) {
+                setError('Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.');
+            } else {
+                setError('Не вдалося створити бронювання. Спробуйте ще раз або оберіть інше місце.');
+            }
         } finally {
             setLoading(false);
         }

@@ -18,12 +18,21 @@ function OperatorLoginPage() {
 
     const renderErrorMessage = (err) => {
         if (err.response && err.response.status === 401) {
-            return 'Невірне ім\'я користувача або пароль.';
+            return 'Невірне ім\'я користувача або пароль. Перевірте введені дані.';
+        }
+        if (err.response && err.response.status === 403) {
+            return 'У вас немає прав оператора. Зверніться до адміністратора.';
+        }
+        if (err.response && err.response.status === 500) {
+            return 'Сервер тимчасово недоступний. Спробуйте пізніше.';
         }
         if (err.response && err.response.data && err.response.data.detail) {
             return err.response.data.detail;
         }
-        return 'Виникла невідома помилка під час входу. Перевірте мережу та облікові дані.';
+        if (err.request) {
+            return 'Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.';
+        }
+        return 'Виникла невідома помилка під час входу. Спробуйте ще раз.';
     };
 
     const handleSubmit = async (e) => {
