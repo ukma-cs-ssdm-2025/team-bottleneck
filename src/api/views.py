@@ -192,28 +192,6 @@ class SpotViewSet(mixins.ListModelMixin,
             if dis is not None:
                 qs = qs.filter(is_disabled=dis)
     
-            available_from = request.query_params.get("available_from")
-            available_to = request.query_params.get("available_to")
-    
-            if available_from and available_to:
-                start = parse_datetime(available_from)
-                end = parse_datetime(available_to)
-    
-                if not start or not end:
-                    return Response(
-                        {"detail": "Invalid date format. Use ISO 8601 format."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-
-                booked_spots = Booking.objects.filter(
-                    status="confirmed",
-                    start_at__lt=end,
-                    end_at__gt=start
-                ).values_list('spot_id', flat=True)
-
-                qs = qs.exclude(id__in=booked_spots)
-
-            self.queryset = qs
             return super().list(request, *args, **kwargs)
         except OperationalError:
             return Response(
