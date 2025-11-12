@@ -25,6 +25,7 @@ from .swagger import ErrorSerializer
 from .services import PaymentService, BookingNotificationService, CancellationService, SpotUpdateService
 from rest_framework.exceptions import ValidationError
 from django.db.utils import OperationalError
+from django.http import Http404
 
 
 class ParkingLotViewSet(viewsets.ModelViewSet):
@@ -660,10 +661,21 @@ class UserViewSet(mixins.RetrieveModelMixin,
             401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
         }
     )
+
+    def _get_user_with_profile(self, user_pk):
+        """
+        Helper method to safely retrieve user with operator_profile.
+        Returns user object or raises Http404.
+        """
+        try:
+            return User.objects.select_related('operator_profile').get(pk=user_pk)
+        except User.DoesNotExist:
+            raise Http404("User not found")
+    
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
         if request.method == 'GET':
-            user = User.objects.select_related('operator_profile').get(pk=request.user.pk)
+            user = self._get_user_with_profile(request.user.pk)
             return Response(self.get_serializer(user).data)
         
         elif request.method == 'PATCH':
@@ -671,8 +683,8 @@ class UserViewSet(mixins.RetrieveModelMixin,
             serializer = self.get_serializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            user.refresh_from_db() 
-            user_data = User.objects.select_related('operator_profile').get(pk=user.pk)
+            user.refresh_from_db()
+            user_data = self._get_user_with_profile(user.pk)
             return Response(UserSerializer(user_data).data)
         
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -705,7 +717,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
             profile.delete()
             
         user.refresh_from_db()
-        user_data = User.objects.select_related('operator_profile').get(pk=user.pk) 
+        user_data = self._get_user_with_profile(user.pk) 
         return Response(UserSerializer(user_data).data, status=status.HTTP_200_OK)
     
     @extend_schema(
@@ -722,7 +734,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         
         user.is_staff = False
         user.save(update_fields=['is_staff'])
-        user_data = User.objects.select_related('operator_profile').get(pk=user.pk)
+        user_data = self._get_user_with_profile(user.pk) 
         return Response(UserSerializer(user_data).data, status=status.HTTP_200_OK)
     
     @extend_schema(
@@ -748,7 +760,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
             defaults={'lot': lot}
         )
         
-        user_data = User.objects.select_related('operator_profile').get(pk=user.pk)
+        user_data = self._get_user_with_profile(user.pk)
         return Response(UserSerializer(user_data).data, status=status.HTTP_201_CREATED)
     
     @extend_schema(
