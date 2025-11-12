@@ -65,3 +65,48 @@
 | **Severity** (Criticality) | **Low**.  |
 
 
+
+
+## **4. Silent Failure in Parking Spot Availability Filter (Incorrect Availability Results)**
+
+| Field                    | Details                                                                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Problem**              | The availability filter did **not exclude booked spots**. Users saw occupied parking spots as available. DRF ignored `self.queryset` in `list()`, silently bypassing the applied filtering. |
+| **Code (Before Fix)**    | <img width="1310" height="830" alt="image" src="https://github.com/user-attachments/assets/ae0bf58f-19d4-476a-946e-01bcbcc1ef89" />  |
+| **Code (After Fix)**     |               <img width="1238" height="852" alt="image" src="https://github.com/user-attachments/assets/00990642-a3dd-411c-bd0a-c3cebd914def" />   |
+| **Why it is dangerous?** | This is a **silent failure**: API returned 200 OK but the **data was semantically wrong**. No errors, no logs, difficult to detect. |
+| **Potential Impact** | 1. **SLO Violation:** Users face a high number of 409 Conflict errors.<br>2. **Poor User Experience:** Users select “available” spots that are occupied.<br>3. **Cascading Failures:** Multiple users try to book the same spot.<br>4. **Loss of Trust:** System appears unreliable and inconsistent. |
+### Fault → Error → Failure
+
+| Field                         | Explanation                                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Fault (Defect Source)**     | Filtering placed in `list()` instead of `get_queryset()`. `super().list()` bypasses `self.queryset`.     |
+| **Error (Internal State)**    | `get_queryset()` returns full results including booked spots; `self.queryset` ignored.                   |
+| **Failure (System Behavior)** | Incorrect availability data → 409 conflicts. Classified as a **value failure** (Laprie/Rushby taxonomy). |
+| **Severity**                  | High — affects core booking logic and is difficult to diagnose due to being silent.                      |
+
+
+
+### 5 Infinite Token Refresh Loop (Authentication Reliability Failure)
+
+| Field                    | Details                                                                                                                                                                                                                                                                                                        |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Problem**              | The token refresh interceptor lacked a **retry guard clause** and did not clear invalid tokens, causing the application to enter an **infinite refresh loop** whenever the refresh token became invalid. This could freeze the entire UI.                                                                      |
+| **Code Before**                 | `apiClient.js` — <img width="1680" height="684" alt="image" src="https://github.com/user-attachments/assets/241b4538-f3b9-493b-8f7c-2b757ee674d6" /> |
+| **Code After**                 | `apiClient.js` — <img width="1045" height="1005" alt="image" src="https://github.com/user-attachments/assets/f29652fa-603d-401b-a193-a9138f7a280e" /> |    
+| **Why it is dangerous?** | **Fault:** No `_retry` flag, no token cleanup, and incorrect error queue handling. <br> **Error:** The interceptor repeatedly attempted the refresh request with no stopping condition. <br> **Failure:** The UI became unresponsive, users were locked out, and the authentication subsystem became unstable. |
+| **Potential Impact**     | 1. **Full UI Freeze** due to infinite retry attempts. <br> 2. **Authentication Subsystem Instability** affecting all authenticated requests. <br> 3. **User Lockout:** The system could not recover without manual localStorage cleanup.                                                                       |
+
+
+
+| Field                         | Explanation                                                                                                                                             |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Fault** (Defect Source)     | Missing retry guard, missing token cleanup, incorrect error propagation in the interceptor.                                                             |
+| **Error** (Internal State)    | The refresh logic recursively retriggered itself via the same interceptor, causing an infinite loop.                                                    |
+| **Failure** (System Behavior) | Endless refresh attempts → UI freeze → redirect loops and complete authentication failure.                                                              |
+| **Fix Summary**               | Added `_retry` guard clause, added token cleanup in the catch block, enforced redirect to `/login`, and ensured the refresh sequence terminates safely. |
+
+
+
+
+
