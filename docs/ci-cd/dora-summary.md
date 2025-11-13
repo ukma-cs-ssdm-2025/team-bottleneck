@@ -20,3 +20,9 @@ pie
     "Failed Deployments (30%)" : 30
 ```
 
+```mermaid
+flowchart TD
+    A["Deployment Frequency: 1 per week"] --> B["Lead Time: 36.7 sec"]
+    B --> C["Change Failure Rate: 30%"]
+    C --> D["Time to Restore: 6.25 min"]
+```
