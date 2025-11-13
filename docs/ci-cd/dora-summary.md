@@ -1,4 +1,4 @@
-# DORA Metrics Summary\
+# DORA Metrics Summary
 
 | Metric | Formula | Your Result | Category* |
 |---------|----------|:-----------:|------------|
