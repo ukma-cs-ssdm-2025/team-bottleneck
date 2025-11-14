@@ -1,6 +1,5 @@
 import os
 from django.apps import AppConfig
-from drf_spectacular.generators import SchemaGenerator
 import yaml
 import json
 
@@ -9,6 +8,7 @@ class ApiConfig(AppConfig):
     name = 'src.api'
 
     def ready(self):
+        from drf_spectacular.generators import SchemaGenerator
         os.makedirs('docs/api/', exist_ok=True)
         generator = SchemaGenerator()
         new_schema = generator.get_schema(request=None, public=True)

@@ -25,6 +25,7 @@ from .swagger import ErrorSerializer
 from .services import PaymentService, BookingNotificationService, CancellationService, SpotUpdateService
 from rest_framework.exceptions import ValidationError
 from django.db.utils import OperationalError
+from django.http import Http404
 
 
 class ParkingLotViewSet(viewsets.ModelViewSet):
@@ -108,8 +109,29 @@ class SpotViewSet(mixins.ListModelMixin,
     serializer_class = SpotSerializer
 
     def get_queryset(self):
-        lot_pk = self.kwargs.get('lot_pk')
-        return Spot.objects.filter(lot_id=lot_pk).select_related('lot').order_by('id')
+        lot_id = self.kwargs.get("lot_pk")
+        qs = Spot.objects.select_related("lot").all()
+        if lot_id:
+            get_object_or_404(ParkingLot, pk=lot_id)
+            qs = qs.filter(lot_id=lot_id)
+
+        available_from = self.request.query_params.get("available_from")
+        available_to = self.request.query_params.get("available_to")
+
+        if available_from and available_to:
+            start = parse_datetime(available_from)
+            end = parse_datetime(available_to)
+
+            if start and end:
+                booked_spots = Booking.objects.filter(
+                    status="confirmed",
+                    start_at__lt=end,
+                    end_at__gt=start
+                ).values_list('spot_id', flat=True)
+
+                qs = qs.exclude(id__in=booked_spots)
+
+        return qs
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -148,50 +170,38 @@ class SpotViewSet(mixins.ListModelMixin,
     )
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
-
-        def parse_bool(val, key):
-            if val is None:
-                return None
-            low = val.lower()
-            if low not in ("true", "false"):
-                raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
-            return low == "true"
-
         try:
-            ev = parse_bool(request.query_params.get("is_ev"), "is_ev")
-            dis = parse_bool(request.query_params.get("is_disabled"), "is_disabled")
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        if ev is not None:
-            qs = qs.filter(is_ev=ev)
-        if dis is not None:
-            qs = qs.filter(is_disabled=dis)
-
-        available_from = request.query_params.get("available_from")
-        available_to = request.query_params.get("available_to")
-
-        if available_from and available_to:
-            start = parse_datetime(available_from)
-            end = parse_datetime(available_to)
-
-            if not start or not end:
-                return Response(
-                    {"detail": "Invalid date format. Use ISO 8601 format."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            booked_spots = Booking.objects.filter(
-                status="confirmed",
-                start_at__lt=end,
-                end_at__gt=start
-            ).values_list('spot_id', flat=True)
-
-            qs = qs.exclude(id__in=booked_spots)
-
-        self.queryset = qs
-        return super().list(request, *args, **kwargs)
-
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL statement_timeout = '20000'")
+            def parse_bool(val, key):
+                if val is None:
+                    return None
+                low = val.lower()
+                if low not in ("true", "false"):
+                    raise ValueError(f"The parameter '{key}' must be 'true' or 'false'")
+                return low == "true"
+    
+            try:
+                ev = parse_bool(request.query_params.get("is_ev"), "is_ev")
+                dis = parse_bool(request.query_params.get("is_disabled"), "is_disabled")
+            except ValueError as e:
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+            if ev is not None:
+                qs = qs.filter(is_ev=ev)
+            if dis is not None:
+                qs = qs.filter(is_disabled=dis)
+    
+            return super().list(request, *args, **kwargs)
+        except OperationalError:
+            return Response(
+                {
+                    "detail": "The search query is taking too long to process. Please try narrowing your search criteria.",
+                    "error_code": "QUERY_TIMEOUT"
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+            
     @extend_schema(
         summary="Get parking spot details",
         description="Returns detailed information for a single parking spot.",
@@ -431,7 +441,7 @@ class BookingViewSet(mixins.ListModelMixin,
             response_data = BookingSerializer(booking).data
             response_data["payment"] = payment_data
             return Response(response_data, status=status.HTTP_201_CREATED)
-        except OperationalError as e:
+        except OperationalError:
             return Response(
                 {
                     "detail": "The booking service is temporarily unavailable. Please try again in a moment.",
@@ -632,10 +642,21 @@ class UserViewSet(mixins.RetrieveModelMixin,
             401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
         }
     )
+
+    def _get_user_with_profile(self, user_pk):
+        """
+        Helper method to safely retrieve user with operator_profile.
+        Returns user object or raises Http404.
+        """
+        try:
+            return User.objects.select_related('operator_profile').get(pk=user_pk)
+        except User.DoesNotExist:
+            raise Http404("User not found")
+    
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
         if request.method == 'GET':
-            user = User.objects.select_related('operator_profile').get(pk=request.user.pk)
+            user = self._get_user_with_profile(request.user.pk)
             return Response(self.get_serializer(user).data)
         
         elif request.method == 'PATCH':
@@ -643,8 +664,8 @@ class UserViewSet(mixins.RetrieveModelMixin,
             serializer = self.get_serializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            user.refresh_from_db() 
-            user_data = User.objects.select_related('operator_profile').get(pk=user.pk)
+            user.refresh_from_db()
+            user_data = self._get_user_with_profile(user.pk)
             return Response(UserSerializer(user_data).data)
         
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -677,7 +698,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
             profile.delete()
             
         user.refresh_from_db()
-        user_data = User.objects.select_related('operator_profile').get(pk=user.pk) 
+        user_data = self._get_user_with_profile(user.pk) 
         return Response(UserSerializer(user_data).data, status=status.HTTP_200_OK)
     
     @extend_schema(
@@ -694,7 +715,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         
         user.is_staff = False
         user.save(update_fields=['is_staff'])
-        user_data = User.objects.select_related('operator_profile').get(pk=user.pk)
+        user_data = self._get_user_with_profile(user.pk) 
         return Response(UserSerializer(user_data).data, status=status.HTTP_200_OK)
     
     @extend_schema(
@@ -720,7 +741,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
             defaults={'lot': lot}
         )
         
-        user_data = User.objects.select_related('operator_profile').get(pk=user.pk)
+        user_data = self._get_user_with_profile(user.pk)
         return Response(UserSerializer(user_data).data, status=status.HTTP_201_CREATED)
     
     @extend_schema(

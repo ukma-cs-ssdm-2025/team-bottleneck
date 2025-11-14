@@ -146,7 +146,7 @@ function ProfilePage() {
     const [cancelReason, setCancelReason] = useState('');
     const [isCancelling, setIsCancelling] = useState(false);
 
-    const loadBookings = useCallback(async () => {
+    const loadBookings = async () => {
         setBookingError(null);
         setLoadingBookings(true);
         try {
@@ -162,11 +162,20 @@ function ProfilePage() {
             });
             setBookings(sortedData);
         } catch (err) {
-            setBookingError(err.response?.data?.detail || MESSAGES.BOOKING_LOAD_ERROR);
+            if (err.response && err.response.status === 401) {
+                setBookingError('Ваша сесія закінчилася. Увійдіть до системи знову.');
+            } else if (err.response && err.response.status === 500) {
+                setBookingError('Сервер тимчасово недоступний. Спробуйте оновити сторінку пізніше.');
+            } else if (err.request) {
+                setBookingError('Не вдалося завантажити бронювання. Перевірте ваше інтернет-з\'єднання.');
+            } else {
+                setBookingError('Виникла помилка при завантаженні бронювань. Спробуйте оновити сторінку.');
+            }
+            console.error('Error loading bookings:', err);
         } finally {
             setLoadingBookings(false);
         }
-    }, []);
+    };
 
     useEffect(() => {
         if (user) {
@@ -193,13 +202,25 @@ function ProfilePage() {
             setUpdateSuccess(MESSAGES.PROFILE_UPDATE_SUCCESS);
         } catch (err) {
             console.error('Update failed:', err.response?.data || err);
-            setUpdateError(err.response?.data?.detail || MESSAGES.PROFILE_UPDATE_ERROR);
+            let errorMessage = 'Помилка при оновленні профілю. Спробуйте ще раз.';
+
+            if (err.response && err.response.status === 400) {
+                errorMessage = 'Некоректні дані. Перевірте введену інформацію.';
+            } else if (err.response && err.response.status === 401) {
+                errorMessage = 'Ваша сесія закінчилася. Увійдіть до системи знову.';
+            } else if (err.response && err.response.status === 500) {
+                errorMessage = 'Сервер тимчасово недоступний. Спробуйте пізніше.';
+            } else if (err.request) {
+                errorMessage = 'Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.';
+            }
+
+            setUpdateError(errorMessage);
         } finally {
             setLoadingProfileUpdate(false);
             setTimeout(() => {
                 setUpdateSuccess(null);
                 setUpdateError(null);
-            }, 3000);
+            }, 5000);
         }
     };
 
@@ -224,12 +245,26 @@ function ProfilePage() {
 
         try {
             await cancelBooking(bookingToCancel, cancelReason);
-            await loadBookings();
-            handleCloseCancelDialog();
+            loadBookings();
+            setIsCancelDialogOpen(false);
         } catch (err) {
-            setBookingError(err.response?.data?.detail || MESSAGES.CANCEL_ERROR_DEFAULT);
+            if (err.response && err.response.status === 400) {
+                setBookingError('Це бронювання вже скасовано або не може бути скасовано.');
+            } else if (err.response && err.response.status === 404) {
+                setBookingError('Бронювання не знайдено. Можливо, воно вже видалено.');
+            } else if (err.response && err.response.status === 401) {
+                setBookingError('Ваша сесія закінчилася. Увійдіть до системи знову.');
+            } else if (err.response && err.response.status === 500) {
+                setBookingError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+            } else if (err.request) {
+                setBookingError('Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.');
+            } else {
+                setBookingError('Помилка при скасуванні бронювання: ' + (err.response?.data?.detail || 'Спробуйте ще раз.'));
+            }
+            console.error('Cancel booking error:', err);
         } finally {
             setIsCancelling(false);
+            setBookingToCancel(null);
         }
     };
 

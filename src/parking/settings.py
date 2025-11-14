@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     
     "rest_framework",
     "drf_spectacular",
+    "rest_framework_simplejwt",
     "corsheaders",
     
     'src.api',
@@ -88,11 +89,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        'rest_framework.authentication.SessionAuthentication', 
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -105,6 +105,14 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
 }
 
+from datetime import timedelta
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
+}
+
 CORS_ALLOW_ALL_ORIGINS = True 
 
 STATIC_URL = "/static/"
@@ -113,7 +121,6 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}
 }
 
-import os
 try:
     if config("RDS_DB_NAME", default=None):
         DATABASES = {

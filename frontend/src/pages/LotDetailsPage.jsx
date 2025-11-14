@@ -44,7 +44,16 @@ function LotDetailsPage() {
                 setEndTime(getFormattedDateTime(twoHoursLater));
 
             } catch (err) {
-                setError('Не вдалося завантажити деталі парковки або вона не знайдена.');
+                console.error('Error loading lot details:', err);
+                if (err.response && err.response.status === 404) {
+                    setError('Парковку не знайдено. Можливо, вона була видалена.');
+                } else if (err.response && err.response.status === 500) {
+                    setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
+                } else if (err.request) {
+                    setError('Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.');
+                } else {
+                    setError('Не вдалося завантажити деталі парковки. Спробуйте оновити сторінку.');
+                }
             } finally {
                 setLoading(false);
             }
@@ -58,7 +67,12 @@ function LotDetailsPage() {
         
         // Basic time validation
         if (!startTime || !endTime || new Date(startTime) >= new Date(endTime)) {
-            alert('Будь ласка, оберіть коректний діапазон часу.');
+            alert('Будь ласка, оберіть коректний діапазон часу. Час початку має бути раніше часу закінчення.');
+            return;
+        }
+
+        if (new Date(startTime) < new Date()) {
+            alert('Неможливо забронювати місце в минулому. Оберіть майбутній час.');
             return;
         }
 

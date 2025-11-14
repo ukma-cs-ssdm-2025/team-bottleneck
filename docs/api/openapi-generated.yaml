@@ -16,7 +16,6 @@ components:
           readOnly: true
           type: integer
         payment_intent_id:
-          nullable: true
           readOnly: true
           type: string
         spot:
@@ -187,7 +186,6 @@ components:
       properties:
         building:
           maxLength: 20
-          nullable: true
           type: string
         city:
           maxLength: 100
@@ -211,7 +209,6 @@ components:
       properties:
         building:
           maxLength: 20
-          nullable: true
           type: string
         city:
           maxLength: 100
@@ -241,7 +238,6 @@ components:
       properties:
         building:
           maxLength: 20
-          nullable: true
           type: string
         city:
           maxLength: 100
@@ -315,6 +311,38 @@ components:
         is_ev:
           type: boolean
       type: object
+    TokenObtainPair:
+      properties:
+        access:
+          readOnly: true
+          type: string
+        password:
+          type: string
+          writeOnly: true
+        refresh:
+          readOnly: true
+          type: string
+        username:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+      type: object
+    TokenRefresh:
+      properties:
+        access:
+          readOnly: true
+          type: string
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+      type: object
     User:
       properties:
         email:
@@ -330,15 +358,16 @@ components:
           type: integer
         is_operator:
           readOnly: true
-          type: string
+          type: boolean
         is_staff:
           type: boolean
         last_name:
           maxLength: 150
           type: string
         lot_id:
+          nullable: true
           readOnly: true
-          type: string
+          type: integer
         username:
           description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
             only.
@@ -380,13 +409,10 @@ components:
       - username
       type: object
   securitySchemes:
-    basicAuth:
-      scheme: basic
+    jwtAuth:
+      bearerFormat: JWT
+      scheme: bearer
       type: http
-    cookieAuth:
-      in: cookie
-      name: sessionid
-      type: apiKey
 info:
   description: Search lots/spots, book & cancel.
   title: Smart Parking API
@@ -536,8 +562,7 @@ paths:
                 type: object
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       tags:
       - api
@@ -574,8 +599,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Authentication required
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Client] List my bookings'
       tags:
       - api
@@ -636,8 +660,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: The spot is already booked for this period
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Client] Create a new booking'
       tags:
       - api
@@ -667,8 +690,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Forbidden - You are not an operator or not assigned to a lot
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Operator] List bookings for my lot'
       tags:
       - api
@@ -704,8 +726,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Booking not found or belongs to another user
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Client] Get booking details'
       tags:
       - api
@@ -759,8 +780,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Booking not found
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Operator] Cancel a booking in my lot'
       tags:
       - api
@@ -823,8 +843,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Booking not found or belongs to another user
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Client] Cancel my booking'
       tags:
       - api
@@ -847,8 +866,7 @@ paths:
                 $ref: '#/components/schemas/PaginatedParkingLotList'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       summary: List of all lots
       tags:
@@ -875,8 +893,7 @@ paths:
                 $ref: '#/components/schemas/ParkingLotDetail'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Create a new lot'
       tags:
       - api
@@ -894,8 +911,7 @@ paths:
         '204':
           description: No response body
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Delete a lot'
       tags:
       - api
@@ -924,8 +940,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Lot not found
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       summary: Detailed info about lot
       tags:
@@ -958,8 +973,7 @@ paths:
                 $ref: '#/components/schemas/ParkingLotDetail'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Partially update a lot'
       tags:
       - api
@@ -992,8 +1006,7 @@ paths:
                 $ref: '#/components/schemas/ParkingLotDetail'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Update a lot'
       tags:
       - api
@@ -1054,8 +1067,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Parking lot not found
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       summary: List of parking spots in a lot
       tags:
@@ -1103,8 +1115,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Forbidden - Not an operator for this lot
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Operator] Create a new spot'
       tags:
       - api
@@ -1147,8 +1158,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Spot not found
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Operator] Delete a parking spot'
       tags:
       - api
@@ -1181,8 +1191,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Spot not found or Lot not found
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       summary: Get parking spot details
       tags:
@@ -1235,9 +1244,64 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Forbidden - Not an operator for this lot
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Operator] Update spot properties'
+      tags:
+      - api
+  /api/v1/token/:
+    post:
+      description: 'Takes a set of user credentials and returns an access and refresh
+        JSON web
+
+        token pair to prove the authentication of those credentials.'
+      operationId: api_v1_token_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+      tags:
+      - api
+  /api/v1/token/refresh/:
+    post:
+      description: 'Takes a refresh type JSON web token and returns an access type
+        JSON web
+
+        token if the refresh token is valid.'
+      operationId: api_v1_token_refresh_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
       tags:
       - api
   /api/v1/users/:
@@ -1258,8 +1322,7 @@ paths:
                 $ref: '#/components/schemas/PaginatedUserList'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       tags:
       - api
   /api/v1/users/me/:
@@ -1281,8 +1344,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Authentication required
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: Get/Update current user profile
       tags:
       - api
@@ -1315,8 +1377,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Authentication required
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: Get/Update current user profile
       tags:
       - api
@@ -1351,8 +1412,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: Validation error (e.g., username exists, weak password)
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       summary: Register a new user
       tags:
@@ -1388,8 +1448,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Get any user details'
       tags:
       - api
@@ -1436,8 +1495,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Make a user an Admin'
       tags:
       - api
@@ -1484,8 +1542,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Assign a user as Lot Operator'
       tags:
       - api
@@ -1520,8 +1577,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Remove Admin role'
       tags:
       - api
@@ -1547,8 +1603,7 @@ paths:
                 $ref: '#/components/schemas/Error'
           description: ''
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       summary: '[Admin] Remove Operator role'
       tags:
       - api
