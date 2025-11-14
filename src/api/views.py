@@ -401,7 +401,10 @@ class BookingViewSet(mixins.ListModelMixin,
         end_at = ser.validated_data["end_at"]
 
         validate_booking_window(start_at, end_at)
-        try: 
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL statement_timeout = '5000'") 
+        
             try:
                 locked_spot = Spot.objects.select_for_update(
                     nowait=False, 

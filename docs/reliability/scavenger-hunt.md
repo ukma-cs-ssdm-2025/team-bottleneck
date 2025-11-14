@@ -26,7 +26,7 @@
 | Field | Details |
 | :--- | :--- |
 | **Problem** | The **GET /api/v1/lots/{id}/spots/** method (searching for available spots) executes a highly costly query that likely results in a **Full Table Scan** of the `Booking` table without any timeout mechanism. This endpoint is the first step in the sales funnel. |
-| **Code Snippet** | **File:** `views.py` <img width="1046" height="450" alt="image" src="https://github.com/user-attachments/assets/6038bbad-2bcf-4387-aca1-eeadd4c28513" /> |
+| **Code Snippet** | **File:** `views.py`<img width="1376" height="472" alt="image" src="https://github.com/user-attachments/assets/8d315006-4715-446d-90c9-adc9dee1343e" />
 | **Why it is dangerous?** | **Fault:** Lack of a proper **composite index** on the critical time fields (`start_at`, `end_at`, `status`) in the `Booking` table, combined with **no query timeout**. <br> **Error:** As the number of bookings grows (e.g., to 100,000+), the query becomes **extremely slow** (30+ seconds). This leads to an **HTTP timeout** and blocks the handler thread. |
 | **Potential Impact** | **High Severity**. <br> 1. **Customer Loss:** Users cannot view available spots, causing them to **abandon the site** (Failure to Retain User). <br> 2. **Partial DoS:** The long-running query **blocks DB connections** and ties up web server resources, slowing down the entire system for others. <br> 3. **Reputation Damage:** Poor user experience ("The site is laggy/broken"). |
 
