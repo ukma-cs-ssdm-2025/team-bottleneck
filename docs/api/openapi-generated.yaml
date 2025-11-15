@@ -1370,6 +1370,7 @@ paths:
           description: ''
       security:
       - jwtAuth: []
+      summary: Get/Update current user profile
       tags:
       - api
   /api/v1/users/register/:

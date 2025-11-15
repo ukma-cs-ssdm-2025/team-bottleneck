@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PROJECT_ROOT_DIR: team-bottleneck
-      ALLOWED_HOSTS_PROD: "16.170.148.253,localhost,127.0.0.1"
+      ALLOWED_HOSTS_PROD: "16.170.148.253"
       DEBUG_PROD: "False"
       RDS_DB_NAME: "postgres"
       RDS_USERNAME: "MaFiN"
@@ -30,10 +30,11 @@ jobs:
           set -e
           DEPLOY_PATH="/home/ubuntu/${{ env.PROJECT_ROOT_DIR }}"
           
-          # ЗМІНА: Замість 'git reset' ми переключаємось на конкретний тег релізу
           echo "Fetching all tags and checking out release tag ${{ github.ref_name }}..."
           cd $DEPLOY_PATH
           git fetch origin --tags
+          git reset --hard
+          git clean -fd
           git checkout ${{ github.ref_name }}
           
           echo "Creating .env file with all configuration..."
