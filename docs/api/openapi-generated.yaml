@@ -381,6 +381,15 @@ components:
       - lot_id
       - username
       type: object
+    UserProfileUpdate:
+      properties:
+        first_name:
+          maxLength: 150
+          type: string
+        last_name:
+          maxLength: 150
+          type: string
+      type: object
     UserRegistration:
       properties:
         email:
@@ -1327,8 +1336,6 @@ paths:
       - api
   /api/v1/users/me/:
     get:
-      description: 'GET: Returns current user details (and checks if they are an operator).
-        PATCH: Updates profile data (first_name, last_name).'
       operationId: api_v1_users_me_retrieve
       responses:
         '200':
@@ -1337,20 +1344,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Authentication required
       security:
       - jwtAuth: []
-      summary: Get/Update current user profile
       tags:
       - api
     patch:
-      description: 'GET: Returns current user details (and checks if they are an operator).
-        PATCH: Updates profile data (first_name, last_name).'
       operationId: api_v1_users_me_partial_update
       requestBody:
         content:
@@ -1368,17 +1366,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserProfileUpdate'
           description: ''
-        '401':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: Authentication required
       security:
       - jwtAuth: []
-      summary: Get/Update current user profile
       tags:
       - api
   /api/v1/users/register/:
