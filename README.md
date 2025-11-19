@@ -50,6 +50,17 @@ This project is developed for educational purposes as part of the course "Softwa
 ## Validation Documentation
 * [review_log.md](docs/validation/review_log.md) – Review of the Rate UKMA Test Plan
 * [test-plan.md](docs/validation/test-plan.md) – test plan overview
+
+## Refactoring Documentation
+* [sonarcloud-report.md](docs/refactoring/sonarcloud-report.md) – sonarcloud-report
+
+## Reliability Documentation
+* [reliability-report.md](docs/reliability/reliability-report.md) – reliability-report
+* [scavenger-hunt.md](docs/reliability/scavenger-hunt.md) – scavenger-hunt
+
+## CI-CD Documentation
+* [dora-summary.md](docs/ci-cd/dora-summary.md) – dora-summary
+
   
 
 ## Local Deployment Instructions
