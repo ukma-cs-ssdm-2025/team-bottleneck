@@ -1,0 +1,14 @@
+{
+  "id": 18817624178,
+  "name": "Security Check",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2025-10-26T12:02:47Z",
+  "updated_at": "2025-10-26T12:03:12Z",
+  "head_sha": "424950624cada08898ea82742360f663bfd611de",
+  "head_branch": "MaFiN-backend",
+  "event": "pull_request",
+  "run_number": 25,
+  "workflow_id": 197297534,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/18817624178"
+}

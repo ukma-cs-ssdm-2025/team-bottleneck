@@ -1,0 +1,14 @@
+{
+  "id": 18910115394,
+  "name": "Security Check",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2025-10-29T13:48:15Z",
+  "updated_at": "2025-10-29T13:48:34Z",
+  "head_sha": "e66d8dba0902d9e5f64ed677be80ed1f42cfb9ee",
+  "head_branch": "Resolve-conflicts-main-part",
+  "event": "pull_request",
+  "run_number": 33,
+  "workflow_id": 197297534,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/18910115394"
+}

@@ -1,0 +1,14 @@
+{
+  "id": 19101325812,
+  "name": "Run API Tests",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2025-11-05T12:03:12Z",
+  "updated_at": "2025-11-05T12:03:39Z",
+  "head_sha": "815619be2269758b0b0e3d5a62aeb60c90e7b9e0",
+  "head_branch": "refactor-tests-for-sonar",
+  "event": "pull_request",
+  "run_number": 47,
+  "workflow_id": 200377127,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/19101325812"
+}

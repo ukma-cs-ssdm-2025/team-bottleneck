@@ -1,0 +1,14 @@
+{
+  "id": 19010090883,
+  "name": "Run API Tests",
+  "status": "completed",
+  "conclusion": "failure",
+  "created_at": "2025-11-02T09:06:03Z",
+  "updated_at": "2025-11-02T09:06:48Z",
+  "head_sha": "2622d83aff22e9489e56464aa5953303f628d399",
+  "head_branch": "main",
+  "event": "push",
+  "run_number": 36,
+  "workflow_id": 200377127,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/19010090883"
+}

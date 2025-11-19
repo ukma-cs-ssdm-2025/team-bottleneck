@@ -1,0 +1,14 @@
+{
+  "id": 19099407822,
+  "name": "Create Release",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2025-11-05T10:45:17Z",
+  "updated_at": "2025-11-05T10:45:27Z",
+  "head_sha": "9460d9a7c9374f0dde9344f561b8928f7157e048",
+  "head_branch": "main",
+  "event": "workflow_dispatch",
+  "run_number": 1,
+  "workflow_id": 203788410,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/19099407822"
+}
