@@ -1,0 +1,14 @@
+{
+  "id": 18917260700,
+  "name": "Deploy to EC2",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2025-10-29T17:48:25Z",
+  "updated_at": "2025-10-29T17:48:36Z",
+  "head_sha": "9aedf572a17381b0835a857c36e23a787c8faf4f",
+  "head_branch": "main",
+  "event": "push",
+  "run_number": 14,
+  "workflow_id": 196165544,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/18917260700"
+}

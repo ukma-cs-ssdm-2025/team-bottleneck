@@ -1,0 +1,14 @@
+{
+  "id": 18818557167,
+  "name": "Run API Tests",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2025-10-26T13:21:48Z",
+  "updated_at": "2025-10-26T13:22:36Z",
+  "head_sha": "95cf6ea30d5bb4615c07de6318a45d091f22969f",
+  "head_branch": "MaFiN-backend",
+  "event": "pull_request",
+  "run_number": 17,
+  "workflow_id": 200377127,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/18818557167"
+}

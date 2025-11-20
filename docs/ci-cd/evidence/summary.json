@@ -1,0 +1,809 @@
+{
+  "generated_at": "2025-11-19T13:50:42.399499",
+  "repository": "ukma-cs-ssdm-2025/team-bottleneck",
+  "total_runs": 100,
+  "successful_downloads": 100,
+  "failed_downloads": 0,
+  "runs": [
+    {
+      "id": 19389300105,
+      "number": 56,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-15T11:37:58Z"
+    },
+    {
+      "id": 19389202395,
+      "number": 44,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-15T11:29:15Z"
+    },
+    {
+      "id": 19389202386,
+      "number": 55,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-15T11:29:15Z"
+    },
+    {
+      "id": 19388369754,
+      "number": 17,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-15T10:18:13Z"
+    },
+    {
+      "id": 19388368142,
+      "number": 3,
+      "name": "Create Release",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-15T10:18:04Z"
+    },
+    {
+      "id": 19369177466,
+      "number": 16,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-14T15:24:04Z"
+    },
+    {
+      "id": 19369173890,
+      "number": 2,
+      "name": "Create Release",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-14T15:23:57Z"
+    },
+    {
+      "id": 19369116508,
+      "number": 54,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-14T15:22:03Z"
+    },
+    {
+      "id": 19369017117,
+      "number": 43,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-14T15:18:38Z"
+    },
+    {
+      "id": 19369017107,
+      "number": 53,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-14T15:18:38Z"
+    },
+    {
+      "id": 19191982701,
+      "number": 52,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-08T10:45:28Z"
+    },
+    {
+      "id": 19191952135,
+      "number": 42,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-08T10:42:27Z"
+    },
+    {
+      "id": 19191952114,
+      "number": 51,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-08T10:42:26Z"
+    },
+    {
+      "id": 19191938191,
+      "number": 50,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-08T10:40:58Z"
+    },
+    {
+      "id": 19191902228,
+      "number": 49,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-08T10:37:27Z"
+    },
+    {
+      "id": 19191902222,
+      "number": 41,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-08T10:37:27Z"
+    },
+    {
+      "id": 19101363394,
+      "number": 48,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T12:04:36Z"
+    },
+    {
+      "id": 19101325817,
+      "number": 40,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T12:03:12Z"
+    },
+    {
+      "id": 19101325812,
+      "number": 47,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T12:03:12Z"
+    },
+    {
+      "id": 19101105283,
+      "number": 46,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:53:43Z"
+    },
+    {
+      "id": 19101070316,
+      "number": 39,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:52:11Z"
+    },
+    {
+      "id": 19101070313,
+      "number": 45,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:52:11Z"
+    },
+    {
+      "id": 19100620100,
+      "number": 44,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:33:12Z"
+    },
+    {
+      "id": 19100571979,
+      "number": 43,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:31:19Z"
+    },
+    {
+      "id": 19100571955,
+      "number": 38,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:31:19Z"
+    },
+    {
+      "id": 19100311403,
+      "number": 42,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:20:58Z"
+    },
+    {
+      "id": 19100259964,
+      "number": 41,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-05T11:19:00Z"
+    },
+    {
+      "id": 19100259937,
+      "number": 37,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:19:00Z"
+    },
+    {
+      "id": 19099923354,
+      "number": 40,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T11:05:54Z"
+    },
+    {
+      "id": 19099407822,
+      "number": 1,
+      "name": "Create Release",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T10:45:17Z"
+    },
+    {
+      "id": 19099356918,
+      "number": 39,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T10:43:21Z"
+    },
+    {
+      "id": 19099253476,
+      "number": 38,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T10:39:35Z"
+    },
+    {
+      "id": 19099253475,
+      "number": 36,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T10:39:35Z"
+    },
+    {
+      "id": 19099038934,
+      "number": 35,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T10:31:19Z"
+    },
+    {
+      "id": 19099038860,
+      "number": 37,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-05T10:31:19Z"
+    },
+    {
+      "id": 19010090883,
+      "number": 36,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-02T09:06:03Z"
+    },
+    {
+      "id": 18996664878,
+      "number": 35,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-01T12:22:20Z"
+    },
+    {
+      "id": 18996652838,
+      "number": 34,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-01T12:21:17Z"
+    },
+    {
+      "id": 18995436505,
+      "number": 33,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-01T10:29:12Z"
+    },
+    {
+      "id": 18995436389,
+      "number": 79,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-01T10:29:11Z"
+    },
+    {
+      "id": 18995426834,
+      "number": 32,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-11-01T10:28:22Z"
+    },
+    {
+      "id": 18995279542,
+      "number": 78,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-11-01T10:16:26Z"
+    },
+    {
+      "id": 18920698243,
+      "number": 77,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T20:08:03Z"
+    },
+    {
+      "id": 18917479023,
+      "number": 31,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-29T17:57:33Z"
+    },
+    {
+      "id": 18917479005,
+      "number": 15,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T17:57:33Z"
+    },
+    {
+      "id": 18917478591,
+      "number": 76,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T17:57:32Z"
+    },
+    {
+      "id": 18917314611,
+      "number": 34,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T17:50:35Z"
+    },
+    {
+      "id": 18917314609,
+      "number": 30,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-29T17:50:35Z"
+    },
+    {
+      "id": 18917260700,
+      "number": 14,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T17:48:25Z"
+    },
+    {
+      "id": 18917260686,
+      "number": 29,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-29T17:48:25Z"
+    },
+    {
+      "id": 18917260261,
+      "number": 75,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T17:48:24Z"
+    },
+    {
+      "id": 18910115394,
+      "number": 33,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T13:48:15Z"
+    },
+    {
+      "id": 18910115393,
+      "number": 28,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-29T13:48:15Z"
+    },
+    {
+      "id": 18909402372,
+      "number": 74,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T13:24:18Z"
+    },
+    {
+      "id": 18909276719,
+      "number": 27,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-29T13:20:09Z"
+    },
+    {
+      "id": 18908707194,
+      "number": 73,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T13:00:15Z"
+    },
+    {
+      "id": 18908139002,
+      "number": 32,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T12:38:36Z"
+    },
+    {
+      "id": 18908138961,
+      "number": 26,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-29T12:38:36Z"
+    },
+    {
+      "id": 18907507192,
+      "number": 72,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-29T12:14:50Z"
+    },
+    {
+      "id": 18899603131,
+      "number": 25,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-29T06:53:00Z"
+    },
+    {
+      "id": 18888712817,
+      "number": 31,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T20:45:32Z"
+    },
+    {
+      "id": 18888712787,
+      "number": 24,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-28T20:45:32Z"
+    },
+    {
+      "id": 18888664015,
+      "number": 71,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T20:43:26Z"
+    },
+    {
+      "id": 18885537930,
+      "number": 70,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T18:37:37Z"
+    },
+    {
+      "id": 18876570759,
+      "number": 13,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T13:34:13Z"
+    },
+    {
+      "id": 18876570314,
+      "number": 69,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T13:34:12Z"
+    },
+    {
+      "id": 18876444098,
+      "number": 30,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T13:30:01Z"
+    },
+    {
+      "id": 18876444066,
+      "number": 23,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-28T13:30:01Z"
+    },
+    {
+      "id": 18875417671,
+      "number": 22,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-28T12:53:41Z"
+    },
+    {
+      "id": 18875380473,
+      "number": 21,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-28T12:52:16Z"
+    },
+    {
+      "id": 18872010112,
+      "number": 29,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T10:38:50Z"
+    },
+    {
+      "id": 18869810637,
+      "number": 20,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-28T09:15:20Z"
+    },
+    {
+      "id": 18869810628,
+      "number": 12,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T09:15:20Z"
+    },
+    {
+      "id": 18869810240,
+      "number": 68,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T09:15:19Z"
+    },
+    {
+      "id": 18869632629,
+      "number": 28,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-28T09:08:43Z"
+    },
+    {
+      "id": 18869632597,
+      "number": 19,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-28T09:08:43Z"
+    },
+    {
+      "id": 18866676830,
+      "number": 18,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-28T06:57:09Z"
+    },
+    {
+      "id": 18854826437,
+      "number": 27,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-27T20:22:15Z"
+    },
+    {
+      "id": 18838672105,
+      "number": 67,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-27T11:01:28Z"
+    },
+    {
+      "id": 18821972038,
+      "number": 66,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T18:25:15Z"
+    },
+    {
+      "id": 18821798327,
+      "number": 65,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T18:10:29Z"
+    },
+    {
+      "id": 18820469265,
+      "number": 64,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T16:11:36Z"
+    },
+    {
+      "id": 18820409937,
+      "number": 63,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T16:06:47Z"
+    },
+    {
+      "id": 18819979677,
+      "number": 11,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T15:27:56Z"
+    },
+    {
+      "id": 18819979513,
+      "number": 62,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T15:27:54Z"
+    },
+    {
+      "id": 18818823982,
+      "number": 61,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T13:45:17Z"
+    },
+    {
+      "id": 18818557167,
+      "number": 17,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T13:21:48Z"
+    },
+    {
+      "id": 18818557165,
+      "number": 26,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T13:21:48Z"
+    },
+    {
+      "id": 18817802071,
+      "number": 60,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T12:17:56Z"
+    },
+    {
+      "id": 18817799110,
+      "number": 59,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "created_at": "2025-10-26T12:17:40Z"
+    },
+    {
+      "id": 18817653642,
+      "number": 16,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T12:05:08Z"
+    },
+    {
+      "id": 18817653444,
+      "number": 58,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T12:05:07Z"
+    },
+    {
+      "id": 18817646487,
+      "number": 10,
+      "name": "Deploy to EC2",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-26T12:04:39Z"
+    },
+    {
+      "id": 18817646479,
+      "number": 15,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-26T12:04:39Z"
+    },
+    {
+      "id": 18817646292,
+      "number": 57,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "created_at": "2025-10-26T12:04:39Z"
+    },
+    {
+      "id": 18817624187,
+      "number": 14,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T12:02:47Z"
+    },
+    {
+      "id": 18817624178,
+      "number": 25,
+      "name": "Security Check",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T12:02:47Z"
+    },
+    {
+      "id": 18817463799,
+      "number": 13,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T11:45:19Z"
+    },
+    {
+      "id": 18817334634,
+      "number": 12,
+      "name": "Run API Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2025-10-26T11:32:15Z"
+    },
+    {
+      "id": 18817334388,
+      "number": 56,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2025-10-26T11:32:14Z"
+    }
+  ]
+}

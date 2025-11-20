@@ -1,9 +1,6 @@
 # Project Progress Report: "Parking System"
-Date: 25.10.25
+Date: 19.11.25
 
-## Current Overview
-During Lab 6, our team implemented user-role pages on the frontend and operator endpoints on the backend.  
-We also created and documented [debugging-log.md](debugging-log.md) and [testing-strategy.md](testing-strategy.md).
 
 ## Implementation Details
 
@@ -13,8 +10,9 @@ We also created and documented [debugging-log.md](debugging-log.md) and [testing
 ### Backend
 - [x] Basic authentication  
 - [x] Database hosted on AWS  
-- [x] 14 out of 18 endpoints implemented  
-- [x] Operator functionality implemented  
+- [x] 18 out of 18 endpoints implemented  
+- [x] Operator functionality implemented
+- [x] Admin functionality implemented  
 
 ### Backend Structure Overview
 ```text
@@ -48,40 +46,56 @@ src/
 ### Frontend
 - [x] Basic structure created  
 - [x] All pages for the user role implemented  
-
+- [x] Almost all pages for the operator implemented
+- [x] Almost all pages for the admin implemented  
 
 ### Frontend Structure Overview
 ```text
-frontend/  
-│  
-├── src/                            # Source files of the React app
-│   ├── api/                        # Configuration and methods for REST API interaction
-│   │   ├── apiClient.js            # Base HTTP client (Axios)
-│   │   └── parkingAPI.js           # Functions for API calls (Lots, Bookings)
-│   │
-│   ├── components/                 # Reusable UI components
-│   │   ├── layout/                 # Layout components (header, footer)
-│   │   │   └── Header.jsx          # Header / Navigation bar
-│   │   └── ... other components
-│   │
-│   ├── constants/                  # Global constants
-│   ├── context/                    # React Context for global state
-│   ├── pages/                      # Components mapped to individual routes/pages
-│   │   ├── BookingCreatePage.jsx   # Booking creation page
-│   │   ├── HomePage.jsx            # Home page
-│   │   ├── LoginPage.jsx           # Login page
-│   │   ├── LotDetailsPage.jsx      # Parking lot details page
-│   │   ├── ProfilePage.jsx         # User profile page
-│   │   ├── RegisterPage.jsx        # Registration page
-│   │   └── SpotSelectionPage.jsx   # Spot/time selection page
-│   │
-│   ├── routes/                     # Routing configuration (AppRouter.jsx)
-│   ├── styles/                     # CSS style files
-│   ├── utils/                      # Helper functions (validation, formatting)
-│   ├── App.jsx                     # Root application component
-│   └── index.js                    # Application entry point
-│
-└── package.json                    # Dependency configuration
+frontend/
+└── src/                                # Source files of the React app (JavaScript/JSX)
+    ├── api/                            # Configuration and methods for REST API interaction
+    │   ├── adminAPI.js                 # NEW: API functions for Admin/Operator endpoints
+    │   ├── apiClient.js                # Base HTTP client (Axios)
+    │   ├── operatorAPI.js              # NEW: API functions for Operator endpoints
+    │   └── parkingAPI.js               # Functions for general API calls (Lots, Bookings)
+    │
+    ├── components/                     # Reusable UI components
+    │   ├── admin/                      # NEW: Components specific to Admin/Operator views
+    │   │   ├── ParkingLotForm.jsx      # Form for creating/editing parking lots
+    │   │   ├── ParkingLotsTable.jsx    # Table view for parking lots
+    │   │   └── UserManagementTable.jsx # Component for managing users
+    │   ├── layout/
+    │   │   └── Header.jsx              # Header / Navigation bar
+    │   └── ... other components
+    │
+    ├── constants/                      # Global constants (e.g., apiConfig.js)
+    ├── context/                        # React Context for global state (e.g., AuthContext.js)
+    │
+    ├── pages/                          # Components mapped to individual routes/pages
+    │   ├── AdminDashboardPage.jsx      # NEW: Main Admin view
+    │   ├── BookingCreatePage.jsx       # Booking creation page
+    │   ├── HomePage.jsx                # Home page
+    │   ├── LotDetailsPage.jsx          # Parking lot details page
+    │   ├── OperatorPage.jsx            # NEW: Operator-specific dashboard/view
+    │   ├── ParkingLotCreatePage.jsx    # NEW: Page for creating a new lot
+    │   ├── ParkingLotEditPage.jsx      # NEW: Page for editing a lot
+    │   ├── ParkingLotListPage.jsx      # NEW: Page listing all lots 
+    │   ├── ProfilePage.jsx             # User profile page
+    │   ├── RegisterPage.jsx            # Registration page
+    │   ├── SingleLoginPage.jsx         # Login page (updated)
+    │   ├── SpotCreatePage.jsx          # NEW: Page for creating a spot
+    │   ├── SpotDetailsPage.jsx         # NEW: Spot details view
+    │   ├── SpotSelectionPage.jsx       # Spot/time selection page
+    │   └── UserManagementPage.jsx      # NEW: Page for user management
+    │
+    ├── routes/                         # Routing configuration
+    │   └── AdminRoute.jsx              # NEW: Route guard/wrapper for Admin pages
+    │   └── AppRouter.jsx
+    │
+    ├── styles/                         # CSS style files (e.g., global.css, theme.js)
+    ├── utils/                          # Helper functions (e.g., dateTimeUtils.js)
+    ├── App.jsx                         # Root application component
+    └── index.js                        # Application entry point
 ```
 
 ### Technologies Used

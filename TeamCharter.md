@@ -12,10 +12,10 @@
 
 ## 2. Roles and Responsibilities
 
-* Repository Maintainer (Lab1), Requirements Lead (Lab2), Architecture Lead (Lab3), Backend Lead (Lab4), Quality Lead (Lab5), Test Lead (Lab6), Review Manager (Lab7), QA Engineer(Lab8), Resilience Engineer (Lab9): Dermenzhy Valentina Sergiivna
-* CI Maintainer (Lab1), Traceability Lead (Lab2), Requirements-Architecture Mapper (Lab3), Integration Lead (Lab4), Code Reviewer (Lab5), Integration Lead (Lab6), Test Planner (Lab7), Release Manager (Lab8), Fault Classifier (Lab9): Pihuliak Anton Bohdanovych
-* Documentation Lead (Lab1–Lab5), Debugger (Lab6), Documentation Lead (Lab 7), Code Analyst (Lab8), Risk Documentarian (Lab9): Rakhmanova Victoria Ihorivna
-* Task Tracker Lead (Lab1), Quality Lead (Lab2), UML Lead (Lab3), Quality Lead (Lab4), Security Analyst (Lab5), QA Planner (Lab6), QA Analyst (Lab7), Refactoring Lead (Lab8), Reliability Explorer (Lab9): Dvoylenko Anastasia Ivanivna
+* Repository Maintainer (Lab1), Requirements Lead (Lab2), Architecture Lead (Lab3), Backend Lead (Lab4), Quality Lead (Lab5), Test Lead (Lab6), Review Manager (Lab7), QA Engineer(Lab8), Resilience Engineer (Lab9), Metrics Analyst (Lab10): Dermenzhy Valentina Sergiivna
+* CI Maintainer (Lab1), Traceability Lead (Lab2), Requirements-Architecture Mapper (Lab3), Integration Lead (Lab4), Code Reviewer (Lab5), Integration Lead (Lab6), Test Planner (Lab7), Release Manager (Lab8), Fault Classifier (Lab9), Data Gatherer (Lab10): Pihuliak Anton Bohdanovych
+* Documentation Lead (Lab1–Lab5), Debugger (Lab6), Documentation Lead (Lab 7), Code Analyst (Lab8), Risk Documentarian (Lab9), Documentation Lead (Lab10): Rakhmanova Victoria Ihorivna
+* Task Tracker Lead (Lab1), Quality Lead (Lab2), UML Lead (Lab3), Quality Lead (Lab4), Security Analyst (Lab5), QA Planner (Lab6), QA Analyst (Lab7), Refactoring Lead (Lab8), Reliability Explorer (Lab9), Improvement Designer (Lab10): Dvoylenko Anastasia Ivanivna
 
 ## 3. Communication Plan
 

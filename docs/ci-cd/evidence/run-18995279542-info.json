@@ -1,0 +1,14 @@
+{
+  "id": 18995279542,
+  "name": "pages build and deployment",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2025-11-01T10:16:26Z",
+  "updated_at": "2025-11-01T10:17:05Z",
+  "head_sha": "d64bd1b0cb3618be59d30c73700012b89f47b769",
+  "head_branch": "main",
+  "event": "dynamic",
+  "run_number": 78,
+  "workflow_id": 195101363,
+  "html_url": "https://github.com/ukma-cs-ssdm-2025/team-bottleneck/actions/runs/18995279542"
+}
