@@ -449,7 +449,7 @@ class BookingViewSet(mixins.ListModelMixin,
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
-        except Exception as e:
+        except Exception:
             return Response(
                 {"detail": "An unexpected error occurred. Please contact support."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
