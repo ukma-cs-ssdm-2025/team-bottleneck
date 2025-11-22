@@ -22,4 +22,4 @@ A parking management system that allows drivers to quickly find available spots,
 - **NFR-002 (Security):** Passwords and payment data must be stored encrypted (AES-256).  
 - **NFR-003 (Reliability):** Backups are automatically created every 24 hours and retained for at least 30 days.  
 - **NFR-004 (Usability):** The website must be responsive for mobile devices (screens ≥ 5’’), without horizontal scrolling, and provide full functionality.  
-- **NFR-005 (Usability):** Error messages and push notifications must be understandable to non-technical users and provide instructions to resolve the issue.
+- **NFR-005 (Usability):** Error messages must be understandable to non-technical users and provide instructions to resolve the issue.
