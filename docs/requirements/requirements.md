@@ -13,7 +13,7 @@ A parking management system that allows drivers to quickly find available spots,
 - **FR-002:** The system must support card payments (Stripe).  
 - **FR-003:** The system must allow adding/editing parking lot information.  
 - **FR-004:** The system must display error messages.  
-- **FR-005:** The system must send push notifications or emails when a booking is ending.  
+- **FR-005:** The system must send emails with a booking details when it is created or cancelled.  
 - **FR-006:** The system must automatically create database backups.  
 - **FR-007:** The system must store and display the user's transaction history.
 
