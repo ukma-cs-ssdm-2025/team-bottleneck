@@ -6,6 +6,8 @@ from collections import defaultdict
 
 # Для запуску - команда python -u script.py ukma-cs-ssdm-2025 team-bottleneck --token ghp-token
 
+FILE_PATH = "docs/ci-cd/metrics-raw.md"
+
 def get_workflow_runs(owner, repo, token=None, workflow_name=None, per_page=100):
     headers = {}
     if token:
@@ -125,7 +127,7 @@ def generate_markdown_table(runs, runs_by_commit):
     return '\n'.join(lines)
 
 
-def update_metrics_file(table_content, file_path='docs/ci-cd/metrics-raw.md'):
+def update_metrics_file(table_content, file_path=FILE_PATH):
     path = Path(file_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     
@@ -151,7 +153,7 @@ def main():
     parser.add_argument('repo', help='team-bottleneck')
     parser.add_argument('--token', help='your token')
     parser.add_argument('--limit', type=int, default=200, help="100")
-    parser.add_argument('--output', default='docs/ci-cd/metrics-raw.md', help='docs/ci-cd/metrics-raw.md')
+    parser.add_argument('--output', default=FILE_PATH, help=FILE_PATH)
     
     args = parser.parse_args()
     

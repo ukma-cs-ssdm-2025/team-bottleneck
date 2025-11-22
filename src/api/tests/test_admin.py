@@ -335,7 +335,7 @@ def test_admin_can_delete_spot():
 @pytest.mark.django_db
 def test_admin_can_assign_user_as_operator():
     """Admin can create operator profile for a user"""
-    admin = User.objects.create_superuser(username="admin")
+    User.objects.create_superuser(username="admin")
     lot = ParkingLot.objects.create(name="Lot", city="Kyiv", street="Main")
     user = User.objects.create_user(username="newop")
     
