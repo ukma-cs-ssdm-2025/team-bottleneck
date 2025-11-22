@@ -90,7 +90,7 @@ MEDIA_ROOT=
 
 #### Connecting to the DB (first terminal)
 
-* ssh -i "Absolute path to .pem key" -N -L 5433:smart-parking-db.cz26seqes6xp.eu-north-1.rds.amazonaws.com:5432 ubuntu@16.170.148.253
+* ssh -i "Absolute path to .pem key" -N -L 5433:smart-parking-db.cz26seqes6xp.eu-north-1.rds.amazonaws.com:5432 ubuntu@13.61.159.130
 
 #### Running Django backend (second terminal)
 
