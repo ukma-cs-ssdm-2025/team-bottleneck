@@ -57,3 +57,8 @@ export const removeAdmin = async (userId) => {
     const response = await apiClient.delete(`/users/${userId}/remove-admin/`);
     return response.data;
 };
+
+export const registerUser = async (userData) => {
+    const response = await apiClient.post('/users/register/', userData);
+    return response.data;
+};

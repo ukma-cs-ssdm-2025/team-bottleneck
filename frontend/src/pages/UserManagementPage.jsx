@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Container, Box, Typography, Alert, CircularProgress, 
-    Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField 
+    Button, Dialog, DialogTitle, DialogContent, 
 } from '@mui/material';
 import UserManagementTable from '../components/admin/UserManagementTable'; 
-import { getAllUsers, makeOperator, removeOperator, makeAdmin, removeAdmin } from '../api/adminAPI';
+import OperatorAssignmentDialog from '../components/admin/OperatorAssignmentDialog';
+import CreateUserForm from '../components/admin/CreateUserForm';
+import { 
+    getAllUsers, makeOperator, removeOperator, makeAdmin, removeAdmin, registerUser 
+} from '../api/adminAPI'; 
+
 
 const UserManagementPage = () => {
     const [users, setUsers] = useState([]);
@@ -13,6 +18,7 @@ const UserManagementPage = () => {
     const [actionStatus, setActionStatus] = useState(null); 
     
     const [operatorModal, setOperatorModal] = useState({ open: false, userId: null, lotId: '' });
+    const [createUserModalOpen, setCreateUserModalOpen] = useState(false); 
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -60,6 +66,10 @@ const UserManagementPage = () => {
             
             if (err.response?.data?.detail) {
                 message = `Помилка: ${err.response.data.detail}`; 
+            } else if (err.response?.data?.username) {
+                message = `Помилка імені користувача: ${err.response.data.username.join(', ')}`;
+            } else if (err.response?.data?.email) {
+                message = `Помилка Email: ${err.response.data.email.join(', ')}`;
             } else if (err.message) {
                  message = `Помилка: ${err.message}`;
             }
@@ -76,6 +86,37 @@ const UserManagementPage = () => {
             handleAction(operatorModal.userId, 'make-operator', operatorModal.lotId);
         }
         setOperatorModal({ open: false, userId: null, lotId: '' });
+    };
+    
+    const handleLotIdChange = (newLotId) => {
+        setOperatorModal(prev => ({ ...prev, lotId: newLotId }));
+    };
+
+    const handleCreateUser = async (formData) => {
+        setCreateUserModalOpen(false); 
+        setError(null);
+        setActionStatus(null);
+
+        try {
+            await registerUser(formData);
+            setActionStatus({ severity: 'success', message: `Користувача ${formData.username} успішно створено.` });
+            fetchUsers(); 
+        } catch (err) {
+            console.error('Error creating user:', err.response || err);
+            let message = 'Не вдалося створити користувача. Перевірте введені дані.';
+            
+            if (err.response?.data) {
+                const apiErrors = err.response.data;
+                const errorMessages = Object.keys(apiErrors)
+                    .map(key => `${key}: ${Array.isArray(apiErrors[key]) ? apiErrors[key].join(', ') : apiErrors[key]}`)
+                    .join('; ');
+                message = `Помилка валідації: ${errorMessages}`;
+            } else if (err.message) {
+                message = `Помилка: ${err.message}`;
+            }
+            
+            setActionStatus({ severity: 'error', message });
+        }
     };
 
 
@@ -100,7 +141,7 @@ const UserManagementPage = () => {
                 <Button 
                     variant="contained" 
                     color="primary" 
-                    disabled 
+                    onClick={() => setCreateUserModalOpen(true)}
                 >
                     Створити Користувача
                 </Button>
@@ -119,34 +160,26 @@ const UserManagementPage = () => {
                 onMakeAdmin={(userId) => handleAction(userId, 'make-admin')}
                 onRemoveAdmin={(userId) => handleAction(userId, 'remove-admin')}
             />
+            
+            <OperatorAssignmentDialog
+                open={operatorModal.open}
+                onClose={() => setOperatorModal({ open: false, userId: null, lotId: '' })}
+                onConfirm={handleMakeOperatorConfirm}
+                lotId={operatorModal.lotId}
+                onLotIdChange={handleLotIdChange}
+            />
 
-            <Dialog open={operatorModal.open} onClose={() => setOperatorModal({ open: false, userId: null, lotId: '' })}>
-                <DialogTitle>Зробити користувача оператором</DialogTitle>
+
+            <Dialog open={createUserModalOpen} onClose={() => setCreateUserModalOpen(false)}>
+                <DialogTitle>Створити Нового Користувача</DialogTitle>
                 <DialogContent>
-                    <Typography>Вкажіть ID паркувального майданчика, за яким буде закріплений оператор.</Typography>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="ID Паркувального Майданчика (Lot ID)"
-                        type="number"
-                        fullWidth
-                        variant="standard"
-                        value={operatorModal.lotId}
-                        onChange={(e) => setOperatorModal(prev => ({ ...prev, lotId: e.target.value }))}
-                        sx={{ mt: 2 }}
+                    <CreateUserForm 
+                        onSubmit={handleCreateUser} 
+                        onCancel={() => setCreateUserModalOpen(false)} 
                     />
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOperatorModal({ open: false, userId: null, lotId: '' })}>Скасувати</Button>
-                    <Button 
-                        onClick={handleMakeOperatorConfirm} 
-                        disabled={!operatorModal.lotId || isNaN(parseInt(operatorModal.lotId))}
-                        variant="contained"
-                    >
-                        Підтвердити
-                    </Button>
-                </DialogActions>
             </Dialog>
+
         </Container>
     );
 };
