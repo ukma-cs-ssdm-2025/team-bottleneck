@@ -20,3 +20,5 @@ uritemplate==4.2.0
 whitenoise==6.11.0
 djangorestframework-simplejwt==5.5.1
 pyjwt==2.10.1
+botocore==1.35.70
+boto3==1.35.70
