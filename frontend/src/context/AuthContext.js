@@ -3,25 +3,21 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { API_BASE_URL } from '../constants/apiConfig';
 
-
 const AuthContext = createContext(null);
-
 
 const getAuthStatus = () => {
     return !!localStorage.getItem('accessToken');
 };
 
-
 const fetchUserProfile = async () => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) return null;
-    
-    try {
 
-        const response = await axios.get(`${API_BASE_URL}/users/me/`, { 
-             headers: {
-                 Authorization: `Bearer ${accessToken}`, 
-             },
+    try {
+        const response = await axios.get(`${API_BASE_URL}/users/me/`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
         });
         return response.data;
     } catch (error) {
@@ -29,34 +25,31 @@ const fetchUserProfile = async () => {
     }
 };
 
-
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(getAuthStatus());
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [authTokens, setAuthTokens] = useState(null); 
+    const [authTokens, setAuthTokens] = useState(null);
+
     useEffect(() => {
         const checkSession = async () => {
             const accessToken = localStorage.getItem('accessToken');
             const refreshToken = localStorage.getItem('refreshToken');
 
             if (accessToken && refreshToken) {
-                const userData = await fetchUserProfile(); 
+                const userData = await fetchUserProfile();
                 if (userData) {
                     setAuthTokens({ access: accessToken, refresh: refreshToken });
                     setUser(userData);
                     setIsAuthenticated(true);
                 } else {
-                  
-                    logout(); 
+                    logout();
                 }
             }
             setLoading(false);
         };
         checkSession();
     }, []);
-
-
 
     const login = useCallback((tokens, userData) => {
         localStorage.setItem('accessToken', tokens.access);
@@ -73,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setIsAuthenticated(false);
     }, []);
-    
+
     const updateUser = useCallback((newUserData) => {
         setUser(prevUser => ({
             ...prevUser,
@@ -81,9 +74,11 @@ export const AuthProvider = ({ children }) => {
         }));
     }, []);
 
-
+    // ВИПРАВЛЕННЯ: правильна логіка визначення ролей
     const isAdmin = user?.is_staff === true;
-    const isOperator = !isAdmin && !!(user?.operator_profile && user.operator_profile.lot_id);
+
+    // Оператор - це користувач, який НЕ є адміном, але має прапорець is_operator та призначений lot_id
+    const isOperator = !isAdmin && user?.is_operator === true && !!user?.lot_id;
 
     const value = useMemo(() => ({
         isAuthenticated,
@@ -94,8 +89,8 @@ export const AuthProvider = ({ children }) => {
         loading,
         isAdmin,
         isOperator,
-        authTokens, 
-        setAuthTokens, 
+        authTokens,
+        setAuthTokens,
     }), [
         isAuthenticated,
         user,
@@ -119,7 +114,6 @@ export const AuthProvider = ({ children }) => {
 AuthProvider.propTypes = {
     children: PropTypes.node.isRequired,
 };
-
 
 export const useAuth = () => {
     return useContext(AuthContext);
