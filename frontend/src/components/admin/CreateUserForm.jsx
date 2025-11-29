@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { 
-    Box, Button, DialogActions, TextField, Grid
-} from '@mui/material';
+import { Box, Button, DialogActions, TextField, Grid } from '@mui/material';
 
 const CreateUserForm = ({ onSubmit, onCancel, initialData = {} }) => {
     const [formData, setFormData] = useState({
@@ -12,53 +10,53 @@ const CreateUserForm = ({ onSubmit, onCancel, initialData = {} }) => {
         password: '',
         password2: '',
     });
+
     const [errors, setErrors] = useState({});
-    
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+
         if (errors[e.target.name]) {
             setErrors({ ...errors, [e.target.name]: null });
         }
     };
 
-const validate = () => {
-    let formErrors = {};
-    if (!formData.username) {
-        formErrors.username = 'Імʼя користувача є обовʼязковим.';
-    }
-    if (!formData.email) {
-        formErrors.email = 'Email є обовʼязковим.';
-    }
-    // eslint-disable-next-line
-    if (!formData.password) {
-        formErrors.password = 'Поле захисту є обовʼязковим.'; 
-    } else {
-        // eslint-disable-next-line
-        if (formData.password.length < 8) {
-            formErrors.password = 'Поле має бути не менше 8 символів.';
-        }
-    }
-    // eslint-disable-next-line
-    if (formData.password && formData.password !== formData.password2) {
-        formErrors.password2 = 'Поля захисту не збігаються.'; 
-    }
+    const validate = () => {
+        let formErrors = {};
 
-    setErrors(formErrors);
-    return Object.keys(formErrors).length === 0;
-};
+        if (!formData.username) {
+            formErrors.username = 'Імʼя користувача є обовʼязковим.';
+        }
+
+        if (!formData.email) {
+            formErrors.email = 'Email є обовʼязковим.';
+        }
+
+        if (!formData.password) {
+            formErrors.password = 'Введіть пароль.';
+        } else if (formData.password.length < 8) {
+            formErrors.password = 'Пароль має містити щонайменше 8 символів.';
+        }
+
+        if (formData.password && formData.password !== formData.password2) {
+            formErrors.password2 = 'Паролі не збігаються.';
+        }
+
+        setErrors(formErrors);
+        return Object.keys(formErrors).length === 0;
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validate()) {
-            const registrationData = {
+            onSubmit({
                 username: formData.username,
                 email: formData.email,
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 password: formData.password,
                 password2: formData.password2,
-            };
-            onSubmit(registrationData);
+            });
         }
     };
 
@@ -77,6 +75,7 @@ const validate = () => {
                         helperText={errors.username}
                     />
                 </Grid>
+
                 <Grid item xs={12}>
                     <TextField
                         required
@@ -90,6 +89,7 @@ const validate = () => {
                         helperText={errors.email}
                     />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
@@ -99,6 +99,7 @@ const validate = () => {
                         onChange={handleChange}
                     />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
@@ -108,6 +109,7 @@ const validate = () => {
                         onChange={handleChange}
                     />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                     <TextField
                         required
@@ -121,6 +123,7 @@ const validate = () => {
                         helperText={errors.password}
                     />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                     <TextField
                         required
@@ -135,6 +138,7 @@ const validate = () => {
                     />
                 </Grid>
             </Grid>
+
             <DialogActions sx={{ px: 0, pt: 3 }}>
                 <Button onClick={onCancel}>Скасувати</Button>
                 <Button type="submit" variant="contained" color="primary">
