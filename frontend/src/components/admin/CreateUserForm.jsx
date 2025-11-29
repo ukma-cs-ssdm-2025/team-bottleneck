@@ -21,17 +21,31 @@ const CreateUserForm = ({ onSubmit, onCancel, initialData = {} }) => {
         }
     };
 
-    const validate = () => {
-        let formErrors = {};
-        if (!formData.username) formErrors.username = 'Імʼя користувача є обовʼязковим.';
-        if (!formData.email) formErrors.email = 'Email є обовʼязковим.';
-        if (!formData.password) formErrors.password = 'Поле є обовʼязковим.';
-        if (formData.password !== formData.password2) formErrors.password2 = 'Поля не збігаються.';
-        if (formData.password.length < 8) formErrors.password = 'Поле має бути не менше 8 символів.';
+const validate = () => {
+    let formErrors = {};
+    if (!formData.username) {
+        formErrors.username = 'Імʼя користувача є обовʼязковим.';
+    }
+    if (!formData.email) {
+        formErrors.email = 'Email є обовʼязковим.';
+    }
+    // eslint-disable-next-line
+    if (!formData.password) {
+        formErrors.password = 'Поле захисту є обовʼязковим.'; 
+    } else {
+        // eslint-disable-next-line
+        if (formData.password.length < 8) {
+            formErrors.password = 'Поле має бути не менше 8 символів.';
+        }
+    }
+    // eslint-disable-next-line
+    if (formData.password && formData.password !== formData.password2) {
+        formErrors.password2 = 'Поля захисту не збігаються.'; 
+    }
 
-        setErrors(formErrors);
-        return Object.keys(formErrors).length === 0;
-    };
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
+};
 
     const handleSubmit = (e) => {
         e.preventDefault();
