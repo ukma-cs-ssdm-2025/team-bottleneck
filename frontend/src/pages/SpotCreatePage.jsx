@@ -23,6 +23,10 @@ function SpotCreatePage() {
 
     const lotName = user?.lotDetails?.name || `Лот ID ${lotId}`;
 
+   
+    const isUserAdmin = user?.is_staff;
+    const backPath = isUserAdmin ? `/admin/operator/${lotId}` : '/operator';
+
     const handleChange = (e) => {
         const { name, value, checked, type } = e.target;
         setFormData(prev => ({
@@ -46,11 +50,12 @@ function SpotCreatePage() {
         try {
             await createSpot(lotId, formData);
 
-            setSuccessMessage(`Паркомісце #${formData.number} успішно створено.`);
+            const successMsg = `Паркомісце #${formData.number} успішно створено.`;
+            setSuccessMessage(successMsg);
             setFormData({ number: '', is_ev: false, is_disabled: false });
 
-            // Redirect back to operator panel after successful creation
-            navigate('/operator', { state: { successMessage: `Паркомісце #${formData.number} створено.` } });
+           
+            navigate(backPath, { state: { successMessage: successMsg } });
 
         } catch (err) {
             console.error('Error creating spot:', err);
@@ -62,7 +67,10 @@ function SpotCreatePage() {
             } else if (err.response && err.response.status === 404) {
                 setError('Парковку не знайдено.');
             } else if (err.response && err.response.status === 409) {
-                setError('Паркомісце з таким номером вже існує. Оберіть інший номер.');
+                 const conflictError = err.response?.data?.number 
+                    ? err.response.data.number.join(' ') 
+                    : 'Паркомісце з таким номером вже існує. Оберіть інший номер.';
+                setError(conflictError);
             } else if (err.response && err.response.status === 500) {
                 setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
             } else if (err.request) {
@@ -77,7 +85,7 @@ function SpotCreatePage() {
 
     return (
         <Container component="main" maxWidth="md" sx={{ mt: 4 }}>
-            <Button onClick={() => navigate('/operator')} sx={{ mb: 3 }} variant="outlined">
+            <Button onClick={() => navigate(backPath)} sx={{ mb: 3 }} variant="outlined">
                 &larr; Назад до Панелі Керування
             </Button>
 

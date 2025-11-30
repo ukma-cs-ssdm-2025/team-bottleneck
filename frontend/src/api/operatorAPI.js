@@ -1,7 +1,8 @@
 import apiClient from './apiClient';
 
-export const fetchLotBookings = async () => {
-    const response = await apiClient.get('/bookings/my-lot-bookings/');
+export const fetchLotBookings = async (lotId = null) => {
+    const params = lotId ? { lot_id: lotId } : {};
+    const response = await apiClient.get('/bookings/my-lot-bookings/', { params });
     return response.data.results || response.data;
 };
 
