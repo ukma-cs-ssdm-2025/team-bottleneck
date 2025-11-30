@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom'; 
 import {
     Typography, Container, Button, CircularProgress, Alert,
     Box, Card, CardContent, Grid, Switch, FormControlLabel,
@@ -14,6 +14,8 @@ import {
     updateSpot,
     deleteSpot
 } from '../api/operatorAPI';
+
+
 
 const getSpotBookingStatus = (booking) => {
     if (booking.status !== 'confirmed') {
@@ -31,11 +33,20 @@ const STATUS_PROPS = {
     CANCELLED: { text: 'СКАСОВАНО', color: 'error.main', bgColor: '#ffebee' },
 };
 
+const BookingPropType = PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    status: PropTypes.string.isRequired,
+    start_at: PropTypes.string.isRequired,
+    end_at: PropTypes.string.isRequired,
+    cancellation_reason: PropTypes.string,
+    user: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.object]),
+});
+
 const SpotBookingHistoryItem = ({ booking, onCancel }) => {
     const statusKey = getSpotBookingStatus(booking);
     const { text, color, bgColor } = STATUS_PROPS[statusKey];
     const canCancel = statusKey === 'UPCOMING';
-    const userText = `Користувач ID: ${booking.user}`;
+    const userText = `Користувач ID: ${booking.user}`; 
 
     return (
         <Card variant="outlined" sx={{ mb: 2, borderLeft: `5px solid ${color}`, backgroundColor: bgColor }}>
@@ -72,19 +83,11 @@ const SpotBookingHistoryItem = ({ booking, onCancel }) => {
     );
 };
 
-const BookingPropType = PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    status: PropTypes.string.isRequired,
-    start_at: PropTypes.string.isRequired,
-    end_at: PropTypes.string.isRequired,
-    cancellation_reason: PropTypes.string,
-    user: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.object]),
-});
-
 SpotBookingHistoryItem.propTypes = {
     booking: BookingPropType.isRequired,
     onCancel: PropTypes.func.isRequired
 };
+
 
 
 function SpotDetailsPage() {
@@ -111,6 +114,13 @@ function SpotDetailsPage() {
     const [cancelReason, setCancelReason] = useState('');
     const [isCancelling, setIsCancelling] = useState(false);
 
+
+    const isUserAdmin = user?.is_staff;
+    const backPath = isUserAdmin ? `/admin/operator/${lotId}` : '/operator';
+
+    const lotIdNumber = Number.parseInt(lotId, 10);
+    const isAllowedToView = isUserAdmin || (user?.is_operator && user?.lot_id === lotIdNumber);
+
     const spotBookings = allBookings.filter(b => b.spot === Number.parseInt(spotId, 10));
     const hasConfirmedFutureBookings = spotBookings.some(
         b => b.status === 'confirmed' && new Date(b.end_at).getTime() > Date.now()
@@ -119,10 +129,17 @@ function SpotDetailsPage() {
     const loadData = useCallback(async () => {
         setError(null);
         setLoadingData(true);
+
+        if (!isAllowedToView) {
+            setLoadingData(false);
+            setError('У вас немає прав доступу до цього паркомісця.');
+            return;
+        }
+
         try {
             const [spotData, bookingsData] = await Promise.all([
                 fetchSpotDetails(lotId, spotId),
-                fetchLotBookings()
+                fetchLotBookings(lotId) 
             ]);
 
             setSpot(spotData);
@@ -137,7 +154,7 @@ function SpotDetailsPage() {
             if (err.response && err.response.status === 404) {
                 setError('Паркомісце не знайдено.');
             } else if (err.response && err.response.status === 403) {
-                setError('У вас немає доступу до цього паркомісця.');
+                setError('У вас немає доступу до цього паркомісся.');
             } else if (err.response && err.response.status === 500) {
                 setError('Сервер тимчасово недоступний. Спробуйте пізніше.');
             } else if (err.request) {
@@ -148,13 +165,15 @@ function SpotDetailsPage() {
         } finally {
             setLoadingData(false);
         }
-    }, [lotId, spotId]);
+    }, [lotId, spotId, isAllowedToView]);
 
     useEffect(() => {
-        if (user?.is_operator && user?.lot_id === Number.parseInt(lotId, 10)) {
-            loadData();
-        }
-    }, [user, lotId, loadData]);
+        if (user && lotId && isAllowedToView && loadingData) {
+             loadData();
+        } else if (user && !isAllowedToView && !loadingData) {
+             setError('У вас немає прав доступу до цього паркомісся. Перевірте ваш Lot ID.');
+        } 
+    }, [user, lotId, loadData, isAllowedToView, loadingData]);
 
     const handleFormChange = (e) => {
         const { name, checked, type } = e.target;
@@ -179,7 +198,7 @@ function SpotDetailsPage() {
         } catch (err) {
             setUpdateStatus('error');
             console.error("Update failed:", err);
-            if (err.response && err.response.status === 400) {
+             if (err.response && err.response.status === 400) {
                 setError('Некоректні дані. Перевірте введену інформацію.');
             } else if (err.response && err.response.status === 404) {
                 setError('Паркомісце не знайдено.');
@@ -205,14 +224,14 @@ function SpotDetailsPage() {
 
         try {
             await deleteSpot(lotId, spotId);
-            navigate('/operator', { state: { successMessage: `Місце #${spot.number} видалено.` } });
+            navigate(backPath, { state: { successMessage: `Місце #${spot.number} видалено.` } });
         } catch (err) {
             console.error('Delete error:', err);
-            if (err.response && err.response.status === 400) {
+             if (err.response && err.response.status === 400) {
                 const detail = err.response?.data?.detail || 'Не вдалося видалити паркомісце.';
                 setError(detail);
             } else if (err.response && err.response.status === 403) {
-                setError('У вас немає доступу до видалення цього паркомісця.');
+                setError('У вас немає доступу до видалення цього паркомісся.');
             } else if (err.response && err.response.status === 404) {
                 setError('Паркомісце не знайдено.');
             } else if (err.response && err.response.status === 500) {
@@ -253,7 +272,7 @@ function SpotDetailsPage() {
             await loadData();
         } catch (err) {
             console.error('Cancel error:', err);
-            if (err.response && err.response.status === 400) {
+             if (err.response && err.response.status === 400) {
                 setError('Це бронювання вже скасовано або не може бути скасовано.');
             } else if (err.response && err.response.status === 404) {
                 setError('Бронювання не знайдено.');
@@ -280,11 +299,13 @@ function SpotDetailsPage() {
         );
     }
 
-    if (error && !spot) {
+    if (!isAllowedToView || error) {
         return (
             <Container sx={{ mt: 4 }}>
-                <Alert severity="error">{error}</Alert>
-                <Button onClick={() => navigate('/operator')} sx={{ mt: 2 }} variant="outlined">Назад до Панелі</Button>
+                <Alert severity="error">{error || 'У вас немає прав доступу до цього паркомісся.'}</Alert>
+                <Button onClick={() => navigate(backPath)} sx={{ mt: 2 }} variant="outlined">
+                    Назад до Панелі
+                </Button>
             </Container>
         );
     }
@@ -293,7 +314,7 @@ function SpotDetailsPage() {
 
     return (
         <Container sx={{ mt: 4, mb: 4 }}>
-            <Button onClick={() => navigate('/operator')} sx={{ mb: 3 }} variant="outlined">
+            <Button onClick={() => navigate(backPath)} sx={{ mb: 3 }} variant="outlined">
                 &larr; Назад до Панелі Керування
             </Button>
 

@@ -5,7 +5,7 @@ import {
     Button, CircularProgress, Grid, Dialog, DialogTitle,
     DialogContent, DialogActions, TextField, Divider
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     fetchLotBookings,
@@ -188,6 +188,8 @@ SpotCard.propTypes = {
 function OperatorPage() {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
+    const { lotId: lotIdParam } = useParams();
+
     const [bookings, setBookings] = useState([]);
     const [lotDetails, setLotDetails] = useState(null);
     const [loadingData, setLoadingData] = useState(false);
@@ -200,12 +202,15 @@ function OperatorPage() {
     const [cancelReasonError, setCancelReasonError] = useState(null);
     const [isDeletingSpot, setIsDeletingSpot] = useState(false);
 
-    const lotId = user?.lot_id;
-    const isOperator = user?.is_operator;
+  
+    const lotId = user?.is_staff ? lotIdParam : user?.lot_id;
+    
+    const isAllowedToOperate = user?.is_staff || user?.is_operator; 
+    
     const spots = lotDetails?.spots || [];
 
     const loadData = useCallback(async () => {
-        if (!lotId) return;
+        if (!lotId || !isAllowedToOperate) return; 
 
         setError(null);
         setLoadingData(true);
@@ -218,27 +223,32 @@ function OperatorPage() {
             setBookings(bookingsData);
         } catch (err) {
             console.error('Error loading operator data:', err);
-            if (err.response && err.response.status === 403) {
-                setError('У вас немає доступу до цієї панелі. Зверніться до адміністратора.');
-            } else if (err.response && err.response.status === 404) {
-                setError('Парковку не знайдено. Можливо, її було видалено.');
-            } else if (err.response && err.response.status === 500) {
-                setError('Сервер тимчасово недоступний. Спробуйте оновити сторінку пізніше.');
+            
+            let errorMessage = 'Не вдалося завантажити дані. Спробуйте оновити сторінку.';
+
+            if (err.response) {
+                if (err.response.status === 403) {
+                    errorMessage = 'У вас немає доступу до цієї панелі. Зверніться до адміністратора.';
+                } else if (err.response.status === 404) {
+                    errorMessage = 'Парковку не знайдено. Можливо, її було видалено.';
+                } else if (err.response.status === 500) {
+                    errorMessage = 'Сервер тимчасово недоступний. Спробуйте оновити сторінку пізніше.';
+                }
             } else if (err.request) {
-                setError('Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.');
-            } else {
-                setError('Не вдалося завантажити дані. Спробуйте оновити сторінку.');
+                errorMessage = 'Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.';
             }
+
+            setError(errorMessage);
         } finally {
             setLoadingData(false);
         }
-    }, [lotId]);
+    }, [lotId, isAllowedToOperate]);
 
     useEffect(() => {
-        if (!loading && isOperator && lotId) {
+        if (!loading && isAllowedToOperate && lotId) {
             loadData();
         }
-    }, [loading, isOperator, lotId, loadData]);
+    }, [loading, isAllowedToOperate, lotId, loadData]);
 
     const handleOpenCancelDialog = (booking) => {
         setBookingToCancel(booking);
@@ -302,7 +312,7 @@ function OperatorPage() {
         }
         if (spots.length === 0) {
             return (
-                <Alert severity="info">На вашому лоті немає зареєстрованих паркомісць.</Alert>
+                <Alert severity="info">На цьому лоті немає зареєстрованих паркомісць.</Alert>
             );
         }
         return (
@@ -333,10 +343,27 @@ function OperatorPage() {
         );
     }
 
-    if (!user || !isOperator || !lotId) {
+    if (!user || !isAllowedToOperate) {
         return (
             <Container sx={{ mt: 4 }}>
                 <Alert severity="error">У вас немає прав доступу до цієї сторінки.</Alert>
+            </Container>
+        );
+    }
+    
+  
+    if (user.is_staff && !lotId) {
+        return (
+            <Container sx={{ mt: 4 }}>
+                 <Alert severity="warning">Адміністраторе! Будь ласка, вкажіть ID лоту в URL або поверніться на <Link to="/admin">головну панель</Link> та оберіть його.</Alert>
+            </Container>
+        );
+    }
+    
+    if (user.is_operator && !user.is_staff && !user.lot_id) {
+        return (
+            <Container sx={{ mt: 4 }}>
+                <Alert severity="error">За вами не закріплено жодного паркувального лоту. Зверніться до адміністратора.</Alert>
             </Container>
         );
     }

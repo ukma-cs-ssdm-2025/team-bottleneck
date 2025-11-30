@@ -47,6 +47,7 @@ function AppRouter() {
                         <Route path="lots/create" element={<ParkingLotCreatePage />} />
                         <Route path="lots/edit/:id" element={<ParkingLotEditPage />} />
                         <Route path="users" element={<UserManagementPage />} />
+                        <Route path="operator/:lotId" element={<OperatorPage />} />
                     </Route>
                     
                     <Route path="*" element={<Navigate to="/" replace />} /> 
