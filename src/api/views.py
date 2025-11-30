@@ -436,8 +436,11 @@ class BookingViewSet(mixins.ListModelMixin,
                 end_at=end_at,
                 status="confirmed"
             )
+            
 
             payment_data = PaymentService.initiate_payment(booking)
+            BookingNotificationService.send_booking_confirmation(booking)
+        
             response_data = BookingSerializer(booking).data
             response_data["payment"] = payment_data
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -495,6 +498,7 @@ class BookingViewSet(mixins.ListModelMixin,
         booking.cancellation_reason = reason
         booking.save(update_fields=["status", "cancellation_reason"])
         PaymentService.process_refund(booking)
+        BookingNotificationService.send_cancellation_confirmation(booking)
         return Response(BookingSerializer(booking).data)
 
     @extend_schema(
