@@ -1,0 +1,12 @@
+Шановний {{ user.username|default:"Користувачу" }},
+
+Ваше бронювання підтверджено!
+
+Деталі бронювання:
+- Номер бронювання: #{{ booking.id|default:"N/A" }}
+- Майданчик: {{ booking.spot.lot.name|default:"N/A" }}
+- Місце: {{ booking.spot.number|default:"N/A" }}
+- Початок: {{ booking.start_at|default:"N/A" }}
+- Кінець: {{ booking.end_at|default:"N/A" }}
+
+Дякуємо за використання Smart Parking System.

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Скасування Бронювання #{{ booking.id|default:"N/A" }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    
+    <div style="background-color: #f4f4f4; padding: 20px;">
+        <h2 style="color: #ff4500;">❌ Бронювання скасовано</h2>
+    </div>
+
+    <div style="padding: 20px;">
+        <p> <strong>{{ user.username|default:"Користувачу" }}</strong>,</p>
+        <p>Ваше бронювання паркувального місця було скасовано.</p>
+
+        <h3 style="border-bottom: 2px solid #eee; padding-bottom: 5px;">Деталі:</h3>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; width: 30%;">Номер бронювання:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">#{{ booking.id|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Майданчик (Лот):</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ booking.spot.lot.name|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Місце:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ booking.spot.number|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Початок:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ booking.start_at|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Кінець:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ booking.end_at|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Причина:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ booking.cancellation_reason|default:"Не вказано" }}</td>
+            </tr>
+        </table>
+
+        <p style="margin-top: 20px;">Грошові кошти будуть повернуті відповідно до нашої політики повернення.</p>
+    </div>
+
+</body>
+</html>

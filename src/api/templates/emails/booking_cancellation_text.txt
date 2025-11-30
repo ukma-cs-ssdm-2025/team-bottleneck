@@ -1,0 +1,13 @@
+Шановний {{ user.username|default:"Користувачу" }},
+
+Ваше бронювання було УСПІШНО СКАСОВАНО.
+
+Деталі скасування:
+- Номер бронювання: #{{ booking.id|default:"N/A" }}
+- Майданчик: {{ booking.spot.lot.name|default:"N/A" }}
+- Місце: {{ booking.spot.number|default:"N/A" }}
+- Початок: {{ booking.start_at|default:"N/A" }}
+- Кінець: {{ booking.end_at|default:"N/A" }}
+- Причина скасування: {{ booking.cancellation_reason|default:"Не вказано" }}
+
+Дякуємо за використання Smart Parking System.
