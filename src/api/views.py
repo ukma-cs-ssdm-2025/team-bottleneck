@@ -12,13 +12,13 @@ from drf_spectacular.utils import (
 )
 from django.utils.dateparse import parse_datetime
 from .permissions import IsLotOperator
-from .models import ParkingLot, Spot, Booking, OperatorProfile
+from .models import ParkingLot, Spot, Booking, OperatorProfile, BackupLog
 from .serializers import (
     ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer,
     BookingSerializer, BookingCreateSerializer, BookingCancelSerializer,
     UserRegistrationSerializer, UserSerializer, UserProfileUpdateSerializer,
     OperatorBookingCancelSerializer, SpotOperatorUpdateSerializer, 
-    OperatorAssignSerializer
+    OperatorAssignSerializer, BackupLogSerializer
 )
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
@@ -764,3 +764,28 @@ class UserViewSet(mixins.RetrieveModelMixin,
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({'detail': 'User is not an operator.'}, status=status.HTTP_404_NOT_FOUND)
+
+class BackupLogViewSet(mixins.ListModelMixin,
+                       viewsets.GenericViewSet):
+    """
+    View for listing database backup logs.
+    Accessible only by Admin users.
+    Used for the NFR Reliability dashboard widget.
+    """
+    queryset = BackupLog.objects.all()
+    serializer_class = BackupLogSerializer
+    permission_classes = [IsAuthenticated, permissions.IsAdminUser]
+
+    @extend_schema(
+        summary="[Admin] List Backup Logs",
+        description="Returns a list of database backup attempts (success/failure). "
+                    "The list is ordered by creation time (newest first). "
+                    "Used to display system reliability status.",
+        responses={
+            200: BackupLogSerializer(many=True),
+            401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
+            403: OpenApiResponse(ErrorSerializer, description="Permission denied (Admin only)"),
+        }
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

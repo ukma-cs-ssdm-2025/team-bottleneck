@@ -6,6 +6,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext'; 
 import { styled } from '@mui/material/styles'; 
+import BackupStatusCard from '../components/admin/BackupStatusCard';
 
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -61,10 +62,19 @@ const AdminDashboardPage = () => {
             <Typography variant="body1" color="text.secondary" paragraph>
                 Головна панель управління системою паркування.
             </Typography>
+            <Box sx={{ mb: 4, mt: 3 }}>
+                <Typography variant="h6" gutterBottom color="text.secondary">
+                    Статус Системи (Reliability)
+                </Typography>
+                <BackupStatusCard />
+            </Box>
 
-            <Grid container spacing={3} sx={{ mt: 2 }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mt: 4 }}>
+                Панель Керування
+            </Typography>
+
+            <Grid container spacing={3} sx={{ mt: 1 }}>
                 
-          
                 <Grid item xs={12} md={6} lg={4}>
                     <StyledCard>
                         <CardContent>
@@ -99,7 +109,6 @@ const AdminDashboardPage = () => {
                     </StyledCard>
                 </Grid>
 
-               
                 <Grid item xs={12} md={6} lg={4}>
                     <StyledCard>
                         <CardContent>
@@ -125,7 +134,6 @@ const AdminDashboardPage = () => {
                     </StyledCard>
                 </Grid>
                 
-              
                 <Grid item xs={12} md={6} lg={4}>
                     <StyledCard>
                         <CardContent>
@@ -148,32 +156,7 @@ const AdminDashboardPage = () => {
                             </Button>
                         </CardActions>
                     </StyledCard>
-                </Grid>
-
-               
-                <Grid item xs={12} md={6} lg={4}>
-                    <StyledCard>
-                        <CardContent>
-                            <CardHeader variant="h6">
-                                Керування Бекапами
-                            </CardHeader>
-                            <Typography variant="body2" color="text.secondary">
-                                Моніторинг автоматичних бекапів (NFR-003) та надійність системи.
-                            </Typography>
-                        </CardContent>
-                        <CardActions sx={{ p: 2, pt: 0 }}>
-                            <Button 
-                                size="small" 
-                                variant="outlined" 
-                                disabled
-                                sx={{ borderRadius: 1 }}
-                            >
-                                Моніторинг бекапів (в розробці)
-                            </Button>
-                        </CardActions>
-                    </StyledCard>
-                </Grid>
-                
+                </Grid>                
             </Grid>
             
           

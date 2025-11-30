@@ -1,10 +1,8 @@
 from rest_framework import serializers
-from .models import ParkingLot, Spot, Booking, OperatorProfile
+from .models import ParkingLot, Spot, Booking, BackupLog
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 import re
-from rest_framework.validators import UniqueTogetherValidator
-
 
 class SpotSerializer(serializers.ModelSerializer):
     created_by_username = serializers.CharField(source="created_by.username", read_only=True)
@@ -176,3 +174,9 @@ class OperatorAssignSerializer(serializers.Serializer):
         if not ParkingLot.objects.filter(pk=value).exists():
             raise serializers.ValidationError("Parking lot with this ID does not exist.")
         return value
+
+class BackupLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BackupLog
+        fields = ['id', 'status', 'message', 'created_at']
+    

@@ -1,5 +1,27 @@
 components:
   schemas:
+    BackupLog:
+      properties:
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        message:
+          description: "\u0428\u043B\u044F\u0445 \u0434\u043E \u0444\u0430\u0439\u043B\
+            \u0443 \u0430\u0431\u043E \u0442\u0435\u043A\u0441\u0442 \u043F\u043E\u043C\
+            \u0438\u043B\u043A\u0438"
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+      required:
+      - created_at
+      - id
+      - message
+      - status
+      type: object
     Booking:
       properties:
         cancellation_reason:
@@ -89,6 +111,29 @@ components:
           type: string
       required:
       - reason
+      type: object
+    PaginatedBackupLogList:
+      properties:
+        count:
+          example: 123
+          type: integer
+        next:
+          example: http://api.example.org/accounts/?page=4
+          format: uri
+          nullable: true
+          type: string
+        previous:
+          example: http://api.example.org/accounts/?page=2
+          format: uri
+          nullable: true
+          type: string
+        results:
+          items:
+            $ref: '#/components/schemas/BackupLog'
+          type: array
+      required:
+      - count
+      - results
       type: object
     PaginatedBookingList:
       properties:
@@ -311,6 +356,14 @@ components:
         is_ev:
           type: boolean
       type: object
+    StatusEnum:
+      description: '* `SUCCESS` - Success
+
+        * `FAILURE` - Failure'
+      enum:
+      - SUCCESS
+      - FAILURE
+      type: string
     TokenObtainPair:
       properties:
         access:
@@ -573,6 +626,43 @@ paths:
       security:
       - jwtAuth: []
       - {}
+      tags:
+      - api
+  /api/v1/admin/backups/:
+    get:
+      description: Returns a list of database backup attempts (success/failure). The
+        list is ordered by creation time (newest first). Used to display system reliability
+        status.
+      operationId: api_v1_admin_backups_list
+      parameters:
+      - description: A page number within the paginated result set.
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBackupLogList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Authentication required
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Permission denied (Admin only)
+      security:
+      - jwtAuth: []
+      summary: '[Admin] List Backup Logs'
       tags:
       - api
   /api/v1/bookings/:
@@ -1370,7 +1460,6 @@ paths:
           description: ''
       security:
       - jwtAuth: []
-      summary: Get/Update current user profile
       tags:
       - api
   /api/v1/users/register/:

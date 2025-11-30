@@ -68,3 +68,18 @@ class OperatorProfile(models.Model):
     def __str__(self):
         return f"Operator {self.user.username} for {self.lot.name if self.lot else 'N/A'}"
     
+class BackupLog(models.Model):
+    STATUS_CHOICES = [
+        ('SUCCESS', 'Success'),
+        ('FAILURE', 'Failure'),
+    ]
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    message = models.TextField(help_text="Шлях до файлу або текст помилки")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.status} at {self.created_at}"

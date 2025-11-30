@@ -1,5 +1,3 @@
-
-
 import apiClient from './apiClient';
 
 export const createParkingLot = async (lotData) => {
@@ -61,4 +59,8 @@ export const removeAdmin = async (userId) => {
 export const registerUser = async (userData) => {
     const response = await apiClient.post('/users/register/', userData);
     return response.data;
+};
+
+export const getBackupLogs = () => {
+    return apiClient.get('/admin/backups/');
 };
