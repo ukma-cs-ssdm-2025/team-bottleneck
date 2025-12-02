@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; 
 import {
@@ -12,6 +11,7 @@ import {
     Box
 } from '@mui/material';
 import { fetchParkingLots } from '../api/parkingAPI';
+import ParkingMap from '../components/ParkingMap';
 
 function HomePage() {
     const [parkings, setParkings] = useState([]);
@@ -45,10 +45,8 @@ function HomePage() {
                 setLoading(false);
             }
         };
-
         loadData();
     }, []);
-
     
     if (loading) {
          return (
@@ -65,22 +63,34 @@ function HomePage() {
              </Container>
          );
      }
-    // ...
 
     return (
         <Container sx={{ mt: 4 }}>
-            <Typography variant="h4" gutterBottom> {}
+            <Typography variant="h4" gutterBottom>
                 Доступні паркінги
+            </Typography>
+
+            {parkings.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                    <ParkingMap parkingLots={parkings} />
+                </Box>
+            )}
+
+            <Typography variant="h5" gutterBottom sx={{ mt: 2 }}>
+                Список парковок
             </Typography>
             <List>
                 {parkings.map((parking) => (
                     <ListItem 
                         key={parking.id} 
                         divider
-                        // Використовуємо Link для навігації на сторінку деталей
                         component={Link} 
                         to={`/lots/${parking.id}`}
-                        sx={{ textDecoration: 'none', color: 'inherit', '&:hover': { backgroundColor: '#f5f5f5' } }} // Стилі для Link
+                        sx={{ 
+                            textDecoration: 'none', 
+                            color: 'inherit', 
+                            '&:hover': { backgroundColor: '#f5f5f5' } 
+                        }}
                     >
                         <ListItemText
                             primary={parking.name}
@@ -89,6 +99,7 @@ function HomePage() {
                     </ListItem>
                 ))}
             </List>
+
             {parkings.length === 0 && !loading && (
                 <Alert severity="info">Наразі немає доступних паркувальних лотів.</Alert>
             )}
