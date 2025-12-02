@@ -146,7 +146,7 @@ function ProfilePage() {
     const [cancelReason, setCancelReason] = useState('');
     const [isCancelling, setIsCancelling] = useState(false);
 
-    const loadBookings = async () => {
+    const loadBookings = useCallback(async () => {
         setBookingError(null);
         setLoadingBookings(true);
         try {
@@ -175,7 +175,7 @@ function ProfilePage() {
         } finally {
             setLoadingBookings(false);
         }
-    };
+    },[]);
 
     useEffect(() => {
         if (user) {

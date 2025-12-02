@@ -6,10 +6,11 @@ import re
 
 class SpotSerializer(serializers.ModelSerializer):
     created_by_username = serializers.CharField(source="created_by.username", read_only=True)
+    lot_name = serializers.CharField(source="lot.name", read_only=True)
 
     class Meta:
         model = Spot
-        fields = ["id", "number", "is_ev", "is_disabled", "lot", "created_by", "created_by_username"]
+        fields = ["id", "number", "is_ev", "is_disabled", "lot", "lot_name", "created_by", "created_by_username"]
         read_only_fields = ["lot", "created_by"]
 
     def get_created_by(self, obj):
@@ -66,12 +67,21 @@ class ParkingLotDetailSerializer(ParkingLotSerializer):
             raise serializers.ValidationError("Invalid building number format.")
         return value
 
-
 class BookingSerializer(serializers.ModelSerializer):
+    spot_number = serializers.CharField(source='spot.number', read_only=True)
+    lot_name = serializers.CharField(source='spot.lot.name', read_only=True)
+    lot_address = serializers.SerializerMethodField()
+    user_email = serializers.CharField(source='user.email', read_only=True)
     class Meta:
         model = Booking
-        fields = ["id", "user", "spot", "start_at", "end_at", "status", "created_at", "cancellation_reason", "payment_intent_id"]
+        fields = ["id", "user", "user_email", "spot", "spot_number", "lot_name", "lot_address", "start_at", "end_at", 
+            "status", "created_at", "cancellation_reason", "payment_intent_id"]
         read_only_fields = ["status", "created_at", "user", "cancellation_reason", "payment_intent_id"]
+
+    def get_lot_address(self, obj):
+        if obj.spot and obj.spot.lot:
+            return f"{obj.spot.lot.city}, {obj.spot.lot.street} {obj.spot.lot.building}"
+        return "Unknown"
 
 class OperatorBookingCancelSerializer(serializers.Serializer):
     reason = serializers.CharField(max_length=255, required=True,
@@ -84,29 +94,6 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
 class BookingCancelSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, max_length=200)
-
-class UserRegistrationSerializer(serializers.ModelSerializer):
-
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'password', 'first_name', 'last_name')
-        extra_kwargs = {
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-            'email': {'required': True},
-        }
-
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', '')
-        )
-        return user
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])

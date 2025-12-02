@@ -132,9 +132,10 @@ try:
                 "HOST": config("RDS_HOSTNAME"),
                 "PORT": config("RDS_PORT", "5432"),
                 "OPTIONS": {
-                    "connect_timeout": 5,
-                    "options": "-c statement_timeout=10000"
-                }
+                    "connect_timeout": 10,
+                    "options": "-c statement_timeout=30000"
+                },
+                "CONN_MAX_AGE": 60,
             }
         }
     else:

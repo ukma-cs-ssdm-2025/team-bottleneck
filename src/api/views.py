@@ -313,7 +313,12 @@ class BookingViewSet(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Booking.objects.all().select_related("spot__lot", "user").order_by("-created_at")
+        qs = Booking.objects.all().select_related(
+            "spot", 
+            "spot__lot", 
+            "user", 
+            "user__operator_profile"
+        ).order_by("-created_at")
 
         if not self.request.user.is_authenticated:
             return Booking.objects.none()
@@ -403,7 +408,7 @@ class BookingViewSet(mixins.ListModelMixin,
         validate_booking_window(start_at, end_at)
         try:
             with connection.cursor() as cursor:
-                cursor.execute("SET LOCAL statement_timeout = '5000'") 
+                cursor.execute("SET LOCAL statement_timeout = '10000'") 
         
             try:
                 locked_spot = Spot.objects.select_for_update(
@@ -441,7 +446,7 @@ class BookingViewSet(mixins.ListModelMixin,
             payment_data = PaymentService.initiate_payment(booking)
             BookingNotificationService.send_booking_confirmation(booking)
         
-            response_data = BookingSerializer(booking).data
+            response_data = BookingSerializer(booking, context={'request': request}).data
             response_data["payment"] = payment_data
             return Response(response_data, status=status.HTTP_201_CREATED)
         except OperationalError:
@@ -598,8 +603,13 @@ class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'delete']
-    queryset = User.objects.all().order_by('id')
     serializer_class = UserRegistrationSerializer
+
+    def get_queryset(self):
+        qs = User.objects.all().order_by('id')
+        if self.action in ['list', 'retrieve']:
+            qs = qs.select_related('operator_profile')
+        return qs
 
     def get_permissions(self):
         if self.action == 'register':
@@ -772,7 +782,7 @@ class BackupLogViewSet(mixins.ListModelMixin,
     Accessible only by Admin users.
     Used for the NFR Reliability dashboard widget.
     """
-    queryset = BackupLog.objects.all()
+    queryset = BackupLog.objects.all().order_by('-created_at')
     serializer_class = BackupLogSerializer
     permission_classes = [IsAuthenticated, permissions.IsAdminUser]
 
