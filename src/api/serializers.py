@@ -3,6 +3,7 @@ from .models import ParkingLot, Spot, Booking, BackupLog
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 import re
+from src.api.validators import validate_coordinates
 
 class SpotSerializer(serializers.ModelSerializer):
     created_by_username = serializers.CharField(source="created_by.username", read_only=True)
@@ -38,13 +39,38 @@ class SpotSerializer(serializers.ModelSerializer):
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParkingLot
-        fields = ['id', 'name', 'city', 'street', 'building']
-
+        fields = ['id', 'name', 'city', 'street', 'building', 'latitude', 'longitude']
+    
+    def validate(self, attrs):
+        """Validate coordinates"""
+        print(f"DEBUG: validate() called with attrs: {attrs}")  # DEBUG
+        latitude = attrs.get('latitude')
+        longitude = attrs.get('longitude')
+        print(f"DEBUG: latitude={latitude}, longitude={longitude}")  # DEBUG
+        
+        # Check if both coordinates are provided together
+        if latitude is not None and longitude is None:
+            raise serializers.ValidationError({
+                'longitude': 'If latitude is provided, longitude is required.'
+            })
+        
+        if longitude is not None and latitude is None:
+            raise serializers.ValidationError({
+                'latitude': 'If longitude is provided, latitude is required.'
+            })
+        
+        # Validate coordinate ranges
+        if latitude is not None and longitude is not None:
+            print(f"DEBUG: About to call validate_coordinates")  # DEBUG
+            validate_coordinates(latitude, longitude)
+        
+        return attrs
+    
 class ParkingLotDetailSerializer(ParkingLotSerializer):
     spots = SpotSerializer(many=True, read_only=True)
     class Meta:
         model = ParkingLot
-        fields = ['id', 'name', 'city', 'street', 'building', 'spots']
+        fields = ['id', 'name', 'city', 'street', 'building', 'spots', 'latitude', 'longitude']
 
     def validate_name(self, value):
         if len(value.strip()) < 3:
@@ -66,6 +92,25 @@ class ParkingLotDetailSerializer(ParkingLotSerializer):
         if value and not re.match(r'^\d+[A-Za-z\-]*$', value):
             raise serializers.ValidationError("Invalid building number format.")
         return value
+    
+    def validate_coordinates(latitude, longitude):
+        """
+        Validates geographical coordinates.
+        """
+        lat = float(latitude) if latitude is not None else None
+        lon = float(longitude) if longitude is not None else None
+        
+        if lat is not None:
+            if not -90 <= lat <= 90:
+                raise serializers.ValidationError({
+                    'latitude': 'Latitude must be between -90 and 90 degrees'
+                })
+        
+        if lon is not None:
+            if not -180 <= lon <= 180:
+                raise serializers.ValidationError({
+                    'longitude': 'Longitude must be between -180 and 180 degrees'
+                })
 
 class BookingSerializer(serializers.ModelSerializer):
     spot_number = serializers.CharField(source='spot.number', read_only=True)

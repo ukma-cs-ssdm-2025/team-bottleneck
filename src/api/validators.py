@@ -42,3 +42,22 @@ def validate_booking_window(start_at, end_at):
             {"start_at": f"Bookings can only be made up to {MAX_ADVANCE_BOOKING.days} days in advance."},
             code="too_far_in_future"
         )
+    
+def validate_coordinates(latitude, longitude):
+    """
+    Validates geographical coordinates.
+    """
+    lat = float(latitude) if latitude is not None else None
+    lon = float(longitude) if longitude is not None else None
+    
+    if lat is not None:
+        if not -90 <= lat <= 90:
+            raise serializers.ValidationError({
+                'latitude': 'Latitude must be between -90 and 90 degrees'
+            })
+    
+    if lon is not None:
+        if not -180 <= lon <= 180:
+            raise serializers.ValidationError({
+                'longitude': 'Longitude must be between -180 and 180 degrees'
+            })
