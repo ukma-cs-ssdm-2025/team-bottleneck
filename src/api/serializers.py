@@ -70,7 +70,8 @@ class ParkingLotDetailSerializer(ParkingLotSerializer):
     spots = SpotSerializer(many=True, read_only=True)
     class Meta:
         model = ParkingLot
-        fields = ['id', 'name', 'city', 'street', 'building', 'spots', 'latitude', 'longitude']
+        fields = ['id', 'name', 'city', 'street', 'building', 'spots',
+                  'latitude', 'longitude', 'description', 'base_price_per_hour']
 
     def validate_name(self, value):
         if len(value.strip()) < 3:
