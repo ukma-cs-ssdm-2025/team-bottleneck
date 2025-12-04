@@ -506,6 +506,58 @@ class BookingViewSet(mixins.ListModelMixin,
         BookingNotificationService.send_cancellation_confirmation(booking)
         return Response(BookingSerializer(booking).data)
 
+    @action(detail=False, methods=["post"], url_path="preview-price")
+    def preview_price(self, request):
+        """
+        Calculate booking price without creating a booking.
+        Used to show the user the final price before confirmation.
+        """
+        spot_id = request.data.get('spot')
+        start_at = request.data.get('start_at')
+        end_at = request.data.get('end_at')
+
+        if not spot_id or not start_at or not end_at:
+            return Response(
+                {"detail": "Missing required fields: spot, start_at, end_at"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            spot = Spot.objects.select_related('lot').get(id=spot_id)
+        except Spot.DoesNotExist:
+            return Response(
+                {"detail": "Parking spot not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Parse datetime
+        from django.utils.dateparse import parse_datetime
+        start_dt = parse_datetime(start_at)
+        end_dt = parse_datetime(end_at)
+
+        if not start_dt or not end_dt:
+            return Response(
+                {"detail": "Invalid datetime format. Use ISO 8601."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Create temporary booking object
+        temp_booking = Booking(
+            spot=spot,
+            start_at=start_dt,
+            end_at=end_dt
+        )
+
+        price = PaymentService.calculate_price(temp_booking)
+
+        return Response({
+            'price': str(price),
+            'currency': 'UAH',
+            'spot_number': spot.number,
+            'is_ev': spot.is_ev,
+            'is_disabled': spot.is_disabled
+        })
+
     @extend_schema(
         summary="[Operator] List bookings for my lot",
         description="Returns a list of all bookings for the parking lot *assigned to the authenticated operator*.",
