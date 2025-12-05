@@ -5,13 +5,14 @@ import {
     TextField, Checkbox, FormControlLabel, Divider, Tabs, Tab, Tooltip
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import ErrorPopup from '../components/common/ErrorPopup';
 
 function OperatorPage() {
-    const { user, isOperator, isAdmin } = useAuth();
+    const { user, isOperator, isAdmin, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+    const { lotId: urlLotId } = useParams();
 
     // Data
     const [lot, setLot] = useState(null);
@@ -37,15 +38,21 @@ function OperatorPage() {
     // Errors
     const [errorPopup, setErrorPopup] = useState({ open: false, message: '', severity: 'error' });
 
-    const lotId = user?.lot_id;
+    // Визначаємо lotId: для адміна - з URL, для оператора - з профілю
+    const lotId = isAdmin && urlLotId ? parseInt(urlLotId) : user?.lot_id;
 
     useEffect(() => {
+        // Чекаємо завершення завантаження даних авторизації
+        if (authLoading) return;
+
+        // Перевірка доступу: тільки оператори та адміни
         if (!isOperator && !isAdmin) {
             navigate('/');
             return;
         }
 
-        if (!lotId) {
+        // Для звичайного оператора: перевірка чи є закріплений лот
+        if (isOperator && !isAdmin && !lotId) {
             setErrorPopup({
                 open: true,
                 message: 'За вами не закріплено паркувальний лот. Зверніться до адміністратора.',
@@ -55,8 +62,21 @@ function OperatorPage() {
             return;
         }
 
-        loadAllData();
-    }, [lotId, isOperator, isAdmin, navigate]);
+        // Для адміна: перевірка чи вказаний lotId в URL
+        if (isAdmin && !urlLotId && !user?.lot_id) {
+            setErrorPopup({
+                open: true,
+                message: 'Не вказано ID паркувального майданчика.',
+                severity: 'error'
+            });
+            setLoading(false);
+            return;
+        }
+
+        if (lotId) {
+            loadAllData();
+        }
+    }, [lotId, isOperator, isAdmin, navigate, authLoading, urlLotId, user]);
 
     const loadAllData = useCallback(async () => {
         if (!lotId) return;
