@@ -1,5 +1,8 @@
 from decimal import Decimal
 from typing import Dict, Any
+from django.core.mail import EmailMultiAlternatives, send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 import logging
 from django.conf import settings
 import stripe
@@ -72,24 +75,7 @@ class PaymentService:
         logger.info(f"Verifying payment for order {order_id}")
         return True
 
-class BookingNotificationService:    
-    @staticmethod
-    def send_booking_confirmation(booking):
-        logger.info(f"Sending booking confirmation for {booking.id} to {booking.user.email}")
 
-   
-    @staticmethod
-    def send_cancellation_confirmation(booking):
-        if booking.user is None:
-            logger.warning(f"Skipping cancellation confirmation for {booking.id}. User field is NULL.")
-            return 
-            
-        logger.info(f"Sending cancellation confirmation for {booking.id} to {booking.user.email}")
-   
-    @staticmethod
-    def send_reminder(booking):
-        """Sends a reminder before the booking starts"""
-        logger.info(f"Sending reminder for booking {booking.id}")
 
 class CancellationService:
     @staticmethod
@@ -103,3 +89,92 @@ class SpotUpdateService:
             setattr(spot, field, value)
         spot.save()
         return spot
+    
+
+ 
+class BookingNotificationService:
+    @staticmethod
+    def send_booking_confirmation(booking):
+        
+        if booking.user is None or not booking.user.email:
+            logger.warning(f"Skipping confirmation for {booking.id}. User email is missing.")
+            return False
+
+        context = {'booking': booking, 'user': booking.user}
+        
+        try:
+            lot_name = getattr(getattr(booking.spot, 'lot', None), 'name', 'Unknown Lot')
+            subject = f" Booking Confirmed: #{booking.id} | {lot_name}"
+   
+            message_html = render_to_string('emails/booking_confirmation.html', context)
+            message_text = render_to_string('emails/booking_confirmation_text.txt', context)
+            
+        except Exception as e:
+            logger.error(f" EMAIL RENDERING FAILURE for booking {booking.id}: {e}")
+            
+            subject = f" Notification Error for Booking #{booking.id}"
+            message_html = None
+            message_text = (
+                f"Dear {booking.user.username},\n\n"
+                f"Your booking was successfully created. However, a critical error occurred "
+                f"while formatting the details (rendering).\n\n"
+                f"Please check the booking details on the website. Booking ID: {booking.id}\n"
+            )
+
+        try:
+            if message_html:
+                msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, [booking.user.email])
+
+                msg.attach_alternative(message_html, "text/html")
+            else:
+                msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, [booking.user.email])
+                
+            msg.send(fail_silently=True) 
+            logger.info(f"Successfully sent confirmation email for booking {booking.id}.")
+            return True
+        except Exception as e:
+            logger.error(f" CRITICAL EMAIL SENDING FAILURE for booking {booking.id}: {e}")
+            return False
+
+    @staticmethod
+    def send_cancellation_confirmation(booking):
+        """Sends an email notification when a booking is cancelled."""
+        if booking.user is None or not booking.user.email:
+            logger.warning(f"Skipping cancellation confirmation for {booking.id}. User email is missing.")
+            return False
+
+        context = {'booking': booking, 'user': booking.user}
+        
+        try:
+            lot_name = getattr(getattr(booking.spot, 'lot', None), 'name', 'Unknown Lot')
+            subject = f" Booking Cancelled: #{booking.id} | {lot_name}"
+            message_html = render_to_string('emails/booking_cancellation.html', context)
+            message_text = render_to_string('emails/booking_cancellation_text.txt', context)
+            
+        except Exception as e:
+            logger.error(f" EMAIL CANCELLATION RENDERING FAILURE for booking {booking.id}: {e}")
+            
+            subject = f" Cancellation Notification Error for Booking #{booking.id}"
+            message_html = None
+            message_text = (
+                f"Dear {booking.user.username},\n\n"
+                f"Your booking #{booking.id} has been cancelled. However, a critical error occurred "
+                f"while formatting the details.\n\n"
+                f"Please check the booking status on the website."
+            )
+
+        try:
+            from django.core.mail import EmailMultiAlternatives
+            
+            if message_html:
+                msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, [booking.user.email])
+                msg.attach_alternative(message_html, "text/html")
+            else:
+                msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, [booking.user.email])
+                
+            msg.send(fail_silently=True) 
+            logger.info(f"Successfully sent cancellation email for booking {booking.id}.")
+            return True
+        except Exception as e:
+            logger.error(f" CRITICAL EMAIL SENDING FAILURE for booking {booking.id}: {e}")
+            return False

@@ -12,13 +12,13 @@ from drf_spectacular.utils import (
 )
 from django.utils.dateparse import parse_datetime
 from .permissions import IsLotOperator
-from .models import ParkingLot, Spot, Booking, OperatorProfile
+from .models import ParkingLot, Spot, Booking, OperatorProfile, BackupLog
 from .serializers import (
     ParkingLotSerializer, ParkingLotDetailSerializer, SpotSerializer,
     BookingSerializer, BookingCreateSerializer, BookingCancelSerializer,
     UserRegistrationSerializer, UserSerializer, UserProfileUpdateSerializer,
     OperatorBookingCancelSerializer, SpotOperatorUpdateSerializer, 
-    OperatorAssignSerializer
+    OperatorAssignSerializer, BackupLogSerializer
 )
 from .validators import validate_booking_window
 from .swagger import ErrorSerializer
@@ -313,7 +313,12 @@ class BookingViewSet(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Booking.objects.all().select_related("spot__lot", "user").order_by("-created_at")
+        qs = Booking.objects.all().select_related(
+            "spot", 
+            "spot__lot", 
+            "user", 
+            "user__operator_profile"
+        ).order_by("-created_at")
 
         if not self.request.user.is_authenticated:
             return Booking.objects.none()
@@ -403,7 +408,7 @@ class BookingViewSet(mixins.ListModelMixin,
         validate_booking_window(start_at, end_at)
         try:
             with connection.cursor() as cursor:
-                cursor.execute("SET LOCAL statement_timeout = '5000'") 
+                cursor.execute("SET LOCAL statement_timeout = '10000'") 
         
             try:
                 locked_spot = Spot.objects.select_for_update(
@@ -436,9 +441,12 @@ class BookingViewSet(mixins.ListModelMixin,
                 end_at=end_at,
                 status="confirmed"
             )
+            
 
             payment_data = PaymentService.initiate_payment(booking)
-            response_data = BookingSerializer(booking).data
+            BookingNotificationService.send_booking_confirmation(booking)
+        
+            response_data = BookingSerializer(booking, context={'request': request}).data
             response_data["payment"] = payment_data
             return Response(response_data, status=status.HTTP_201_CREATED)
         except OperationalError:
@@ -495,6 +503,7 @@ class BookingViewSet(mixins.ListModelMixin,
         booking.cancellation_reason = reason
         booking.save(update_fields=["status", "cancellation_reason"])
         PaymentService.process_refund(booking)
+        BookingNotificationService.send_cancellation_confirmation(booking)
         return Response(BookingSerializer(booking).data)
 
     @extend_schema(
@@ -594,8 +603,13 @@ class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     http_method_names = ['get', 'post', 'patch', 'head', 'options', 'delete']
-    queryset = User.objects.all().order_by('id')
     serializer_class = UserRegistrationSerializer
+
+    def get_queryset(self):
+        qs = User.objects.all().order_by('id')
+        if self.action in ['list', 'retrieve']:
+            qs = qs.select_related('operator_profile')
+        return qs
 
     def get_permissions(self):
         if self.action == 'register':
@@ -760,3 +774,28 @@ class UserViewSet(mixins.RetrieveModelMixin,
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({'detail': 'User is not an operator.'}, status=status.HTTP_404_NOT_FOUND)
+
+class BackupLogViewSet(mixins.ListModelMixin,
+                       viewsets.GenericViewSet):
+    """
+    View for listing database backup logs.
+    Accessible only by Admin users.
+    Used for the NFR Reliability dashboard widget.
+    """
+    queryset = BackupLog.objects.all().order_by('-created_at')
+    serializer_class = BackupLogSerializer
+    permission_classes = [IsAuthenticated, permissions.IsAdminUser]
+
+    @extend_schema(
+        summary="[Admin] List Backup Logs",
+        description="Returns a list of database backup attempts (success/failure). "
+                    "The list is ordered by creation time (newest first). "
+                    "Used to display system reliability status.",
+        responses={
+            200: BackupLogSerializer(many=True),
+            401: OpenApiResponse(ErrorSerializer, description="Authentication required"),
+            403: OpenApiResponse(ErrorSerializer, description="Permission denied (Admin only)"),
+        }
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

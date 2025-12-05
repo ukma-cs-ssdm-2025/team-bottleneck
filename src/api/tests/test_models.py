@@ -48,6 +48,31 @@ def test_parking_lot_str_without_building():
     assert "Main Street" in result
     assert "None" not in result
 
+# Додайте до файлу src/api/tests/test_models.py:
+
+@pytest.mark.django_db
+def test_parking_lot_with_coordinates():
+    lot = ParkingLot.objects.create(
+        name="Forum Lviv",
+        city="Lviv",
+        street="Pid Dubom",
+        latitude=49.841952,
+        longitude=24.029717
+    )
+    assert lot.latitude == 49.841952
+    assert lot.longitude == 24.029717
+
+
+@pytest.mark.django_db
+def test_parking_lot_without_coordinates():
+    lot = ParkingLot.objects.create(
+        name="Test Lot",
+        city="Kyiv",
+        street="Main St"
+    )
+    assert lot.latitude is None
+    assert lot.longitude is None
+
 
 # ────────────────────────────────────────────────
 # Spot model

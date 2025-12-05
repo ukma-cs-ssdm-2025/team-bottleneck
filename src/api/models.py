@@ -9,6 +9,8 @@ class ParkingLot(models.Model):
     building = models.CharField(max_length=20, blank=True)
     base_price_per_hour = models.DecimalField(max_digits=8, decimal_places=2, default=30.00)
     description = models.CharField(max_length=1000, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.city}, {self.street} {self.building or ''})"
@@ -68,3 +70,18 @@ class OperatorProfile(models.Model):
     def __str__(self):
         return f"Operator {self.user.username} for {self.lot.name if self.lot else 'N/A'}"
     
+class BackupLog(models.Model):
+    STATUS_CHOICES = [
+        ('SUCCESS', 'Success'),
+        ('FAILURE', 'Failure'),
+    ]
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    message = models.TextField(help_text="Шлях до файлу або текст помилки")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.status} at {self.created_at}"

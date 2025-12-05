@@ -132,9 +132,10 @@ try:
                 "HOST": config("RDS_HOSTNAME"),
                 "PORT": config("RDS_PORT", "5432"),
                 "OPTIONS": {
-                    "connect_timeout": 5,
-                    "options": "-c statement_timeout=10000"
-                }
+                    "connect_timeout": 10,
+                    "options": "-c statement_timeout=30000"
+                },
+                "CONN_MAX_AGE": 60,
             }
         }
     else:
@@ -154,3 +155,37 @@ STRIPE_PUBLIC_KEY = config("STRIPE_PUBLIC_KEY", default="pk-test...")
 STRIPE_CURRENCY = config("STRIPE_CURRENCY", default="usd")
 TEST_USER_PASSWORD = config('TEST_USER_PASSWORD', default='your_pass')
 STRONG_PASSWORD_FOR_TESTS = config('STRONG_PASSWORD_FOR_TESTS', default='your_strong_pass')
+
+
+
+
+
+EMAIL_BACKEND = config( 
+
+    'EMAIL_BACKEND',  
+
+    default='django.core.mail.backends.smtp.EmailBackend' 
+
+) 
+
+
+EMAIL_HOST = config('EMAIL_HOST', default='')  
+
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int) 
+
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='') 
+
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='') 
+
+
+
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool) 
+
+
+
+ 
+
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER 
+
+SERVER_EMAIL = EMAIL_HOST_USER 
