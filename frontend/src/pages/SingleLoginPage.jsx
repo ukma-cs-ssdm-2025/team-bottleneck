@@ -96,8 +96,13 @@ function SingleLoginPage() {
             const { tokens, userData } = await getTokensAndProfile({ username, password });
             login(tokens, userData);
 
-            // Redirect to the page user was trying to access, or home
-            navigate(from, { replace: true });
+            // Redirect admin users to admin dashboard
+            if (userData.is_staff) {
+                navigate('/admin', { replace: true });
+            } else {
+                // Redirect to the page user was trying to access, or home
+                navigate(from, { replace: true });
+            }
         } catch (err) {
             const errorMessage = renderErrorMessage(err);
             setErrorPopup({ open: true, message: errorMessage });
