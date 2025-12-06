@@ -179,7 +179,9 @@ function HomePage() {
                     <Grid item xs={12} sm={6} md={3}>
                         <Card sx={{ height: '100%', borderRadius: '16px' }}>
                             <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                                <Typography variant="h3" sx={{ mb: 2 }}>⏰</Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <img src="/appointment.png" alt="Бронювання" style={{ width: '60px', height: '60px' }} />
+                                </Box>
                                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>
                                     Бронювання 24/7
                                 </Typography>
@@ -193,7 +195,9 @@ function HomePage() {
                     <Grid item xs={12} sm={6} md={3}>
                         <Card sx={{ height: '100%', borderRadius: '16px' }}>
                             <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                                <Typography variant="h3" sx={{ mb: 2 }}>🔒</Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <img src="/verified.png" alt="Безпека" style={{ width: '60px', height: '60px' }} />
+                                </Box>
                                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>
                                     Безпека та Захист
                                 </Typography>
@@ -207,7 +211,9 @@ function HomePage() {
                     <Grid item xs={12} sm={6} md={3}>
                         <Card sx={{ height: '100%', borderRadius: '16px' }}>
                             <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                                <Typography variant="h3" sx={{ mb: 2 }}>📱</Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <img src="/phone.png" alt="Мобільний доступ" style={{ width: '60px', height: '60px' }} />
+                                </Box>
                                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>
                                     Мобільний Доступ
                                 </Typography>
@@ -221,7 +227,9 @@ function HomePage() {
                     <Grid item xs={12} sm={6} md={3}>
                         <Card sx={{ height: '100%', borderRadius: '16px' }}>
                             <CardContent sx={{ textAlign: 'center', p: 4 }}>
-                                <Typography variant="h3" sx={{ mb: 2 }}>✅</Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <img src="/remote.png" alt="Автоматизація" style={{ width: '60px', height: '60px' }} />
+                                </Box>
                                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>
                                     Автоматизація
                                 </Typography>
