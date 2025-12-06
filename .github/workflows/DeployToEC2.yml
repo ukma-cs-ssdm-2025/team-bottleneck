@@ -9,13 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PROJECT_ROOT_DIR: team-bottleneck
-      ALLOWED_HOSTS_PROD: "16.170.148.253"
+      ALLOWED_HOSTS_PROD: "13.61.159.130"
       DEBUG_PROD: "False"
       RDS_DB_NAME: "postgres"
       RDS_USERNAME: "MaFiN"
       RDS_PORT: "5432"
       STRIPE_PUBLIC_KEY: "pk_test_51SKjS5HtnK8GZIavQHUhE48lrRc4PvyMVd8BmTafOijozdGrcx2GU4Rb812Ml4xeqs9a8RsviSaODAxSGjFoBy5b00DaJziTKU"
       STRIPE_CURRENCY: "uah"
+      EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+      EMAIL_HOST: "smtp.gmail.com"
+      EMAIL_PORT: "587"
+      EMAIL_USE_TLS: "True"
       
     steps:
     - name: Deploy Backend and Frontend
@@ -38,7 +42,6 @@ jobs:
           git checkout ${{ github.ref_name }}
           
           echo "Creating .env file with all configuration..."
-          # ... (решта скрипту залишається без змін) ...
           cat > $DEPLOY_PATH/.env << 'EOF'
           DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
           DJANGO_DEBUG=${{ env.DEBUG_PROD }}
@@ -51,6 +54,12 @@ jobs:
           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_PUBLIC_KEY=${{ env.STRIPE_PUBLIC_KEY }}
           STRIPE_CURRENCY=${{ env.STRIPE_CURRENCY }}
+          EMAIL_BACKEND=${{ env.EMAIL_BACKEND }}
+          EMAIL_HOST=${{ env.EMAIL_HOST }}
+          EMAIL_PORT=${{ env.EMAIL_PORT }}
+          EMAIL_USE_TLS=${{ env.EMAIL_USE_TLS }}
+          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
           EOF
           
           echo "Installing Python dependencies..."
