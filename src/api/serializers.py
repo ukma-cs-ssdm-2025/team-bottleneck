@@ -39,7 +39,7 @@ class SpotSerializer(serializers.ModelSerializer):
 class ParkingLotSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParkingLot
-        fields = ['id', 'name', 'city', 'street', 'building', 'latitude', 'longitude']
+        fields = ['id', 'name', 'city', 'street', 'building', 'latitude', 'longitude', 'description', 'base_price_per_hour']
     
     def validate(self, attrs):
         """Validate coordinates"""
