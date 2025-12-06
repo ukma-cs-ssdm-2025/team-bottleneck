@@ -1,38 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Container, Box, Typography, Alert, CircularProgress, 
-    Button, Dialog, DialogTitle, DialogContent, 
+import {
+    Container, Box, Typography, CircularProgress,
+    Button, Dialog, DialogTitle, DialogContent, ToggleButtonGroup, ToggleButton
 } from '@mui/material';
-import UserManagementTable from '../components/admin/UserManagementTable'; 
+import UserManagementTable from '../components/admin/UserManagementTable';
 import OperatorAssignmentDialog from '../components/admin/OperatorAssignmentDialog';
 import CreateUserForm from '../components/admin/CreateUserForm';
-import { 
-    getAllUsers, makeOperator, removeOperator, makeAdmin, removeAdmin, registerUser 
-} from '../api/adminAPI'; 
+import ErrorPopup from '../components/common/ErrorPopup';
+import {
+    getAllUsers, makeOperator, removeOperator, makeAdmin, removeAdmin, registerUser
+} from '../api/adminAPI';
 
 
 const UserManagementPage = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [actionStatus, setActionStatus] = useState(null); 
-    
+    const [filterRole, setFilterRole] = useState('all'); // 'all', 'admins', 'operators', 'users'
+
     const [operatorModal, setOperatorModal] = useState({ open: false, userId: null, lotId: '' });
-    const [createUserModalOpen, setCreateUserModalOpen] = useState(false); 
+    const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
+
+    // Error/Success popup state
+    const [popup, setPopup] = useState({
+        open: false,
+        message: '',
+        severity: 'error'
+    });
 
     const fetchUsers = async () => {
         setLoading(true);
-        setError(null);
         try {
             const data = await getAllUsers();
-            setUsers(data.map(user => ({ 
-                ...user, 
+            setUsers(data.map(user => ({
+                ...user,
                 id: String(user.id),
-                is_admin: user.is_staff 
+                is_admin: user.is_staff
             })));
         } catch (err) {
-            console.error('Error fetching users:', err.response || err); 
-            setError('Не вдалося завантажити список користувачів.');
+            console.error('Error fetching users:', err.response || err);
+
+            let errorMessage = 'Не вдалося завантажити список користувачів.';
+
+            if (err.response?.status === 403) {
+                errorMessage = 'Доступ заборонено. Увійдіть як адміністратор.';
+            } else if (err.response?.data?.detail) {
+                errorMessage = err.response.data.detail;
+            } else if (err.message) {
+                errorMessage = `Помилка: ${err.message}`;
+            }
+
+            setPopup({
+                open: true,
+                message: errorMessage,
+                severity: 'error'
+            });
         } finally {
             setLoading(false);
         }
@@ -43,9 +64,6 @@ const UserManagementPage = () => {
     }, []);
 
     const handleAction = async (userId, actionType, lotId = null) => {
-        setError(null);
-        setActionStatus(null);
-        
         try {
             if (actionType === 'make-operator') {
                 await makeOperator(userId, lotId);
@@ -57,23 +75,46 @@ const UserManagementPage = () => {
                 await removeAdmin(userId);
             }
 
-            setActionStatus({ severity: 'success', message: `Роль користувача ID ${userId} успішно змінено.` });
+            setPopup({
+                open: true,
+                message: `Роль користувача ID ${userId} успішно змінено.`,
+                severity: 'success'
+            });
             fetchUsers();
         } catch (err) {
-
             console.error('Error during role change:', err.response || err);
-            let message = 'Не вдалося виконати дію. Перевірте дозволи або ID лоту.';
-            
+
+            let errorMessage = 'Не вдалося виконати дію. Перевірте дозволи або ID лоту.';
+
             if (err.response?.data?.detail) {
-                message = `Помилка: ${err.response.data.detail}`; 
-            } else if (err.response?.data?.username) {
-                message = `Помилка імені користувача: ${err.response.data.username.join(', ')}`;
-            } else if (err.response?.data?.email) {
-                message = `Помилка Email: ${err.response.data.email.join(', ')}`;
+                errorMessage = err.response.data.detail;
+            } else if (err.response?.data?.lot_id) {
+                const lotErrors = Array.isArray(err.response.data.lot_id)
+                    ? err.response.data.lot_id.join(', ')
+                    : err.response.data.lot_id;
+                errorMessage = `Помилка ID лоту: ${lotErrors}`;
+            } else if (err.response?.data) {
+                // Handle other validation errors
+                const errors = err.response.data;
+                if (typeof errors === 'object') {
+                    const errorMessages = Object.keys(errors)
+                        .map(key => {
+                            const value = errors[key];
+                            const messages = Array.isArray(value) ? value.join(', ') : value;
+                            return `${key}: ${messages}`;
+                        })
+                        .join('\n');
+                    errorMessage = `Помилка:\n${errorMessages}`;
+                }
             } else if (err.message) {
-                 message = `Помилка: ${err.message}`;
+                errorMessage = `Помилка: ${err.message}`;
             }
-            setActionStatus({ severity: 'error', message });
+
+            setPopup({
+                open: true,
+                message: errorMessage,
+                severity: 'error'
+            });
         }
     };
 
@@ -87,80 +128,137 @@ const UserManagementPage = () => {
         }
         setOperatorModal({ open: false, userId: null, lotId: '' });
     };
-    
+
     const handleLotIdChange = (newLotId) => {
         setOperatorModal(prev => ({ ...prev, lotId: newLotId }));
     };
 
     const handleCreateUser = async (formData) => {
-        setCreateUserModalOpen(false); 
-        setError(null);
-        setActionStatus(null);
+        setCreateUserModalOpen(false);
 
         try {
             await registerUser(formData);
-            setActionStatus({ severity: 'success', message: `Користувача ${formData.username} успішно створено.` });
-            fetchUsers(); 
+            setPopup({
+                open: true,
+                message: `Користувача ${formData.username} успішно створено.`,
+                severity: 'success'
+            });
+            fetchUsers();
         } catch (err) {
             console.error('Error creating user:', err.response || err);
-            let message = 'Не вдалося створити користувача. Перевірте введені дані.';
-            
+
+            let errorMessage = 'Не вдалося створити користувача. Перевірте введені дані.';
+
             if (err.response?.data) {
                 const apiErrors = err.response.data;
-                const errorMessages = Object.keys(apiErrors)
-                    .map(key => `${key}: ${Array.isArray(apiErrors[key]) ? apiErrors[key].join(', ') : apiErrors[key]}`)
-                    .join('; ');
-                message = `Помилка валідації: ${errorMessages}`;
+
+                if (typeof apiErrors === 'object') {
+                    const errorMessages = Object.keys(apiErrors)
+                        .map(key => {
+                            const value = apiErrors[key];
+                            const messages = Array.isArray(value) ? value.join(', ') : value;
+                            return `${key}: ${messages}`;
+                        })
+                        .join('\n');
+                    errorMessage = `Помилка валідації:\n${errorMessages}`;
+                }
             } else if (err.message) {
-                message = `Помилка: ${err.message}`;
+                errorMessage = `Помилка: ${err.message}`;
             }
-            
-            setActionStatus({ severity: 'error', message });
+
+            setPopup({
+                open: true,
+                message: errorMessage,
+                severity: 'error'
+            });
         }
     };
 
+    const handleFilterChange = (event, newFilter) => {
+        if (newFilter !== null) {
+            setFilterRole(newFilter);
+        }
+    };
+
+    const handleClosePopup = () => {
+        setPopup({ ...popup, open: false });
+    };
+
+    // Filter users based on selected role
+    const filteredUsers = users.filter(user => {
+        if (filterRole === 'all') return true;
+        if (filterRole === 'admins') return user.is_staff;
+        if (filterRole === 'operators') return user.is_operator && !user.is_staff;
+        if (filterRole === 'users') return !user.is_staff && !user.is_operator;
+        return true;
+    });
 
     if (loading) {
         return (
-            <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Container>
-        );
-    }
-
-    if (error && !users.length) {
-        return (
-            <Container sx={{ mt: 5 }}><Alert severity="error">{error}</Alert></Container>
+            <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+                <CircularProgress />
+            </Container>
         );
     }
 
     return (
         <Container component="main" maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" gutterBottom>
+                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
                     Керування Користувачами та Ролями
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary" 
+                <Button
+                    variant="contained"
+                    color="primary"
                     onClick={() => setCreateUserModalOpen(true)}
+                    sx={{ borderRadius: 1 }}
                 >
-                    Створити Користувача
+                    + Створити Користувача
                 </Button>
             </Box>
-            
-            {actionStatus && (
-                <Alert severity={actionStatus.severity} onClose={() => setActionStatus(null)} sx={{ mb: 2 }}>
-                    {actionStatus.message}
-                </Alert>
-            )}
 
-            <UserManagementTable 
-                users={users}
+            {/* Filter Buttons */}
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+                <ToggleButtonGroup
+                    value={filterRole}
+                    exclusive
+                    onChange={handleFilterChange}
+                    aria-label="user role filter"
+                    sx={{
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                        borderRadius: 2,
+                        '& .MuiToggleButton-root': {
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1,
+                            textTransform: 'none',
+                            fontWeight: 500,
+                        }
+                    }}
+                >
+                    <ToggleButton value="all">
+                        Всі ({users.length})
+                    </ToggleButton>
+                    <ToggleButton value="admins">
+                        Адміністратори ({users.filter(u => u.is_staff).length})
+                    </ToggleButton>
+                    <ToggleButton value="operators">
+                        Оператори ({users.filter(u => u.is_operator && !u.is_staff).length})
+                    </ToggleButton>
+                    <ToggleButton value="users">
+                        Користувачі ({users.filter(u => !u.is_staff && !u.is_operator).length})
+                    </ToggleButton>
+                </ToggleButtonGroup>
+            </Box>
+
+            <UserManagementTable
+                users={filteredUsers}
                 onMakeOperator={handleMakeOperatorClick}
                 onRemoveOperator={(userId) => handleAction(userId, 'remove-operator')}
                 onMakeAdmin={(userId) => handleAction(userId, 'make-admin')}
                 onRemoveAdmin={(userId) => handleAction(userId, 'remove-admin')}
             />
-            
+
             <OperatorAssignmentDialog
                 open={operatorModal.open}
                 onClose={() => setOperatorModal({ open: false, userId: null, lotId: '' })}
@@ -169,17 +267,23 @@ const UserManagementPage = () => {
                 onLotIdChange={handleLotIdChange}
             />
 
-
             <Dialog open={createUserModalOpen} onClose={() => setCreateUserModalOpen(false)}>
                 <DialogTitle>Створити Нового Користувача</DialogTitle>
                 <DialogContent>
-                    <CreateUserForm 
-                        onSubmit={handleCreateUser} 
-                        onCancel={() => setCreateUserModalOpen(false)} 
+                    <CreateUserForm
+                        onSubmit={handleCreateUser}
+                        onCancel={() => setCreateUserModalOpen(false)}
                     />
                 </DialogContent>
             </Dialog>
 
+            {/* Error/Success Popup */}
+            <ErrorPopup
+                open={popup.open}
+                onClose={handleClosePopup}
+                message={popup.message}
+                severity={popup.severity}
+            />
         </Container>
     );
 };

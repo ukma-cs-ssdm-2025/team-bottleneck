@@ -1,70 +1,97 @@
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-    Paper, Button, Box, Typography 
+import React from 'react';
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Paper, Button, Box, Typography
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+    borderRadius: 16,
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+}));
+
+const StyledTableHead = styled(TableHead)(({ theme }) => ({
+    backgroundColor: theme.palette.primary.main,
+}));
+
+const StyledHeaderCell = styled(TableCell)(({ theme }) => ({
+    fontWeight: 600,
+    color: 'white',
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:last-child td, &:last-child th': { border: 0 },
+    '&:hover': {
+        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+        transition: 'background-color 0.2s'
+    },
+}));
 
 const ParkingLotsTable = ({ lots, onDelete }) => {
-    
+
     if (!lots || lots.length === 0) {
         return <Typography color="text.secondary">Паркувальних майданчиків поки що немає.</Typography>;
     }
-    
+
     return (
-        <TableContainer component={Paper} elevation={3}>
+        <StyledTableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="parking lot table">
-                <TableHead sx={{ backgroundColor: 'primary.light' }}>
+                <StyledTableHead>
                     <TableRow>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>ID</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Назва</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Адреса</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white' }} align="right">Ціна (грн/год)</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Сервіси</TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white' }} align="center">Дії</TableCell>
+                        <StyledHeaderCell>ID</StyledHeaderCell>
+                        <StyledHeaderCell>Назва</StyledHeaderCell>
+                        <StyledHeaderCell>Адреса</StyledHeaderCell>
+                        <StyledHeaderCell align="right">Ціна (грн/год)</StyledHeaderCell>
+                        <StyledHeaderCell>Опис</StyledHeaderCell>
+                        <StyledHeaderCell align="center">Дії</StyledHeaderCell>
                     </TableRow>
-                </TableHead>
+                </StyledTableHead>
                 <TableBody>
                     {lots.map((lot) => (
-                        <TableRow
-                            key={lot.id}
-                            sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: '#f5f5f5' } }}
-                        >
+                        <StyledTableRow key={lot.id}>
                             <TableCell component="th" scope="row">
                                 {lot.id}
                             </TableCell>
                             <TableCell>{lot.name}</TableCell>
-                            <TableCell>{lot.city}, {lot.street}</TableCell>
+                            <TableCell>{lot.city}, {lot.street} {lot.building}</TableCell>
                             <TableCell align="right">
-                                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                    {lot.hourly_rate}
+                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                    {lot.base_price_per_hour ? `${lot.base_price_per_hour} грн` : 'Не вказано'}
                                 </Typography>
                             </TableCell>
                             <TableCell>
-                                
-                                {lot.additional_services || 'Немає'}
+                                <Typography variant="body2" color="text.secondary">
+                                    {lot.description || 'Немає опису'}
+                                </Typography>
                             </TableCell>
                             <TableCell align="center">
-                                <Button 
-                                    size="small" 
-                                    component={Link} 
-                                    to={`/admin/lots/edit/${lot.id}`} 
-                                    sx={{ mr: 1 }}
-                                >
-                                    Редагувати
-                                </Button>
-                                <Button 
-                                    size="small" 
-                                    color="error" 
-                                    onClick={() => onDelete(lot.id, lot.name)}
-                                >
-                                    Видалити
-                                </Button>
+                                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        component={Link}
+                                        to={`/admin/lots/edit/${lot.id}`}
+                                        sx={{ borderRadius: 1 }}
+                                    >
+                                        Редагувати
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        color="error"
+                                        onClick={() => onDelete(lot.id, lot.name)}
+                                        sx={{ borderRadius: 1 }}
+                                    >
+                                        Видалити
+                                    </Button>
+                                </Box>
                             </TableCell>
-                        </TableRow>
+                        </StyledTableRow>
                     ))}
                 </TableBody>
             </Table>
-        </TableContainer>
+        </StyledTableContainer>
     );
 };
 

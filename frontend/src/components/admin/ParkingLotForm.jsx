@@ -1,15 +1,16 @@
-
-
 import { useState, useEffect } from 'react';
 import { Box, TextField, Button, Grid, Typography, CircularProgress, Alert } from '@mui/material';
 
 
 const initialFormState = {
     name: '',
-    city: '', 
+    city: '',
     street: '',
-    hourly_rate: 0.00,
-    additional_services: '', 
+    building: '',
+    base_price_per_hour: '',
+    description: '',
+    latitude: '',
+    longitude: '',
 };
 
 const ParkingLotForm = ({ initialData, loading, onSubmit, error }) => {
@@ -17,12 +18,13 @@ const ParkingLotForm = ({ initialData, loading, onSubmit, error }) => {
 
     useEffect(() => {
         if (initialData) {
-            
             setFormData({
                 ...initialData,
-                hourly_rate: initialData.hourly_rate ? initialData.hourly_rate.toString() : '',
-                
-                additional_services: initialData.additional_services || '', 
+                base_price_per_hour: initialData.base_price_per_hour ? initialData.base_price_per_hour.toString() : '',
+                description: initialData.description || '',
+                building: initialData.building || '',
+                latitude: initialData.latitude !== null && initialData.latitude !== undefined ? initialData.latitude.toString() : '',
+                longitude: initialData.longitude !== null && initialData.longitude !== undefined ? initialData.longitude.toString() : '',
             });
         }
     }, [initialData]);
@@ -37,14 +39,16 @@ const ParkingLotForm = ({ initialData, loading, onSubmit, error }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         const dataToSend = {
             name: formData.name,
             city: formData.city,
             street: formData.street,
-            hourly_rate: Number(formData.hourly_rate) || 0,
-            
-            additional_services: formData.additional_services || null, 
+            building: formData.building || null,
+            base_price_per_hour: formData.base_price_per_hour ? Number(formData.base_price_per_hour) : null,
+            description: formData.description || null,
+            latitude: formData.latitude ? Number(formData.latitude) : null,
+            longitude: formData.longitude ? Number(formData.longitude) : null,
         };
 
         onSubmit(dataToSend);
@@ -53,16 +57,16 @@ const ParkingLotForm = ({ initialData, loading, onSubmit, error }) => {
     const isEditing = !!initialData;
 
     return (
-        <Box 
-            component="form" 
-            onSubmit={handleSubmit} 
-            noValidate 
+        <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
             sx={{ mt: 3, maxWidth: 600, mx: 'auto' }}
         >
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
                 {isEditing ? 'Редагувати Майданчик' : 'Створити Новий Майданчик'}
             </Typography>
-            
+
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
             <Grid container spacing={2}>
@@ -77,7 +81,7 @@ const ParkingLotForm = ({ initialData, loading, onSubmit, error }) => {
                         disabled={loading}
                     />
                 </Grid>
-                {/* ... (City та Street) ... */}
+
                 <Grid item xs={12} sm={6}>
                     <TextField
                         required
@@ -100,42 +104,79 @@ const ParkingLotForm = ({ initialData, loading, onSubmit, error }) => {
                         disabled={loading}
                     />
                 </Grid>
-                {/* ... (Hourly Rate) ... */}
+
                 <Grid item xs={12}>
                     <TextField
-                        required
                         fullWidth
-                        label="Погодинна ставка (грн)"
-                        name="hourly_rate"
-                        type="number"
-                        inputProps={{ step: "0.01", min: "0" }}
-                        value={formData.hourly_rate}
+                        label="Номер будинку"
+                        name="building"
+                        value={formData.building}
                         onChange={handleChange}
                         disabled={loading}
                     />
                 </Grid>
 
-                
                 <Grid item xs={12}>
                     <TextField
                         fullWidth
-                        label="Додаткові сервіси (напр., Мийка, Підкачка шин)"
-                        name="additional_services"
-                        multiline
-                        rows={2}
-                        value={formData.additional_services}
+                        label="Базова ціна за годину (грн)"
+                        name="base_price_per_hour"
+                        type="number"
+                        inputProps={{ step: "0.01", min: "0" }}
+                        value={formData.base_price_per_hour}
                         onChange={handleChange}
                         disabled={loading}
-                        helperText="Введіть перелік сервісів через кому або описом."
+                        helperText="Вкажіть базову вартість паркування за годину"
                     />
                 </Grid>
-                
+
+                <Grid item xs={12}>
+                    <TextField
+                        fullWidth
+                        label="Опис"
+                        name="description"
+                        multiline
+                        rows={3}
+                        value={formData.description}
+                        onChange={handleChange}
+                        disabled={loading}
+                        helperText="Додайте опис майданчика, особливості, доступні послуги тощо"
+                    />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Широта (Latitude)"
+                        name="latitude"
+                        type="number"
+                        inputProps={{ step: "any" }}
+                        value={formData.latitude}
+                        onChange={handleChange}
+                        disabled={loading}
+                        helperText="Географічна широта (-90 до 90)"
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Довгота (Longitude)"
+                        name="longitude"
+                        type="number"
+                        inputProps={{ step: "any" }}
+                        value={formData.longitude}
+                        onChange={handleChange}
+                        disabled={loading}
+                        helperText="Географічна довгота (-180 до 180)"
+                    />
+                </Grid>
+
                 <Grid item xs={12}>
                     <Button
                         type="submit"
                         fullWidth
                         variant="contained"
-                        sx={{ mt: 2, py: 1.5 }}
+                        sx={{ mt: 2, py: 1.5, borderRadius: 1 }}
                         disabled={loading}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : (isEditing ? 'ЗБЕРЕГТИ ЗМІНИ' : 'СТВОРИТИ МАЙДАНЧИК')}
