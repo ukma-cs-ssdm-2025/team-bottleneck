@@ -37,11 +37,20 @@ components:
         id:
           readOnly: true
           type: integer
+        lot_address:
+          readOnly: true
+          type: string
+        lot_name:
+          readOnly: true
+          type: string
         payment_intent_id:
           readOnly: true
           type: string
         spot:
           type: integer
+        spot_number:
+          readOnly: true
+          type: string
         start_at:
           format: date-time
           type: string
@@ -52,16 +61,23 @@ components:
           nullable: true
           readOnly: true
           type: integer
+        user_email:
+          readOnly: true
+          type: string
       required:
       - cancellation_reason
       - created_at
       - end_at
       - id
+      - lot_address
+      - lot_name
       - payment_intent_id
       - spot
+      - spot_number
       - start_at
       - status
       - user
+      - user_email
       type: object
     BookingCancel:
       properties:
@@ -229,15 +245,32 @@ components:
       type: object
     ParkingLot:
       properties:
+        base_price_per_hour:
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          type: string
         building:
           maxLength: 20
           type: string
         city:
           maxLength: 100
           type: string
+        description:
+          maxLength: 1000
+          type: string
         id:
           readOnly: true
           type: integer
+        latitude:
+          format: decimal
+          nullable: true
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          type: string
+        longitude:
+          format: decimal
+          nullable: true
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          type: string
         name:
           maxLength: 100
           type: string
@@ -252,15 +285,32 @@ components:
       type: object
     ParkingLotDetail:
       properties:
+        base_price_per_hour:
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          type: string
         building:
           maxLength: 20
           type: string
         city:
           maxLength: 100
           type: string
+        description:
+          maxLength: 1000
+          type: string
         id:
           readOnly: true
           type: integer
+        latitude:
+          format: decimal
+          nullable: true
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          type: string
+        longitude:
+          format: decimal
+          nullable: true
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          type: string
         name:
           maxLength: 100
           type: string
@@ -281,15 +331,32 @@ components:
       type: object
     PatchedParkingLotDetail:
       properties:
+        base_price_per_hour:
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          type: string
         building:
           maxLength: 20
           type: string
         city:
           maxLength: 100
           type: string
+        description:
+          maxLength: 1000
+          type: string
         id:
           readOnly: true
           type: integer
+        latitude:
+          format: decimal
+          nullable: true
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          type: string
+        longitude:
+          format: decimal
+          nullable: true
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          type: string
         name:
           maxLength: 100
           type: string
@@ -338,6 +405,9 @@ components:
         lot:
           readOnly: true
           type: integer
+        lot_name:
+          readOnly: true
+          type: string
         number:
           maxLength: 10
           type: string
@@ -346,6 +416,7 @@ components:
       - created_by_username
       - id
       - lot
+      - lot_name
       - number
       type: object
     SpotOperatorUpdate:
@@ -791,6 +862,35 @@ paths:
       security:
       - jwtAuth: []
       summary: '[Operator] List bookings for my lot'
+      tags:
+      - api
+  /api/v1/bookings/preview-price/:
+    post:
+      description: 'Calculate booking price without creating a booking.
+
+        Used to show the user the final price before confirmation.'
+      operationId: api_v1_bookings_preview_price_create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Booking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Booking'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+      security:
+      - jwtAuth: []
       tags:
       - api
   /api/v1/bookings/{id}/:
