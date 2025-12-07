@@ -114,5 +114,5 @@
   2. Selects the "My Profile" tab.  
   3. System displays bookings with date, time, status. 
 - **Alternate/Exception Flows:**  
-  - A1: History empty → system shows "No payments yet".  
+  - A1: History empty → system shows "No bookings yet".  
   - E1: Database unavailable → system shows an error message.  
