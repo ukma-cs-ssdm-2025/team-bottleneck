@@ -1,21 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
-    Typography, Container, Alert, Box, Card, CardContent,
-    Button, TextField, CircularProgress, Grid,
-    Dialog, DialogTitle, DialogContent, DialogActions
+    Typography, Container, Box, Card, CardContent,
+    Button, TextField, CircularProgress, Grid, Chip,
+    Dialog, DialogTitle, DialogContent, DialogActions, Divider
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { updateProfile, fetchUserBookings, cancelBooking } from '../api/parkingAPI';
-
-
-const MESSAGES = {
-    BOOKING_LOAD_ERROR: 'Не вдалося завантажити ваші бронювання. Перевірте підключення.',
-    PROFILE_UPDATE_SUCCESS: 'Профіль успішно оновлено!',
-    PROFILE_UPDATE_ERROR: 'Помилка оновлення профілю.',
-    CANCEL_ERROR_DEFAULT: 'Незрозуміла помилка.',
-};
-
+import ErrorPopup from '../components/common/ErrorPopup';
 
 const getBookingStatus = (booking) => {
     if (booking.status === 'cancelled') {
@@ -27,103 +18,136 @@ const getBookingStatus = (booking) => {
     return 'CONFIRMED';
 };
 
-const BOOKING_STATUS_PROPS = {
+const BOOKING_STATUS_CONFIG = {
     CANCELLED: {
-        text: 'СКАСОВАНО',
-        color: '#f44336',
-        bgColor: '#ffebee',
-        canCancel: false,
+        label: 'Скасовано',
+        color: '#EF4444',
+        bgColor: '#FEE2E2',
     },
     COMPLETED: {
-        text: 'ЗАВЕРШЕНО',
-        color: '#ff9800',
-        bgColor: '#fff3e0',
-        canCancel: false,
+        label: 'Завершено',
+        color: '#F59E0B',
+        bgColor: '#FEF3C7',
     },
     CONFIRMED: {
-        text: 'ПІДТВЕРДЖЕНО',
-        color: '#4caf50',
-        bgColor: '#e8f5e9',
-        canCancel: true,
+        label: 'Активне',
+        color: '#10B981',
+        bgColor: '#D1FAE5',
     },
 };
 
 const BookingCard = ({ booking, onCancel }) => {
     const statusKey = getBookingStatus(booking);
-    const { text, color, bgColor, canCancel } = BOOKING_STATUS_PROPS[statusKey];
+    const { label, color, bgColor } = BOOKING_STATUS_CONFIG[statusKey];
+    const canCancel = statusKey === 'CONFIRMED';
 
-    const spotNumber = booking.spot?.number || 'N/A';
-    const lotName = booking.spot?.lot?.name || 'Невідомий лот';
+    // Use correct fields from API response
+    const spotNumber = booking.spot_number || 'N/A';
+    const lotName = booking.lot_name || 'Невідома парковка';
+    const lotAddress = booking.lot_address || '';
 
     return (
         <Card sx={{
-            mb: 2,
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            borderLeft: `5px solid ${color}`
         }}>
-            <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                    Бронювання #{booking.id}
-                </Typography>
-                <Typography variant="body1" color="text.primary">
-                    <strong>Місце:</strong> {lotName} #{spotNumber}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                    <strong>З:</strong> {new Date(booking.start_at).toLocaleString()}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    <strong>До:</strong> {new Date(booking.end_at).toLocaleString()}
-                </Typography>
+            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827' }}>
+                        Бронювання #{booking.id}
+                    </Typography>
+                    <Chip
+                        label={label}
+                        sx={{
+                            backgroundColor: bgColor,
+                            color: color,
+                            fontWeight: 600,
+                            fontSize: '0.75rem'
+                        }}
+                    />
+                </Box>
 
-                <Box sx={{ p: 1, borderRadius: 1, backgroundColor: bgColor }}>
-                    <Typography variant="subtitle2">
-                        <strong>Статус:</strong> <span style={{ color: color, ml: 1, fontWeight: 'bold' }}>
-                            {text}
-                        </span>
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        Парковка
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500, color: '#111827' }}>
+                        {lotName}
+                    </Typography>
+                    {lotAddress && (
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                            {lotAddress}
+                        </Typography>
+                    )}
+                </Box>
+
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        Місце
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500, color: '#111827' }}>
+                        #{spotNumber}
                     </Typography>
                 </Box>
 
-                {statusKey === 'CANCELLED' && booking.cancellation_reason && (
-                    <Typography variant="caption" display="block" color="error" sx={{ mt: 1 }}>
-                        Причина: {booking.cancellation_reason}
+                <Divider sx={{ my: 2 }} />
+
+                <Box sx={{ mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                        Початок
                     </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {new Date(booking.start_at).toLocaleString('uk-UA')}
+                    </Typography>
+                </Box>
+
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                        Кінець
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {new Date(booking.end_at).toLocaleString('uk-UA')}
+                    </Typography>
+                </Box>
+
+                {booking.cancellation_reason && (
+                    <Box sx={{ mb: 2, p: 2, backgroundColor: '#FEF2F2', borderRadius: '8px' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            Причина скасування
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#EF4444' }}>
+                            {booking.cancellation_reason}
+                        </Typography>
+                    </Box>
                 )}
-            </CardContent>
-            {canCancel && (
-                <Box sx={{ p: 2, pt: 0 }}>
+
+                {canCancel && (
                     <Button
-                        variant="contained"
-                        color="error"
+                        variant="outlined"
                         fullWidth
                         onClick={() => onCancel(booking.id)}
+                        sx={{
+                            mt: 2,
+                            color: '#EF4444',
+                            borderColor: '#EF4444',
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            borderRadius: '12px',
+                            '&:hover': {
+                                borderColor: '#DC2626',
+                                backgroundColor: '#FEF2F2',
+                            }
+                        }}
                     >
-                        СКАСУВATИ
+                        Скасувати бронювання
                     </Button>
-                </Box>
-            )}
+                )}
+            </CardContent>
         </Card>
     );
-};
-
-const BookingPropType = PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    status: PropTypes.string.isRequired,
-    start_at: PropTypes.string.isRequired,
-    end_at: PropTypes.string.isRequired,
-    cancellation_reason: PropTypes.string,
-    spot: PropTypes.shape({
-        number: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        lot: PropTypes.shape({
-            name: PropTypes.string
-        })
-    })
-});
-
-BookingCard.propTypes = {
-    booking: BookingPropType.isRequired,
-    onCancel: PropTypes.func.isRequired
 };
 
 function ProfilePage() {
@@ -137,17 +161,23 @@ function ProfilePage() {
     const [loadingBookings, setLoadingBookings] = useState(false);
     const [loadingProfileUpdate, setLoadingProfileUpdate] = useState(false);
 
-    const [updateSuccess, setUpdateSuccess] = useState(null);
-    const [updateError, setUpdateError] = useState(null);
-    const [bookingError, setBookingError] = useState(null);
+    const [errorPopup, setErrorPopup] = useState({ open: false, message: '', severity: 'error' });
 
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
     const [bookingToCancel, setBookingToCancel] = useState(null);
     const [cancelReason, setCancelReason] = useState('');
     const [isCancelling, setIsCancelling] = useState(false);
 
+    useEffect(() => {
+        if (user) {
+            setProfileData({
+                first_name: user.first_name || '',
+                last_name: user.last_name || ''
+            });
+        }
+    }, [user]);
+
     const loadBookings = useCallback(async () => {
-        setBookingError(null);
         setLoadingBookings(true);
         try {
             const data = await fetchUserBookings();
@@ -162,65 +192,57 @@ function ProfilePage() {
             });
             setBookings(sortedData);
         } catch (err) {
-            if (err.response && err.response.status === 401) {
-                setBookingError('Ваша сесія закінчилася. Увійдіть до системи знову.');
-            } else if (err.response && err.response.status === 500) {
-                setBookingError('Сервер тимчасово недоступний. Спробуйте оновити сторінку пізніше.');
-            } else if (err.request) {
-                setBookingError('Не вдалося завантажити бронювання. Перевірте ваше інтернет-з\'єднання.');
-            } else {
-                setBookingError('Виникла помилка при завантаженні бронювань. Спробуйте оновити сторінку.');
-            }
             console.error('Error loading bookings:', err);
+            let errorMessage = 'Не вдалося завантажити бронювання.';
+
+            if (!err.response) {
+                errorMessage = 'Не вдалося з\'єднатися з сервером. Перевірте ваше інтернет-з\'єднання.';
+            } else if (err.response.status === 401) {
+                errorMessage = 'Ваша сесія закінчилася. Будь ласка, увійдіть знову.';
+            } else if (err.response.status === 500) {
+                errorMessage = 'Помилка сервера. Спробуйте пізніше.';
+            }
+
+            setErrorPopup({ open: true, message: errorMessage, severity: 'error' });
         } finally {
             setLoadingBookings(false);
         }
-    },[]);
+    }, []);
 
     useEffect(() => {
         if (user) {
-            setProfileData({
-                first_name: user.first_name || '',
-                last_name: user.last_name || ''
-            });
             loadBookings();
         }
     }, [user, loadBookings]);
 
     const handleProfileChange = (e) => {
-        setProfileData({ ...profileData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setProfileData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
         setLoadingProfileUpdate(true);
-        setUpdateSuccess(null);
-        setUpdateError(null);
-        try {
-            const updatedUser = await updateProfile(profileData);
-            updateUser(updatedUser);
-            setUpdateSuccess(MESSAGES.PROFILE_UPDATE_SUCCESS);
-        } catch (err) {
-            console.error('Update failed:', err.response?.data || err);
-            let errorMessage = 'Помилка при оновленні профілю. Спробуйте ще раз.';
 
-            if (err.response && err.response.status === 400) {
-                errorMessage = 'Некоректні дані. Перевірте введену інформацію.';
-            } else if (err.response && err.response.status === 401) {
-                errorMessage = 'Ваша сесія закінчилася. Увійдіть до системи знову.';
-            } else if (err.response && err.response.status === 500) {
-                errorMessage = 'Сервер тимчасово недоступний. Спробуйте пізніше.';
-            } else if (err.request) {
-                errorMessage = 'Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.';
+        try {
+            const updated = await updateProfile(profileData);
+            updateUser(updated);
+            setErrorPopup({ open: true, message: 'Профіль успішно оновлено!', severity: 'success' });
+        } catch (err) {
+            console.error('Profile update error:', err);
+            let errorMessage = 'Не вдалося оновити профіль.';
+
+            if (!err.response) {
+                errorMessage = 'Не вдалося з\'єднатися з сервером.';
+            } else if (err.response.status === 400) {
+                errorMessage = 'Невірні дані. Перевірте введену інформацію.';
+            } else if (err.response.status === 401) {
+                errorMessage = 'Ваша сесія закінчилася. Будь ласка, увійдіть знову.';
             }
 
-            setUpdateError(errorMessage);
+            setErrorPopup({ open: true, message: errorMessage, severity: 'error' });
         } finally {
             setLoadingProfileUpdate(false);
-            setTimeout(() => {
-                setUpdateSuccess(null);
-                setUpdateError(null);
-            }, 5000);
         }
     };
 
@@ -228,51 +250,49 @@ function ProfilePage() {
         setBookingToCancel(bookingId);
         setCancelReason('');
         setIsCancelDialogOpen(true);
-        setBookingError(null);
     };
 
     const handleCloseCancelDialog = () => {
-        if (isCancelling) return;
-        setIsCancelDialogOpen(false);
-        setBookingToCancel(null);
-        setBookingError(null);
+        if (!isCancelling) {
+            setIsCancelDialogOpen(false);
+            setBookingToCancel(null);
+            setCancelReason('');
+        }
     };
 
-    const handleCancelSubmit = async () => {
+    const handleConfirmCancel = async () => {
         if (!bookingToCancel) return;
-        setIsCancelling(true);
-        setBookingError(null);
 
+        setIsCancelling(true);
         try {
             await cancelBooking(bookingToCancel, cancelReason);
-            loadBookings();
+            setErrorPopup({ open: true, message: 'Бронювання успішно скасовано!', severity: 'success' });
             setIsCancelDialogOpen(false);
+            setBookingToCancel(null);
+            setCancelReason('');
+            await loadBookings();
         } catch (err) {
-            if (err.response && err.response.status === 400) {
-                setBookingError('Це бронювання вже скасовано або не може бути скасовано.');
-            } else if (err.response && err.response.status === 404) {
-                setBookingError('Бронювання не знайдено. Можливо, воно вже видалено.');
-            } else if (err.response && err.response.status === 401) {
-                setBookingError('Ваша сесія закінчилася. Увійдіть до системи знову.');
-            } else if (err.response && err.response.status === 500) {
-                setBookingError('Сервер тимчасово недоступний. Спробуйте пізніше.');
-            } else if (err.request) {
-                setBookingError('Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.');
-            } else {
-                setBookingError('Помилка при скасуванні бронювання: ' + (err.response?.data?.detail || 'Спробуйте ще раз.'));
-            }
             console.error('Cancel booking error:', err);
+            let errorMessage = 'Не вдалося скасувати бронювання.';
+
+            if (!err.response) {
+                errorMessage = 'Не вдалося з\'єднатися з сервером.';
+            } else if (err.response.status === 400) {
+                errorMessage = err.response.data?.detail || 'Це бронювання не можна скасувати.';
+            } else if (err.response.status === 404) {
+                errorMessage = 'Бронювання не знайдено.';
+            }
+
+            setErrorPopup({ open: true, message: errorMessage, severity: 'error' });
         } finally {
             setIsCancelling(false);
-            setBookingToCancel(null);
         }
     };
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
                 <CircularProgress />
-                <Typography sx={{ ml: 2 }}>Відновлення сесії...</Typography>
             </Box>
         );
     }
@@ -280,148 +300,219 @@ function ProfilePage() {
     if (!user) {
         return (
             <Container sx={{ mt: 4 }}>
-                <Alert severity="warning">Будь ласка, увійдіть, щоб переглянути профіль.</Alert>
+                <Typography>Будь ласка, увійдіть до системи.</Typography>
             </Container>
         );
     }
 
     return (
-        <Container sx={{ mt: 4, mb: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                Мій Профіль
-            </Typography>
+        <Box sx={{ background: '#F4F6F8', minHeight: '100vh', py: 4 }}>
+            <ErrorPopup
+                open={errorPopup.open}
+                onClose={() => setErrorPopup({ open: false, message: '', severity: 'error' })}
+                message={errorPopup.message}
+                severity={errorPopup.severity}
+            />
 
-            {/* Profile Info Section */}
-            <Card variant="outlined" sx={{ mb: 4 }}>
-                <CardContent>
-                    <Typography variant="h5" gutterBottom>
-                        Ваші дані
-                    </Typography>
-                    <Typography variant="body1">
-                        <strong>Ім'я користувача:</strong> {user.username}
-                    </Typography>
-                    <Typography variant="body1">
-                        <strong>Email:</strong> {user.email}
-                    </Typography>
-                    <Typography variant="body1">
-                        <strong>Іm'я:</strong> {user.first_name || 'Не вказано'}
-                    </Typography>
-                    <Typography variant="body1">
-                        <strong>Прізвище:</strong> {user.last_name || 'Не вказано'}
-                    </Typography>
-                </CardContent>
-            </Card>
+            <Container maxWidth="lg">
+                {/* Profile Header */}
+                <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', mb: 4 }}>
+                    <CardContent sx={{ p: 4 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 1 }}>
+                            Мій профіль
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: '#6B7280' }}>
+                            Керуйте своїм обліковим записом та бронюваннями
+                        </Typography>
+                    </CardContent>
+                </Card>
 
-            {/* Profile Update Section */}
-            <Card variant="outlined" sx={{ mb: 4, p: 3 }}>
-                <Typography variant="h5" gutterBottom>
-                    Оновити Ім'я / Прізвище
-                </Typography>
-                <Box component="form" onSubmit={handleProfileSubmit}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Ім'я"
-                                name="first_name"
-                                value={profileData.first_name}
-                                onChange={handleProfileChange}
-                                fullWidth
-                                disabled={loadingProfileUpdate}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Прізвище"
-                                name="last_name"
-                                value={profileData.last_name}
-                                onChange={handleProfileChange}
-                                fullWidth
-                                disabled={loadingProfileUpdate}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                disabled={loadingProfileUpdate}
-                            >
-                                {loadingProfileUpdate ? <CircularProgress size={24} /> : 'Зберегти зміни'}
-                            </Button>
-                            {updateSuccess && (
-                                <Alert severity="success" sx={{ mt: 2 }}>{updateSuccess}</Alert>
-                            )}
-                            {updateError && (
-                                <Alert severity="error" sx={{ mt: 2 }}>{updateError}</Alert>
-                            )}
-                        </Grid>
-                    </Grid>
-                </Box>
-            </Card>
-
-            {/* My Bookings Section */}
-            <Typography variant="h4" gutterBottom sx={{ mt: 4 }}>
-                Мої Бронювання
-            </Typography>
-
-            {loadingBookings && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-                    <CircularProgress />
-                </Box>
-            )}
-
-            {/* Main page error for bookings */}
-            {bookingError && !isCancelDialogOpen && (
-                <Alert severity="error" sx={{ mb: 2 }}>{bookingError}</Alert>
-            )}
-
-            {!loadingBookings && bookings.length === 0 && !bookingError && (
-                <Alert severity="info">Наразі у вас немає бронювань.</Alert>
-            )}
-
-            {!loadingBookings && bookings.length > 0 && (
                 <Grid container spacing={3}>
-                    {bookings.map((booking) => (
-                        <Grid item key={booking.id} xs={12} md={6} lg={4}>
-                            <BookingCard booking={booking} onCancel={openCancelDialog} />
-                        </Grid>
-                    ))}
-                </Grid>
-            )}
+                    {/* User Info Card */}
+                    <Grid item xs={12} md={4}>
+                        <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', height: '100%' }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                                    Інформація користувача
+                                </Typography>
 
-            {/* Cancellation Dialog */}
-            <Dialog open={isCancelDialogOpen} onClose={handleCloseCancelDialog}>
-                <DialogTitle>Скасувати Бронювання #{bookingToCancel}</DialogTitle>
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                        Ім'я користувача
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 500, color: '#111827' }}>
+                                        {user.username}
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                        Email
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 500, color: '#111827' }}>
+                                        {user.email}
+                                    </Typography>
+                                </Box>
+
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    {/* Edit Profile Card */}
+                    <Grid item xs={12} md={8}>
+                        <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                                    Редагувати профіль
+                                </Typography>
+
+                                <Box component="form" onSubmit={handleProfileSubmit}>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField
+                                                label="Ім'я"
+                                                name="first_name"
+                                                value={profileData.first_name}
+                                                onChange={handleProfileChange}
+                                                fullWidth
+                                                disabled={loadingProfileUpdate}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                            <TextField
+                                                label="Прізвище"
+                                                name="last_name"
+                                                value={profileData.last_name}
+                                                onChange={handleProfileChange}
+                                                fullWidth
+                                                disabled={loadingProfileUpdate}
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <Button
+                                                type="submit"
+                                                variant="contained"
+                                                disabled={loadingProfileUpdate}
+                                                sx={{
+                                                    mt: 2,
+                                                    py: 1.5,
+                                                    px: 4,
+                                                    background: 'linear-gradient(135deg, #34D399 0%, #059669 100%)',
+                                                    color: '#FFFFFF',
+                                                    fontWeight: 600,
+                                                    fontSize: '1rem',
+                                                    borderRadius: '12px',
+                                                    textTransform: 'none',
+                                                    '&:hover': {
+                                                        background: 'linear-gradient(135deg, #34D399 0%, #059669 100%)',
+                                                    },
+                                                    '&:disabled': {
+                                                        background: '#9CA3AF',
+                                                        color: '#FFFFFF',
+                                                    }
+                                                }}
+                                            >
+                                                {loadingProfileUpdate ? <CircularProgress size={24} sx={{ color: '#FFFFFF' }} /> : 'Зберегти зміни'}
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+
+                {/* My Bookings Section */}
+                <Box sx={{ mt: 5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
+                        Мої бронювання
+                    </Typography>
+
+                    {loadingBookings && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+                            <CircularProgress />
+                        </Box>
+                    )}
+
+                    {!loadingBookings && bookings.length === 0 && (
+                        <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', p: 4, textAlign: 'center' }}>
+                            <Typography variant="body1" color="text.secondary">
+                                У вас поки немає бронювань
+                            </Typography>
+                        </Card>
+                    )}
+
+                    {!loadingBookings && bookings.length > 0 && (
+                        <Grid container spacing={3}>
+                            {bookings.map((booking) => (
+                                <Grid item key={booking.id} xs={12} sm={6} lg={4}>
+                                    <BookingCard booking={booking} onCancel={openCancelDialog} />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
+                </Box>
+            </Container>
+
+            {/* Cancel Dialog */}
+            <Dialog
+                open={isCancelDialogOpen}
+                onClose={handleCloseCancelDialog}
+                PaperProps={{
+                    sx: { borderRadius: '16px', minWidth: { xs: '90%', sm: '400px' } }
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 600 }}>
+                    Скасувати бронювання
+                </DialogTitle>
                 <DialogContent>
-                    <Typography gutterBottom>
-                        Ви впевнені, що хочете скасувати бронювання?
+                    <Typography gutterBottom sx={{ mb: 2 }}>
+                        Ви впевнені, що хочете скасувати бронювання #{bookingToCancel}?
                     </Typography>
                     <TextField
-                        autoFocus
-                        margin="dense"
                         label="Причина скасування (необов'язково)"
-                        type="text"
+                        multiline
+                        rows={3}
                         fullWidth
-                        variant="outlined"
                         value={cancelReason}
                         onChange={(e) => setCancelReason(e.target.value)}
                         disabled={isCancelling}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                     />
-                    {/* Dialog-specific error */}
-                    {bookingError && isCancelDialogOpen && (
-                        <Alert severity="error" sx={{ mt: 2 }}>{bookingError}</Alert>
-                    )}
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseCancelDialog} disabled={isCancelling}>
-                        Ні
+                <DialogActions sx={{ p: 3 }}>
+                    <Button
+                        onClick={handleCloseCancelDialog}
+                        disabled={isCancelling}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                    >
+                        Відміна
                     </Button>
-                    <Button onClick={handleCancelSubmit} color="error" variant="contained" disabled={isCancelling}>
-                        {isCancelling ? 'Скасування...' : 'Так, скасувати'}
+                    <Button
+                        onClick={handleConfirmCancel}
+                        disabled={isCancelling}
+                        sx={{
+                            background: '#EF4444',
+                            color: '#FFFFFF',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            px: 3,
+                            '&:hover': {
+                                background: '#DC2626',
+                            },
+                            '&:disabled': {
+                                background: '#9CA3AF',
+                                color: '#FFFFFF',
+                            }
+                        }}
+                    >
+                        {isCancelling ? <CircularProgress size={20} sx={{ color: '#FFFFFF' }} /> : 'Підтвердити'}
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Container>
+        </Box>
     );
 }
 
