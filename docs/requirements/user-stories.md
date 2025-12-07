@@ -2,12 +2,11 @@
 
 ### US-001: Parking Spot Search
 **User Story:**  
-As a **driver**, I want to see all available parking spots on the map so I can quickly find a place.
+As a **driver**, I want to see all available parking spots so I can quickly find a place.
 
 **Acceptance Criteria:**  
-- [ ] After entering the address, the system shows available spots.  
-- [ ] Free spots are marked green, occupied — red.  
-- [ ] If no spots are available → system shows “No available parking spots” and suggests nearby options.
+- [ ] After choosing the address and prefered time period, the system shows available spots.  
+- [ ] If no spots are available → system shows “No available parking spots”.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
 
@@ -89,14 +88,13 @@ As an **administrator**, I want to ensure data is safely stored to avoid informa
 
 ---
 
-### US-008: Transaction History
+### US-008: Booking History
 **User Story:**  
-As a **driver**, I want to view my payment history to track my expenses.
+As a **driver**, I want to view my booking history to track my expenses.
 
 **Acceptance Criteria:**  
-- [ ] Profile includes “My Payments” tab.  
-- [ ] Each payment shows date, time, and amount.  
-- [ ] Filter by date available.  
-- [ ] If history is empty → system shows “You have no payments yet”.
+- [ ] Profile includes “My Profile” tab.  
+- [ ] Each payment shows date, time, and status.  
+- [ ] If history is empty → system shows “You have no bookings yet”.
 
 **INVEST Check:** ✅ Independent, ✅ Negotiable, ✅ Valuable, ✅ Estimable, ✅ Small, ✅ Testable  
