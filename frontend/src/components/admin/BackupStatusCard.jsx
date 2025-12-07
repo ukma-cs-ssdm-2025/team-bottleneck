@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Box, CircularProgress, Button } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, Typography, Box, Chip, CircularProgress, Button } from '@mui/material';
+import CloudDoneIcon from '@mui/icons-material/CloudDone';
+import ErrorIcon from '@mui/icons-material/Error';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { getBackupLogs } from '../../api/adminAPI';
 
 const BackupStatusCard = () => {
@@ -12,11 +15,11 @@ const BackupStatusCard = () => {
         setError(null);
         try {
             const response = await getBackupLogs();
-
+            
             const data = response.data.results ? response.data.results : response.data;
-
+            
             if (data && data.length > 0) {
-                setLatestBackup(data[0]);
+                setLatestBackup(data[0]); 
             } else {
                 setLatestBackup(null);
             }

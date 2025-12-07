@@ -54,7 +54,6 @@ function HomePage() {
                 setLoading(false);
             }
         };
-
         loadData();
     }, []);
 

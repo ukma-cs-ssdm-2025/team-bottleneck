@@ -1,7 +1,6 @@
-import React from 'react';
-import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Paper, Button, Box, Typography
+import { 
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+    Paper, Button, Box, Typography 
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
