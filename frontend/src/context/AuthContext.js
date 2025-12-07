@@ -21,6 +21,7 @@ const fetchUserProfile = async () => {
         });
         return response.data;
     } catch (error) {
+        console.error('Failed to fetch user profile:', error);
         return null;
     }
 };
@@ -43,7 +44,10 @@ export const AuthProvider = ({ children }) => {
                     setUser(userData);
                     setIsAuthenticated(true);
                 } else {
-                    logout();
+                    // Token invalid, clear session
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    setIsAuthenticated(false);
                 }
             }
             setLoading(false);
@@ -51,6 +55,7 @@ export const AuthProvider = ({ children }) => {
         checkSession();
     }, []);
 
+    // FIXED: Correct parameter order - tokens first, then userData
     const login = useCallback((tokens, userData) => {
         localStorage.setItem('accessToken', tokens.access);
         localStorage.setItem('refreshToken', tokens.refresh);
@@ -74,10 +79,8 @@ export const AuthProvider = ({ children }) => {
         }));
     }, []);
 
-    // ВИПРАВЛЕННЯ: правильна логіка визначення ролей
+    // Role detection
     const isAdmin = user?.is_staff === true;
-
-    // Оператор - це користувач, який НЕ є адміном, але має прапорець is_operator та призначений lot_id
     const isOperator = !isAdmin && user?.is_operator === true && !!user?.lot_id;
 
     const value = useMemo(() => ({
@@ -101,7 +104,6 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateUser,
         authTokens,
-        setAuthTokens
     ]);
 
     return (

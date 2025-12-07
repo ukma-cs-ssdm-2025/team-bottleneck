@@ -1,31 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Alert, Box, Typography, CircularProgress } from '@mui/material';
+import { Container, Box, Typography, CircularProgress } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import ParkingLotForm from '../components/admin/ParkingLotForm';
-import { getParkingLotDetails, updateParkingLot } from '../api/adminAPI'; 
-const ParkingLotEditPage = () => {
-    const { id } = useParams(); 
-    const navigate = useNavigate();
-    
+import { getParkingLotDetails, updateParkingLot } from '../api/adminAPI';
+import ErrorPopup from '../components/common/ErrorPopup';
 
-    const [initialData, setInitialData] = useState(null); 
-    const [loading, setLoading] = useState(true); 
-    const [error, setError] = useState(null); 
-    const [isSaving, setIsSaving] = useState(false); 
+const ParkingLotEditPage = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const [initialData, setInitialData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Error popup state
+    const [popup, setPopup] = useState({
+        open: false,
+        message: '',
+        severity: 'error'
+    });
 
     useEffect(() => {
         const fetchDetails = async () => {
             setLoading(true);
             try {
-              
-                const data = await getParkingLotDetails(id); 
-                
-              
+                const data = await getParkingLotDetails(id);
                 setInitialData(data);
-                setError(null);
             } catch (err) {
                 console.error(`Error fetching lot ${id}:`, err);
-                setError('Не вдалося завантажити дані майданчика для редагування. Перевірте, чи існує ID.');
+
+                let errorMessage = 'Не вдалося завантажити дані майданчика для редагування.';
+
+                if (err.response?.status === 404) {
+                    errorMessage = `Майданчик з ID ${id} не знайдено.`;
+                } else if (err.response?.status === 403) {
+                    errorMessage = 'Доступ заборонено. Увійдіть як адміністратор.';
+                } else if (err.response?.data?.detail) {
+                    errorMessage = err.response.data.detail;
+                } else if (err.message) {
+                    errorMessage = `Помилка: ${err.message}`;
+                }
+
+                setPopup({
+                    open: true,
+                    message: errorMessage,
+                    severity: 'error'
+                });
             } finally {
                 setLoading(false);
             }
@@ -33,69 +53,108 @@ const ParkingLotEditPage = () => {
         fetchDetails();
     }, [id]);
 
-  
     const handleSubmit = async (formData) => {
         setIsSaving(true);
-        setError(null);
 
         try {
-            
             await updateParkingLot(id, formData);
-            
-            
-            navigate('/admin/lots', { state: { success: `Майданчик "${formData.name}" успішно оновлено!` } });
+
+            // Navigate with success message
+            navigate('/admin/lots', {
+                state: { success: `Майданчик "${formData.name}" успішно оновлено!` }
+            });
 
         } catch (err) {
             console.error('Error updating parking lot:', err.response || err);
-            
+
             let errorMessage = 'Не вдалося зберегти зміни. Перевірте введені дані.';
-            if (err.response && err.response.data) {
+
+            if (err.response?.data) {
                 const errors = err.response.data;
-                
+
+                // Handle validation errors
                 if (typeof errors === 'object' && !Array.isArray(errors)) {
-                    errorMessage = Object.keys(errors)
-                        .map(key => `${key.toUpperCase()}: ${errors[key].join(' ')}`)
-                        .join('; ');
+                    const errorMessages = Object.keys(errors)
+                        .map(key => {
+                            const value = errors[key];
+                            const messages = Array.isArray(value) ? value.join(', ') : value;
+                            return `${key}: ${messages}`;
+                        })
+                        .join('\n');
+                    errorMessage = `Помилка валідації:\n${errorMessages}`;
                 } else if (errors.detail) {
                     errorMessage = errors.detail;
                 }
+            } else if (err.message) {
+                errorMessage = `Помилка: ${err.message}`;
             }
-            setError(`Помилка: ${errorMessage}`);
+
+            setPopup({
+                open: true,
+                message: errorMessage,
+                severity: 'error'
+            });
         } finally {
             setIsSaving(false);
         }
     };
 
+    const handleClosePopup = () => {
+        setPopup({ ...popup, open: false });
+    };
+
     if (loading) {
         return (
-            <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Container>
+            <Container sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+                <CircularProgress />
+            </Container>
         );
     }
 
-   
-    if (error && !initialData) {
+    // If failed to load and no data, show error state
+    if (!initialData) {
         return (
-            <Container sx={{ mt: 5 }}><Alert severity="error">{error}</Alert></Container>
+            <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Box sx={{ textAlign: 'center', mt: 5 }}>
+                    <Typography variant="h5" color="error" gutterBottom>
+                        Не вдалося завантажити дані майданчика
+                    </Typography>
+                    <Typography color="text.secondary">
+                        Перевірте правильність ID або спробуйте пізніше.
+                    </Typography>
+                </Box>
+
+                <ErrorPopup
+                    open={popup.open}
+                    onClose={handleClosePopup}
+                    message={popup.message}
+                    severity={popup.severity}
+                />
+            </Container>
         );
     }
-    
+
     return (
         <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Box sx={{ maxWidth: 600, mx: 'auto' }}>
-                <Typography variant="h4" gutterBottom>
+                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
                     Редагування Майданчика: {initialData?.name}
                 </Typography>
             </Box>
-            
-           
-            {initialData && (
-                <ParkingLotForm
-                    initialData={initialData} 
-                    loading={isSaving} 
-                    onSubmit={handleSubmit}
-                    error={error}
-                />
-            )}
+
+            <ParkingLotForm
+                initialData={initialData}
+                loading={isSaving}
+                onSubmit={handleSubmit}
+            />
+
+            {/* Error Popup */}
+            <ErrorPopup
+                open={popup.open}
+                onClose={handleClosePopup}
+                message={popup.message}
+                severity={popup.severity}
+            />
         </Container>
     );
 };
