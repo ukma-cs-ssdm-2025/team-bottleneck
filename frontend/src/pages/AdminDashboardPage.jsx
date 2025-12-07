@@ -102,6 +102,25 @@ const AdminDashboardPage = () => {
             <Typography variant="body1" color="text.secondary" paragraph>
                 Головна панель управління системою паркування.
             </Typography>
+            <Box sx={{ mb: 4, mt: 3 }}>
+                <Typography variant="h6" gutterBottom color="text.secondary">
+                    Статус Системи (Reliability)
+                </Typography>
+                <BackupStatusCard />
+            </Box>
+
+            <Box sx={{ mb: 4, mt: 3 }}>
+                <Typography variant="h6" gutterBottom color="text.secondary">
+                    Статус системи
+                </Typography>
+                <BackupStatusCard />
+            </Box>
+
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mt: 4 }}>
+                Панель Керування
+            </Typography>
+
+            <Grid container spacing={3} sx={{ mt: 1 }}>
 
             <Box sx={{ mb: 4, mt: 3 }}>
                 <Typography variant="h6" gutterBottom color="text.secondary">

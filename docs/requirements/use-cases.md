@@ -5,11 +5,11 @@
 ### UC-001: Parking Spot Search
 - **Primary Actor:** Driver  
 - **Goal:** Find an available parking spot  
-- **Preconditions:** Driver is logged in; map is available  
-- **Postconditions:** Available spots are displayed on the map  
+- **Preconditions:** Driver is logged in;
+- **Postconditions:** Available spots are displayed on the interface
 - **Main Success Scenario:**  
   1. Driver enters an address or district.  
-  2. System displays the map with all spots.  
+  2. System displays all spots.  
   3. Free spots are marked green, occupied — red.  
 - **Alternate/Exception Flows:**  
   - A1: No available spots → system shows "No available parking spots".  
@@ -86,9 +86,7 @@
 - **Main Success Scenario:**  
   1. Driver opens the website on a smartphone.  
   2. Site adjusts to screen (responsive design).  
-  3. Driver can click buttons (minimum 44x44 px).  
-- **Alternate/Exception Flows:**  
-  - A1: Very old device → system shows simplified version.  
+  3. Driver can click buttons (minimum 44x44 px).   
 
 ---
 
@@ -102,20 +100,19 @@
   2. Daily backups are created in cloud storage.  
   3. Administrator sees confirmation of successful backup.  
 - **Alternate/Exception Flows:**  
-  - A1: Backup fails → system sends an error notification to the administrator.  
+  - A1: Backup fails → system shows an error to the administrator.  
 
 ---
 
-### UC-008: Transaction History
+### UC-008: Booking History
 - **Primary Actor:** Driver  
-- **Goal:** View payment history  
-- **Preconditions:** Driver has an account with completed payments  
-- **Postconditions:** Driver sees a list of transactions  
+- **Goal:** View booking history  
+- **Preconditions:** Driver has an account with all bookings  
+- **Postconditions:** Driver sees a list of bookings
 - **Main Success Scenario:**  
   1. Driver opens the profile.  
-  2. Selects the "My Payments" tab.  
-  3. System displays payments with date, time, and amount.  
-  4. User can filter by date.  
+  2. Selects the "My Profile" tab.  
+  3. System displays bookings with date, time, status. 
 - **Alternate/Exception Flows:**  
-  - A1: History empty → system shows "No payments yet".  
+  - A1: History empty → system shows "No bookings yet".  
   - E1: Database unavailable → system shows an error message.  

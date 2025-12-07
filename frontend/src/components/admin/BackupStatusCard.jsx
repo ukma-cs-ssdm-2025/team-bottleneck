@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Box, CircularProgress, Button } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, Typography, Box, Chip, CircularProgress, Button } from '@mui/material';
+import CloudDoneIcon from '@mui/icons-material/CloudDone';
+import ErrorIcon from '@mui/icons-material/Error';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { getBackupLogs } from '../../api/adminAPI';
 
 const BackupStatusCard = () => {
