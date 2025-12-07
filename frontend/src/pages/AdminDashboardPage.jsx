@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-    Container, Typography, Grid, Card, CardContent, CardActions, Button,
-    Dialog, DialogTitle, DialogContent, DialogActions, Box,
-    Select, MenuItem, FormControl, InputLabel, FormHelperText, CircularProgress
-} from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, CardActions, Button, Dialog, DialogTitle, DialogContent, DialogActions, Box, Select, MenuItem, FormControl, InputLabel, FormHelperText, CircularProgress } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { styled } from '@mui/material/styles';
@@ -32,18 +28,12 @@ const CardHeader = styled(Typography)(({ theme }) => ({
 const AdminDashboardPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-
     const [isLotSelectOpen, setIsLotSelectOpen] = useState(false);
     const [selectedLotId, setSelectedLotId] = useState('');
     const [lotIdError, setLotIdError] = useState(null);
     const [lots, setLots] = useState([]);
     const [lotsLoading, setLotsLoading] = useState(false);
-
-    const [popup, setPopup] = useState({
-        open: false,
-        message: '',
-        severity: 'error'
-    });
+    const [popup, setPopup] = useState({ open: false, message: '', severity: 'error' });
 
     const handleOperatorPanelClick = async () => {
         setIsLotSelectOpen(true);
@@ -55,9 +45,7 @@ const AdminDashboardPage = () => {
             setLots(fetchedLots);
         } catch (error) {
             console.error('Failed to fetch lots:', error);
-
             let errorMessage = 'Не вдалося завантажити список лотів.';
-
             if (error.response?.status === 403) {
                 errorMessage = 'Доступ заборонено. Увійдіть як адміністратор.';
             } else if (error.response?.data?.detail) {
@@ -65,7 +53,6 @@ const AdminDashboardPage = () => {
             } else if (error.message) {
                 errorMessage = `Помилка: ${error.message}`;
             }
-
             setLotIdError(errorMessage);
         } finally {
             setLotsLoading(false);
@@ -77,7 +64,6 @@ const AdminDashboardPage = () => {
             setLotIdError("Оберіть лот зі списку.");
             return;
         }
-
         navigate(`/admin/operator/${selectedLotId}`);
         setIsLotSelectOpen(false);
         setSelectedLotId('');
@@ -95,49 +81,22 @@ const AdminDashboardPage = () => {
     };
 
     return (
-        <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Typography variant="h4" gutterBottom>
                 Вітаємо, {user?.first_name || user?.username || 'Адміністратор'}!
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
                 Головна панель управління системою паркування.
             </Typography>
-            <Box sx={{ mb: 4, mt: 3 }}>
-                <Typography variant="h6" gutterBottom color="text.secondary">
-                    Статус Системи (Reliability)
-                </Typography>
-                <BackupStatusCard />
-            </Box>
 
-            <Box sx={{ mb: 4, mt: 3 }}>
-                <Typography variant="h6" gutterBottom color="text.secondary">
-                    Статус системи
-                </Typography>
-                <BackupStatusCard />
-            </Box>
+            <Grid container spacing={3}>
+                <Grid item xs={12}>
+                    <BackupStatusCard />
+                </Grid>
 
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mt: 4 }}>
-                Панель Керування
-            </Typography>
-
-            <Grid container spacing={3} sx={{ mt: 1 }}>
-
-            <Box sx={{ mb: 4, mt: 3 }}>
-                <Typography variant="h6" gutterBottom color="text.secondary">
-                    Статус системи
-                </Typography>
-                <BackupStatusCard />
-            </Box>
-
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mt: 4 }}>
-                Панель Керування
-            </Typography>
-
-            <Grid container spacing={3} sx={{ mt: 1 }}>
-
-                <Grid item xs={12} md={6} lg={4}>
-                    <StyledCard sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <CardContent sx={{ flex: 1 }}>
+                <Grid item xs={12} md={4}>
+                    <StyledCard>
+                        <CardContent>
                             <CardHeader variant="h6">
                                 Керування майданчиками
                             </CardHeader>
@@ -145,25 +104,20 @@ const AdminDashboardPage = () => {
                                 Додавання, редагування та видалення інформації про парковки
                             </Typography>
                         </CardContent>
-                        <CardActions sx={{ p: 2, pt: 0 }}>
-                            <Button
-                                component={Link}
-                                to="/admin/lots"
-                                size="small"
-                                variant="contained"
+                        <CardActions>
+                            <Button 
+                                component={Link} 
+                                to="/admin/parking-lots" 
+                                size="small" 
                                 color="primary"
-                                fullWidth
-                                sx={{ borderRadius: 1, minHeight: 40 }}
                             >
                                 Переглянути список
                             </Button>
-                            <Button
-                                component={Link}
-                                to="/admin/lots/create"
-                                size="small"
-                                variant="outlined"
-                                fullWidth
-                                sx={{ borderRadius: 1, minHeight: 40 }}
+                            <Button 
+                                component={Link} 
+                                to="/admin/parking-lots/new" 
+                                size="small" 
+                                color="primary"
                             >
                                 Додати новий
                             </Button>
@@ -171,9 +125,9 @@ const AdminDashboardPage = () => {
                     </StyledCard>
                 </Grid>
 
-                <Grid item xs={12} md={6} lg={4}>
-                    <StyledCard sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <CardContent sx={{ flex: 1 }}>
+                <Grid item xs={12} md={4}>
+                    <StyledCard>
+                        <CardContent>
                             <CardHeader variant="h6">
                                 Керування ролями
                             </CardHeader>
@@ -181,15 +135,12 @@ const AdminDashboardPage = () => {
                                 Керування всіма обліковими записами системи.
                             </Typography>
                         </CardContent>
-                        <CardActions sx={{ p: 2, pt: 0 }}>
-                            <Button
-                                component={Link}
-                                to="/admin/users"
-                                size="small"
-                                variant="contained"
-                                color="success"
-                                fullWidth
-                                sx={{ borderRadius: 1, minHeight: 40 }}
+                        <CardActions>
+                            <Button 
+                                component={Link} 
+                                to="/admin/users" 
+                                size="small" 
+                                color="primary"
                             >
                                 Перейти до управління
                             </Button>
@@ -197,24 +148,21 @@ const AdminDashboardPage = () => {
                     </StyledCard>
                 </Grid>
 
-                <Grid item xs={12} md={6} lg={4}>
-                    <StyledCard sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <CardContent sx={{ flex: 1 }}>
+                <Grid item xs={12} md={4}>
+                    <StyledCard>
+                        <CardContent>
                             <CardHeader variant="h6">
                                 Керування парковками
                             </CardHeader>
                             <Typography variant="body2" color="text.secondary">
-                                Управління  паркомісцями та бронюваннями певної парковки
+                                Управління паркомісцями та бронюваннями певної парковки
                             </Typography>
                         </CardContent>
-                        <CardActions sx={{ p: 2, pt: 0 }}>
-                            <Button
-                                onClick={handleOperatorPanelClick}
-                                size="small"
-                                variant="contained"
-                                color="success"
-                                fullWidth
-                                sx={{ borderRadius: 1, minHeight: 40 }}
+                        <CardActions>
+                            <Button 
+                                onClick={handleOperatorPanelClick} 
+                                size="small" 
+                                color="primary"
                             >
                                 Керувати Лотом
                             </Button>
@@ -223,72 +171,52 @@ const AdminDashboardPage = () => {
                 </Grid>
             </Grid>
 
-            <Dialog
-                open={isLotSelectOpen}
-                onClose={handleDialogClose}
-                PaperProps={{ style: { borderRadius: 12 } }}
-                maxWidth="sm"
-                fullWidth
-            >
-                <DialogTitle sx={{ fontWeight: 600 }}>
-                    Оберіть Лот для Керування
-                </DialogTitle>
+            {/* Lot Selection Dialog */}
+            <Dialog open={isLotSelectOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+                <DialogTitle>Оберіть Лот для Керування</DialogTitle>
                 <DialogContent>
-                    <Box sx={{ pt: 2, minHeight: 120 }}>
-                        <Typography color="text.secondary" sx={{ mb: 2 }}>
-                            Оберіть паркувальний майданчик, яким ви хочете керувати як оператор.
-                        </Typography>
-                        {lotsLoading ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-                                <CircularProgress />
-                            </Box>
-                        ) : (
-                            <FormControl
-                                fullWidth
-                                variant="outlined"
-                                size="small"
-                                error={!!lotIdError}
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Оберіть паркувальний майданчик, яким ви хочете керувати як оператор.
+                    </Typography>
+                    {lotsLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : (
+                        <FormControl fullWidth error={!!lotIdError}>
+                            <InputLabel id="lot-select-label">Паркувальний Майданчик</InputLabel>
+                            <Select
+                                labelId="lot-select-label"
+                                value={selectedLotId}
+                                onChange={(e) => {
+                                    setSelectedLotId(e.target.value);
+                                    setLotIdError(null);
+                                }}
+                                label="Паркувальний Майданчик"
                             >
-                                <InputLabel id="lot-select-label">
-                                    Паркувальний Майданчик
-                                </InputLabel>
-                                <Select
-                                    labelId="lot-select-label"
-                                    id="lot-select"
-                                    value={selectedLotId}
-                                    onChange={(e) => {
-                                        setSelectedLotId(e.target.value);
-                                        setLotIdError(null);
-                                    }}
-                                    label="Паркувальний Майданчик"
-                                >
-                                    {lots.length === 0 ? (
-                                        <MenuItem value="" disabled>
-                                            Немає доступних лотів
+                                {lots.length === 0 ? (
+                                    <MenuItem value="" disabled>
+                                        Немає доступних лотів
+                                    </MenuItem>
+                                ) : (
+                                    lots.map((lot) => (
+                                        <MenuItem key={lot.id} value={lot.id}>
+                                            ID: {lot.id} - {lot.name}
                                         </MenuItem>
-                                    ) : (
-                                        lots.map((lot) => (
-                                            <MenuItem key={lot.id} value={lot.id}>
-                                                ID: {lot.id} - {lot.name}
-                                            </MenuItem>
-                                        ))
-                                    )}
-                                </Select>
-                                {lotIdError && (
-                                    <FormHelperText>{lotIdError}</FormHelperText>
+                                    ))
                                 )}
-                            </FormControl>
-                        )}
-                    </Box>
+                            </Select>
+                            {lotIdError && (
+                                <FormHelperText>{lotIdError}</FormHelperText>
+                            )}
+                        </FormControl>
+                    )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleDialogClose}>
-                        Скасувати
-                    </Button>
-                    <Button
-                        onClick={handleLotSelectSubmit}
-                        color="primary"
-                        variant="contained"
+                    <Button onClick={handleDialogClose}>Скасувати</Button>
+                    <Button 
+                        onClick={handleLotSelectSubmit} 
+                        variant="contained" 
                         disabled={!selectedLotId || lotsLoading}
                     >
                         Перейти до Панелі
@@ -299,8 +227,8 @@ const AdminDashboardPage = () => {
             {/* Error Popup */}
             <ErrorPopup
                 open={popup.open}
-                onClose={handleClosePopup}
                 message={popup.message}
+                onClose={handleClosePopup}
                 severity={popup.severity}
             />
         </Container>
