@@ -9,13 +9,13 @@ A parking management system that allows drivers to quickly find available spots,
 - **Parking Spot** — a location where a vehicle can be parked.
 
 ## Functional Requirements (FR)
-- **FR-001:** The system must display a list of available parking spots on a map after a search.  
+- **FR-001:** The system must display a list of available parking lots on a map after a search.  
 - **FR-002:** The system must support card payments (Stripe).  
 - **FR-003:** The system must allow adding/editing parking lot information.  
 - **FR-004:** The system must display error messages.  
 - **FR-005:** The system must send emails with a booking details when it is created or cancelled.  
 - **FR-006:** The system must automatically create database backups.  
-- **FR-007:** The system must store and display the user's transaction history.
+- **FR-007:** The system must store and display the user's bookings history.
 
 ## Non-Functional Requirements (NFR)
 - **NFR-001 (Performance):** The list of available parking spots, payment history, or parking map must load within ≤ 3 seconds after a request.  
