@@ -6,11 +6,13 @@ import {
 } from '@mui/material';
 import { fetchAvailableSpots } from '../api/parkingAPI';
 import ErrorPopup from '../components/common/ErrorPopup';
+import { useAuth } from '../context/AuthContext';
 
 function SpotSelectionPage() {
     const { lotId } = useParams();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { isOperator, isAdmin } = useAuth();
 
     // Read time from URL query parameters
     const startTime = searchParams.get('start_at');
@@ -68,6 +70,15 @@ function SpotSelectionPage() {
     }, [loadSpots]);
 
     const handleSelectSpot = (spot) => {
+        if (isOperator || isAdmin) {
+            setErrorPopup({
+                open: true,
+                message: 'Адміністратори та оператори не можуть створювати особисті бронювання.',
+                severity: 'warning'
+            });
+            return;
+        }
+        
         navigate('/booking/create', {
             state: {
                 lotId,

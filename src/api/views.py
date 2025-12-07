@@ -398,9 +398,15 @@ class BookingViewSet(mixins.ListModelMixin,
     @action(detail=False, methods=["post"], url_path="create")
     @transaction.atomic
     def create_booking(self, request):
+        if request.user.is_staff or hasattr(request.user, 'operator_profile'):
+            return Response(
+                {"detail": "Administrators and Operators cannot create personal bookings."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
         ser = BookingCreateSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
-
+        
         spot = ser.validated_data["spot"]
         start_at = ser.validated_data["start_at"]
         end_at = ser.validated_data["end_at"]
