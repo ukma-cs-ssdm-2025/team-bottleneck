@@ -7,4 +7,4 @@
 - **TC005:** Create a booking → verify that a push notification with instructions is received  
 - **TC006:** Open the site on a smartphone (5'') → verify correct display and responsiveness  
 - **TC007:** Check backup logs → confirm files exist for the last 30 days  
-- **TC008:** Access transaction history → verify that data loads within ≤ 3 seconds  
+- **TC008:** Access booking history → verify that data loads within ≤ 3 seconds  
