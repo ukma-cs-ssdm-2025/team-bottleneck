@@ -15,11 +15,11 @@ const BackupStatusCard = () => {
         setError(null);
         try {
             const response = await getBackupLogs();
-            
+
             const data = response.data.results ? response.data.results : response.data;
-            
+
             if (data && data.length > 0) {
-                setLatestBackup(data[0]); 
+                setLatestBackup(data[0]);
             } else {
                 setLatestBackup(null);
             }

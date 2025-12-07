@@ -23,6 +23,7 @@ function OperatorSpotDetailsPage() {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [blockDialogOpen, setBlockDialogOpen] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
     // Forms
     const [editForm, setEditForm] = useState({ is_ev: false, is_disabled: false });
@@ -31,6 +32,8 @@ function OperatorSpotDetailsPage() {
         end_at: '',
         reason: ''
     });
+    const [bookingToCancel, setBookingToCancel] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
 
     const [errorPopup, setErrorPopup] = useState({ open: false, message: '', severity: 'error' });
 
@@ -40,7 +43,7 @@ function OperatorSpotDetailsPage() {
             return;
         }
 
-        if (user?.lot_id !== parseInt(lotId)) {
+        if (isOperator && !isAdmin && user?.lot_id !== parseInt(lotId)) {
             setErrorPopup({
                 open: true,
                 message: 'У вас немає доступу до цієї парковки.',
@@ -201,6 +204,115 @@ function OperatorSpotDetailsPage() {
         }
     };
 
+    // Cancel Booking
+    const openCancelDialog = (booking) => {
+        setBookingToCancel(booking);
+        setCancelReason('');
+        setCancelDialogOpen(true);
+    };
+
+    const handleCancelBooking = async () => {
+        if (!bookingToCancel) {
+            setErrorPopup({ open: true, message: 'Не вибрано бронювання для скасування', severity: 'error' });
+            return;
+        }
+
+        // Валідація причини
+        if (!cancelReason.trim()) {
+            setErrorPopup({ open: true, message: 'Будь ласка, вкажіть причину скасування', severity: 'error' });
+            return;
+        }
+
+        if (cancelReason.trim().length < 5) {
+            setErrorPopup({ open: true, message: 'Причина скасування має містити принаймні 5 символів', severity: 'error' });
+            return;
+        }
+
+        if (cancelReason.length > 255) {
+            setErrorPopup({ open: true, message: 'Причина скасування надто довга (максимум 255 символів)', severity: 'error' });
+            return;
+        }
+
+        setActionLoading(true);
+        try {
+            await apiClient.post(`/bookings/${bookingToCancel.id}/cancel-operator/`, {
+                reason: cancelReason
+            });
+            setErrorPopup({ open: true, message: 'Бронювання успішно скасовано!', severity: 'success' });
+            setCancelDialogOpen(false);
+            setBookingToCancel(null);
+            setCancelReason('');
+            await loadData();
+        } catch (err) {
+            console.error('Error cancelling booking:', err);
+
+            let errorMessage = 'Не вдалося скасувати бронювання.';
+
+            if (!err.response) {
+                errorMessage = 'Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.';
+            } else {
+                const status = err.response.status;
+                const data = err.response.data;
+
+                switch (status) {
+                    case 400:
+                        if (data.detail) {
+                            const detail = data.detail.toLowerCase();
+
+                            if (detail.includes('already cancelled') || detail.includes('вже скасовано')) {
+                                errorMessage = 'Це бронювання вже було скасовано раніше.';
+                            } else if (detail.includes('already completed') || detail.includes('завершено')) {
+                                errorMessage = 'Не можна скасувати завершене бронювання.';
+                            } else if (detail.includes('past') || detail.includes('минуле')) {
+                                errorMessage = 'Не можна скасувати бронювання, яке вже закінчилось.';
+                            } else {
+                                errorMessage = data.detail;
+                            }
+                        } else if (data.reason) {
+                            errorMessage = `Помилка: ${data.reason[0]}`;
+                        } else {
+                            errorMessage = 'Невірні дані. Перевірте правильність введення.';
+                        }
+                        break;
+
+                    case 401:
+                        errorMessage = 'Сесія закінчилась. Будь ласка, увійдіть знову.';
+                        setTimeout(() => navigate('/login'), 2000);
+                        break;
+
+                    case 403:
+                        errorMessage = 'У вас немає прав для скасування цього бронювання. Можливо, воно належить іншій парковці.';
+                        break;
+
+                    case 404:
+                        errorMessage = 'Бронювання не знайдено. Можливо, воно вже було видалено.';
+                        setCancelDialogOpen(false);
+                        await loadData();
+                        break;
+
+                    case 409:
+                        errorMessage = 'Конфлікт даних. Спробуйте оновити сторінку.';
+                        break;
+
+                    case 500:
+                        errorMessage = 'Помилка сервера. Спробуйте пізніше або зверніться до адміністратора.';
+                        break;
+
+                    case 503:
+                        errorMessage = 'Сервіс тимчасово недоступний. Спробуйте через кілька хвилин.';
+                        break;
+
+                    default:
+                        errorMessage = `Помилка ${status}. Спробуйте ще раз або зверніться до підтримки.`;
+                }
+            }
+
+            setErrorPopup({ open: true, message: errorMessage, severity: 'error' });
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -234,7 +346,13 @@ function OperatorSpotDetailsPage() {
 
             <Container maxWidth="lg">
                 <Button
-                    onClick={() => navigate('/operator')}
+                    onClick={() => {
+                        if (isAdmin) {
+                            navigate(`/admin/operator/${lotId}`);
+                        } else {
+                            navigate('/operator');
+                        }
+                    }}
                     sx={{
                         mb: 3,
                         textTransform: 'none',
@@ -378,18 +496,18 @@ function OperatorSpotDetailsPage() {
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 500, color: '#10B981' }}>
                                     Активних: {bookings.filter(b => {
-                                    const now = new Date();
-                                    return b.status === 'confirmed' &&
-                                        new Date(b.start_at) <= now &&
-                                        new Date(b.end_at) > now;
-                                }).length}
+                                        const now = new Date();
+                                        return b.status === 'confirmed' &&
+                                            new Date(b.start_at) <= now &&
+                                            new Date(b.end_at) > now;
+                                    }).length}
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 500, color: '#F59E0B' }}>
                                     Майбутніх: {bookings.filter(b => {
-                                    const now = new Date();
-                                    return b.status === 'confirmed' &&
-                                        new Date(b.start_at) > now;
-                                }).length}
+                                        const now = new Date();
+                                        return b.status === 'confirmed' &&
+                                            new Date(b.start_at) > now;
+                                    }).length}
                                 </Typography>
                                 <Typography variant="body1" sx={{ fontWeight: 500, color: '#EF4444' }}>
                                     Скасованих: {bookings.filter(b => b.status === 'cancelled').length}
@@ -477,6 +595,27 @@ function OperatorSpotDetailsPage() {
                                                             Причина: {booking.cancellation_reason}
                                                         </Typography>
                                                     </Box>
+                                                )}
+
+                                                {(isActive || isFuture) && (
+                                                    <Button
+                                                        variant="outlined"
+                                                        size="small"
+                                                        onClick={() => openCancelDialog(booking)}
+                                                        sx={{
+                                                            mt: 1,
+                                                            color: '#EF4444',
+                                                            borderColor: '#EF4444',
+                                                            textTransform: 'none',
+                                                            fontWeight: 600,
+                                                            '&:hover': {
+                                                                borderColor: '#DC2626',
+                                                                backgroundColor: '#FEF2F2'
+                                                            }
+                                                        }}
+                                                    >
+                                                        Скасувати бронювання
+                                                    </Button>
                                                 )}
                                             </ListItem>
                                         </React.Fragment>
@@ -622,6 +761,59 @@ function OperatorSpotDetailsPage() {
                         }}
                     >
                         {actionLoading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Видалити'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Cancel Booking Dialog */}
+            <Dialog open={cancelDialogOpen} onClose={() => !actionLoading && setCancelDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ fontWeight: 600 }}>Скасувати бронювання?</DialogTitle>
+                <DialogContent>
+                    {bookingToCancel && (
+                        <Box sx={{ mb: 2 }}>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                <strong>ID бронювання:</strong> {bookingToCancel.id}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                <strong>Користувач:</strong> {bookingToCancel.user_email || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                <strong>Період:</strong> {new Date(bookingToCancel.start_at).toLocaleString('uk-UA')} → {new Date(bookingToCancel.end_at).toLocaleString('uk-UA')}
+                            </Typography>
+                        </Box>
+                    )}
+                    <TextField
+                        label="Причина скасування"
+                        multiline
+                        rows={3}
+                        fullWidth
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        disabled={actionLoading}
+                        required
+                        placeholder="Вкажіть причину скасування (мінімум 5 символів)"
+                        helperText={`${cancelReason.length}/255 символів`}
+                        sx={{ mt: 1 }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button onClick={() => setCancelDialogOpen(false)} disabled={actionLoading}>
+                        Відміна
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleCancelBooking}
+                        disabled={actionLoading}
+                        sx={{
+                            background: '#EF4444',
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            '&:hover': {
+                                background: '#DC2626',
+                            }
+                        }}
+                    >
+                        {actionLoading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Скасувати бронювання'}
                     </Button>
                 </DialogActions>
             </Dialog>

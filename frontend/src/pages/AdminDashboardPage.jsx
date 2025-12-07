@@ -122,6 +122,19 @@ const AdminDashboardPage = () => {
 
             <Grid container spacing={3} sx={{ mt: 1 }}>
 
+            <Box sx={{ mb: 4, mt: 3 }}>
+                <Typography variant="h6" gutterBottom color="text.secondary">
+                    Статус системи
+                </Typography>
+                <BackupStatusCard />
+            </Box>
+
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mt: 4 }}>
+                Панель Керування
+            </Typography>
+
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+
                 <Grid item xs={12} md={6} lg={4}>
                     <StyledCard sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                         <CardContent sx={{ flex: 1 }}>
