@@ -103,8 +103,8 @@ function BookingCreatePage() {
 
         const bookingData = {
             spot: spotId,
-            start_at: startTime,
-            end_at: endTime,
+            start_at: new Date(startTime).toISOString(),
+            end_at: new Date(endTime).toISOString(),
         };
 
         try {
