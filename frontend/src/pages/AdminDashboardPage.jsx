@@ -11,6 +11,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
     borderRadius: 16,
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
     transition: 'transform 0.2s, box-shadow 0.2s',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
     '&:hover': {
         transform: 'translateY(-2px)',
         boxShadow: '0 6px 16px rgba(0, 0, 0, 0.1)',
@@ -96,7 +99,7 @@ const AdminDashboardPage = () => {
 
                 <Grid item xs={12} md={4}>
                     <StyledCard>
-                        <CardContent>
+                        <CardContent sx={{ flexGrow: 1 }}>
                             <CardHeader variant="h6">
                                 Керування майданчиками
                             </CardHeader>
@@ -105,18 +108,18 @@ const AdminDashboardPage = () => {
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button 
-                                component={Link} 
-                                to="/admin/parking-lots" 
-                                size="small" 
+                            <Button
+                                component={Link}
+                                to="/admin/lots"
+                                size="small"
                                 color="primary"
                             >
                                 Переглянути список
                             </Button>
-                            <Button 
-                                component={Link} 
-                                to="/admin/parking-lots/new" 
-                                size="small" 
+                            <Button
+                                component={Link}
+                                to="/admin/lots/create"
+                                size="small"
                                 color="primary"
                             >
                                 Додати новий
@@ -127,7 +130,7 @@ const AdminDashboardPage = () => {
 
                 <Grid item xs={12} md={4}>
                     <StyledCard>
-                        <CardContent>
+                        <CardContent sx={{ flexGrow: 1 }}>
                             <CardHeader variant="h6">
                                 Керування ролями
                             </CardHeader>
@@ -136,10 +139,10 @@ const AdminDashboardPage = () => {
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button 
-                                component={Link} 
-                                to="/admin/users" 
-                                size="small" 
+                            <Button
+                                component={Link}
+                                to="/admin/users"
+                                size="small"
                                 color="primary"
                             >
                                 Перейти до управління
@@ -150,7 +153,7 @@ const AdminDashboardPage = () => {
 
                 <Grid item xs={12} md={4}>
                     <StyledCard>
-                        <CardContent>
+                        <CardContent sx={{ flexGrow: 1 }}>
                             <CardHeader variant="h6">
                                 Керування парковками
                             </CardHeader>
@@ -159,9 +162,9 @@ const AdminDashboardPage = () => {
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button 
-                                onClick={handleOperatorPanelClick} 
-                                size="small" 
+                            <Button
+                                onClick={handleOperatorPanelClick}
+                                size="small"
                                 color="primary"
                             >
                                 Керувати Лотом
@@ -214,9 +217,9 @@ const AdminDashboardPage = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleDialogClose}>Скасувати</Button>
-                    <Button 
-                        onClick={handleLotSelectSubmit} 
-                        variant="contained" 
+                    <Button
+                        onClick={handleLotSelectSubmit}
+                        variant="contained"
                         disabled={!selectedLotId || lotsLoading}
                     >
                         Перейти до Панелі
