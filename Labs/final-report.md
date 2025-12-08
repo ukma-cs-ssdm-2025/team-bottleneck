@@ -100,14 +100,13 @@ The backend is built with Django and exposes a complete REST API documented via 
   * View active/upcoming bookings
   * Create/cancel bookings manually
 
-**Administrator Panel**
+### Administrator Panel
 
 * Full operator access
 * Create parking lots
 * Manage all lots and all users
 * Role management
 * Backup management
-
 ---
 
 ### Notifications
