@@ -191,7 +191,7 @@ const RegisterPage = () => {
     };
 
     return (
-        <Box sx={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', background: '#F4F6F8', py: 4 }}>
+        <Box sx={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', background: '#F4F6F8', py: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 0 } }}>
             <ErrorPopup
                 open={errorPopup.open}
                 onClose={() => setErrorPopup({ open: false, message: '', severity: 'error' })}
@@ -200,13 +200,13 @@ const RegisterPage = () => {
             />
 
             <Container component="main" maxWidth="sm">
-                <Paper elevation={0} sx={{ p: 5, borderRadius: '16px', background: '#FFFFFF', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}>
-                    <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <Paper elevation={0} sx={{ p: { xs: 3, sm: 4, md: 5 }, borderRadius: '16px', background: '#FFFFFF', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}>
+                    <Box sx={{ textAlign: 'center', mb: { xs: 3, sm: 4 } }}>
                         <img src="/logo.png" alt="SmartParking Logo" style={{ height: '60px', width: 'auto', marginBottom: '16px' }} />
-                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 1 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 1, fontSize: { xs: '1.5rem', sm: '2rem' } }}>
                             Створити обліковий запис
                         </Typography>
-                        <Typography variant="body1" sx={{ color: '#6B7280' }}>
+                        <Typography variant="body1" sx={{ color: '#6B7280', fontSize: { xs: '0.95rem', sm: '1rem' } }}>
                             Приєднуйтесь до SmartParking
                         </Typography>
                     </Box>

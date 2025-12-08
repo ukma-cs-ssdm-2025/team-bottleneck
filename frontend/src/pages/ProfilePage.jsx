@@ -54,7 +54,7 @@ const BookingCard = ({ booking, onCancel }) => {
             display: 'flex',
             flexDirection: 'column',
         }}>
-            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+            <CardContent sx={{ flexGrow: 1, p: { xs: 2, sm: 3 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827' }}>
                         Бронювання #{booking.id}
@@ -306,7 +306,7 @@ function ProfilePage() {
     }
 
     return (
-        <Box sx={{ background: '#F4F6F8', minHeight: '100vh', py: 4 }}>
+        <Box sx={{ background: '#F4F6F8', minHeight: '100vh', py: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 0 } }}>
             <ErrorPopup
                 open={errorPopup.open}
                 onClose={() => setErrorPopup({ open: false, message: '', severity: 'error' })}
@@ -316,23 +316,23 @@ function ProfilePage() {
 
             <Container maxWidth="lg">
                 {/* Profile Header */}
-                <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', mb: 4 }}>
-                    <CardContent sx={{ p: 4 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 1 }}>
+                <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', mb: { xs: 2, sm: 3, md: 4 } }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 1, fontSize: { xs: '1.5rem', sm: '2rem' } }}>
                             Мій профіль
                         </Typography>
-                        <Typography variant="body1" sx={{ color: '#6B7280' }}>
+                        <Typography variant="body1" sx={{ color: '#6B7280', fontSize: { xs: '0.95rem', sm: '1rem' } }}>
                             Керуйте своїм обліковим записом та бронюваннями
                         </Typography>
                     </CardContent>
                 </Card>
 
-                <Grid container spacing={3}>
+                <Grid container spacing={{ xs: 2, sm: 3 }}>
                     {/* User Info Card */}
                     <Grid item xs={12} md={4}>
                         <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', height: '100%' }}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
                                     Інформація користувача
                                 </Typography>
 
@@ -361,8 +361,8 @@ function ProfilePage() {
                     {/* Edit Profile Card */}
                     <Grid item xs={12} md={8}>
                         <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
                                     Редагувати профіль
                                 </Typography>
 
@@ -426,8 +426,8 @@ function ProfilePage() {
 
                 {/* My Bookings Section */}
                 {!isAdmin && !isOperator && (
-                    <Box sx={{ mt: 5 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
+                    <Box sx={{ mt: { xs: 3, sm: 4, md: 5 } }}>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', mb: 3, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                             Мої бронювання
                         </Typography>
 
@@ -446,7 +446,7 @@ function ProfilePage() {
                         )}
 
                         {!loadingBookings && bookings.length > 0 && (
-                            <Grid container spacing={3}>
+                            <Grid container spacing={{ xs: 2, sm: 3 }}>
                                 {bookings.map((booking) => (
                                     <Grid item key={booking.id} xs={12} sm={6} lg={4}>
                                         <BookingCard booking={booking} onCancel={openCancelDialog} />
