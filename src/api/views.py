@@ -398,6 +398,22 @@ class BookingViewSet(mixins.ListModelMixin,
     @action(detail=False, methods=["post"], url_path="create")
     @transaction.atomic
     def create_booking(self, request):
+        """
+        Create a confirmed booking for the requesting user.
+        
+        Validates request data, denies creation for staff or users with an operator profile, locks the requested spot to prevent race conditions, checks for overlapping confirmed bookings, creates a confirmed Booking, initiates payment, sends a confirmation notification, and returns the serialized booking augmented with payment information.
+        
+        Parameters:
+            request (rest_framework.request.Request): Incoming request containing booking payload (`spot`, `start_at`, `end_at`) and an authenticated user.
+        
+        Returns:
+            rest_framework.response.Response: On success returns serialized booking data with an added `payment` field and HTTP 201. Possible error responses:
+              - 403: Administrators and operators are not allowed to create personal bookings.
+              - 404: Requested parking spot not found.
+              - 409: Spot is already booked for the specified period.
+              - 503: Database timeout / booking service temporarily unavailable (`error_code: "DB_TIMEOUT"`).
+              - 500: Unexpected server error with a generic message.
+        """
         if request.user.is_staff or hasattr(request.user, 'operator_profile'):
             return Response(
                 {"detail": "Administrators and Operators cannot create personal bookings."},

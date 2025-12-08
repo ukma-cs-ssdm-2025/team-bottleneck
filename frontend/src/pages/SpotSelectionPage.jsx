@@ -8,6 +8,12 @@ import { fetchAvailableSpots } from '../api/parkingAPI';
 import ErrorPopup from '../components/common/ErrorPopup';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * Render the spot selection page that lets users view and filter available parking spots for a specific lot and booking period.
+ *
+ * Loads available spots based on `start_at` and `end_at` URL query parameters, shows user-facing error messages when loading fails or time parameters are missing, and provides filters for EV-equipped and wheelchair-accessible spots. Prevents users with operator or admin roles from creating personal bookings and, for permitted users, navigates to the booking creation route with the selected spot and time range in navigation state.
+ *
+ * @returns {JSX.Element} The rendered spot selection page. */
 function SpotSelectionPage() {
     const { lotId } = useParams();
     const navigate = useNavigate();

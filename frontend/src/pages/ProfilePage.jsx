@@ -150,6 +150,13 @@ const BookingCard = ({ booking, onCancel }) => {
     );
 };
 
+/**
+ * Render the user's profile page with editable profile fields and a bookings management section.
+ *
+ * Displays user information, an edit form for first and last name, and a "My Bookings" area that is shown only for non-admin/non-operator users. Handles loading states, shows an error/success popup for operations, allows cancelling bookings via a confirmation dialog (with optional reason), and refreshes the bookings list after changes.
+ *
+ * @returns {JSX.Element} The profile page UI containing profile header, user info, edit form, conditional bookings list, and cancellation dialog.
+ */
 function ProfilePage() {
     const { user, updateUser, loading, isAdmin, isOperator } = useAuth();
     const [profileData, setProfileData] = useState({

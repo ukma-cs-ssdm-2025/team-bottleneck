@@ -9,6 +9,13 @@ import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/apiClient';
 import ErrorPopup from '../components/common/ErrorPopup';
 
+/**
+ * Render the operator/admin view for a specific parking spot, showing spot details, booking history and controls to edit, delete, or cancel bookings.
+ *
+ * Loads spot data and all bookings for the operator's lot, enforces access control (redirects non-operators/admins and prevents operators from accessing other lots), and provides UI flows to update spot attributes, delete the spot, and cancel bookings with reason validation and server error handling.
+ *
+ * @returns {JSX.Element} A React element containing the spot detail page UI and related dialogs for editing, deletion confirmation, and booking cancellation.
+ */
 function OperatorSpotDetailsPage() {
     const { lotId, spotId } = useParams();
     const { user, isOperator, isAdmin } = useAuth();

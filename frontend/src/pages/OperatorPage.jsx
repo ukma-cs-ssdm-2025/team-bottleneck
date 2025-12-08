@@ -9,6 +9,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import ErrorPopup from '../components/common/ErrorPopup';
 
+/**
+ * Renders the operator/admin dashboard for managing a parking lot, including spot tiles, simple occupancy statistics, error handling, and a dialog to create new spots.
+ *
+ * The component enforces access control (operator or admin), resolves the active lot ID (from URL for admins or from the user profile for operators), loads lot details, paginated spots and bookings, computes current occupancy and upcoming bookings, and provides handlers to navigate to spot details and create new spots. Displays user-facing error messages and redirects for authorization-related failures.
+ *
+ * @returns {JSX.Element} The React element for the operator/admin dashboard.
+ */
 function OperatorPage() {
     const { user, isOperator, isAdmin, loading: authLoading } = useAuth();
     const navigate = useNavigate();
