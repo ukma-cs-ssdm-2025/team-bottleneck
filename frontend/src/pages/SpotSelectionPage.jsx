@@ -40,7 +40,9 @@ function SpotSelectionPage() {
         setErrorPopup({ open: false, message: '', severity: 'error' });
 
         try {
-            const data = await fetchAvailableSpots(lotId, startTime, endTime);
+            const startIso = new Date(startTime).toISOString();
+            const endIso = new Date(endTime).toISOString();
+            const data = await fetchAvailableSpots(lotId, startIso, endIso);
             const spotsList = data.results && Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
             setSpots(spotsList);
         } catch (err) {
@@ -86,8 +88,8 @@ function SpotSelectionPage() {
                 spotNumber: spot.number,
                 isEv: spot.is_ev,
                 isDisabled: spot.is_disabled,
-                startTime,
-                endTime,
+                startTime: new Date(startTime).toISOString(),
+                endTime: new Date(endTime).toISOString(),
             },
         });
     };
