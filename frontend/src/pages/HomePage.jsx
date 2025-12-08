@@ -80,7 +80,8 @@ function HomePage() {
                 sx={{
                     background: 'linear-gradient(135deg, #34D399 0%, #059669 100%)',
                     color: '#FFFFFF',
-                    py: { xs: 6, md: 10 },
+                    py: { xs: 4, sm: 6, md: 10 },
+                    px: { xs: 2, sm: 3 },
                     textAlign: 'center',
                 }}
             >
@@ -147,7 +148,7 @@ function HomePage() {
             </Box>
 
             {/* Features Section */}
-            <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+            <Container maxWidth="lg" sx={{ py: { xs: 4, sm: 6, md: 10 }, px: { xs: 2, sm: 3 } }}>
                 <Typography
                     variant="h3"
                     align="center"
@@ -242,7 +243,7 @@ function HomePage() {
             </Container>
 
             {/* Parking Map and List Section */}
-            <Box id="parking-map" sx={{ background: '#FFFFFF', py: { xs: 6, md: 10 } }}>
+            <Box id="parking-map" sx={{ background: '#FFFFFF', py: { xs: 4, sm: 6, md: 10 }, px: { xs: 2, sm: 3 } }}>
                 <Container maxWidth="lg">
                     <Typography
                         variant="h3"
@@ -250,7 +251,7 @@ function HomePage() {
                         sx={{
                             fontWeight: 700,
                             color: '#111827',
-                            mb: 6,
+                            mb: { xs: 3, sm: 4, md: 6 },
                             fontSize: { xs: '1.5rem', md: '2.25rem' }
                         }}
                     >
@@ -262,14 +263,14 @@ function HomePage() {
                             <CircularProgress />
                         </Box>
                     ) : (
-                        <Grid container spacing={4}>
+                        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
                             <Grid item xs={12} md={7}>
                                 <Box
                                     sx={{
                                         background: '#F4F6F8',
                                         borderRadius: '16px',
                                         overflow: 'hidden',
-                                        height: '400px', // Fixed height
+                                        height: { xs: '300px', sm: '350px', md: '400px' },
                                         '& .leaflet-container': {
                                             height: '100%',
                                             width: '100%',
@@ -285,12 +286,12 @@ function HomePage() {
                                     sx={{
                                         background: '#F4F6F8',
                                         borderRadius: '16px',
-                                        p: 3,
-                                        height: '600px',
+                                        p: { xs: 2, sm: 3 },
+                                        height: { xs: '400px', sm: '500px', md: '600px' },
                                         overflowY: 'auto'
                                     }}
                                 >
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: { xs: 2, sm: 3 } }}>
                                         Список локацій
                                     </Typography>
                                     {parkings.length > 0 ? (
@@ -304,9 +305,9 @@ function HomePage() {
                                                         borderRadius: '12px',
                                                         mb: 2,
                                                         cursor: 'pointer',
-                                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // Smooth animation
+                                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                                         '&:hover': {
-                                                            transform: 'translateX(8px)',
+                                                            transform: { xs: 'none', sm: 'translateX(8px)' },
                                                             boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)',
                                                         }
                                                     }}
@@ -314,6 +315,12 @@ function HomePage() {
                                                     <ListItemText
                                                         primary={parking.name}
                                                         secondary={parking.address}
+                                                        primaryTypographyProps={{
+                                                            sx: { fontSize: { xs: '0.95rem', sm: '1rem' } }
+                                                        }}
+                                                        secondaryTypographyProps={{
+                                                            sx: { fontSize: { xs: '0.85rem', sm: '0.875rem' } }
+                                                        }}
                                                     />
                                                 </ListItem>
                                             ))}

@@ -38,21 +38,29 @@ function Header() {
                         alignItems: 'center',
                         textDecoration: 'none',
                         flexGrow: 1,
-                        gap: 1.5,
+                        gap: { xs: 0.5, sm: 1.5 },
                         cursor: 'pointer'
                     }}
                 >
                     <img
                         src="/logo.png"
                         alt="SmartParking Logo"
-                        style={{ height: '40px', width: 'auto' }}
+                        style={{ height: '32px', width: 'auto' }}
                     />
-                    <Typography variant="h6" sx={{ color: '#111827', fontWeight: 700 }}>
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            color: '#111827',
+                            fontWeight: 700,
+                            fontSize: { xs: '1rem', sm: '1.25rem' },
+                            display: { xs: 'none', sm: 'block' }
+                        }}
+                    >
                         SmartParking
                     </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                     {showHomeButton && (
                         <Button
                             component={Link}
@@ -61,6 +69,9 @@ function Header() {
                                 color: '#6B7280',
                                 fontWeight: 600,
                                 textTransform: 'none',
+                                fontSize: { xs: '0.875rem', sm: '1rem' },
+                                px: { xs: 1, sm: 2 },
+                                minWidth: { xs: 'auto', sm: '64px' },
                                 '&:hover': {
                                     backgroundColor: 'rgba(107, 114, 128, 0.1)'
                                 }
@@ -78,12 +89,16 @@ function Header() {
                                 color: '#6B7280',
                                 fontWeight: 600,
                                 textTransform: 'none',
+                                fontSize: { xs: '0.875rem', sm: '1rem' },
+                                px: { xs: 1, sm: 2 },
+                                minWidth: { xs: 'auto', sm: '64px' },
                                 '&:hover': {
                                     backgroundColor: 'rgba(107, 114, 128, 0.1)'
                                 }
                             }}
                         >
-                            Панель адміністратора
+                            <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Панель адміністратора</Box>
+                            <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>Адмін</Box>
                         </Button>
                     )}
 
@@ -95,12 +110,16 @@ function Header() {
                                 color: '#6B7280',
                                 fontWeight: 600,
                                 textTransform: 'none',
+                                fontSize: { xs: '0.875rem', sm: '1rem' },
+                                px: { xs: 1, sm: 2 },
+                                minWidth: { xs: 'auto', sm: '64px' },
                                 '&:hover': {
                                     backgroundColor: 'rgba(107, 114, 128, 0.1)'
                                 }
                             }}
                         >
-                            Панель оператора
+                            <Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>Панель оператора</Box>
+                            <Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>Оператор</Box>
                         </Button>
                     )}
 
@@ -113,6 +132,9 @@ function Header() {
                                     color: '#6B7280',
                                     fontWeight: 600,
                                     textTransform: 'none',
+                                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                                    px: { xs: 1, sm: 2 },
+                                    minWidth: { xs: 'auto', sm: '64px' },
                                     '&:hover': {
                                         backgroundColor: 'rgba(107, 114, 128, 0.1)'
                                     }
@@ -126,6 +148,9 @@ function Header() {
                                     color: '#EF4444',
                                     fontWeight: 600,
                                     textTransform: 'none',
+                                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                                    px: { xs: 1, sm: 2 },
+                                    minWidth: { xs: 'auto', sm: '64px' },
                                     '&:hover': {
                                         backgroundColor: 'rgba(239, 68, 68, 0.1)'
                                     }
@@ -143,6 +168,9 @@ function Header() {
                                     color: '#6B7280',
                                     fontWeight: 600,
                                     textTransform: 'none',
+                                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                                    px: { xs: 1, sm: 2 },
+                                    minWidth: { xs: 'auto', sm: '64px' },
                                     '&:hover': {
                                         backgroundColor: 'rgba(107, 114, 128, 0.1)'
                                     }
@@ -160,7 +188,9 @@ function Header() {
                                     fontWeight: 600,
                                     textTransform: 'none',
                                     borderRadius: '12px',
-                                    px: 2,
+                                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                                    px: { xs: 1.5, sm: 2 },
+                                    minWidth: { xs: 'auto', sm: '64px' },
                                     boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
                                     '&:hover': {
                                         background: 'linear-gradient(135deg, #34D399 0%, #059669 100%)',
@@ -168,7 +198,8 @@ function Header() {
                                     }
                                 }}
                             >
-                                Зареєструватися
+                                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Зареєструватися</Box>
+                                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Реєстрація</Box>
                             </Button>
                         </>
                     )}
