@@ -4,26 +4,27 @@ from rest_framework import serializers
 from src.api.validators import validate_booking_window
 from src.api.serializers import ParkingLotSerializer
 
-
+@pytest.mark.django_db
 def test_valid_booking_window_passes():
     start = timezone.now() + timezone.timedelta(hours=1)
     end = start + timezone.timedelta(hours=1)
     assert validate_booking_window(start, end) is None
 
-
+@pytest.mark.django_db
 def test_start_after_end_raises():
     start = timezone.now() + timezone.timedelta(hours=2)
     end = timezone.now() + timezone.timedelta(hours=1)
     with pytest.raises(serializers.ValidationError, match="must be after start time"):
         validate_booking_window(start, end)
 
-
+@pytest.mark.django_db
 def test_start_in_past_raises():
     start = timezone.now() - timezone.timedelta(hours=1)
     end = timezone.now() + timezone.timedelta(hours=1)
     with pytest.raises(serializers.ValidationError, match="cannot be in the past"):
         validate_booking_window(start, end)
 
+@pytest.mark.django_db
 def test_zero_duration_raises_error():
     start = timezone.now() + timezone.timedelta(hours=1)
     end = start
