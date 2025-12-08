@@ -178,3 +178,34 @@ class BookingNotificationService:
         except Exception as e:
             logger.error(f" CRITICAL EMAIL SENDING FAILURE for booking {booking.id}: {e}")
             return False
+        
+    @staticmethod
+    def send_ending_soon_notification(booking):
+        """Sends an email notification 10 minutes before booking ends."""
+        if booking.user is None or not booking.user.email:
+            logger.warning(f"Skipping reminder for {booking.id}. User email is missing.")
+            return False
+
+        context = {'booking': booking, 'user': booking.user}
+        
+        try:
+            lot_name = getattr(getattr(booking.spot, 'lot', None), 'name', 'Unknown Lot')
+            subject = f"Завершення бронювання через 10 хв | {lot_name}"
+            
+            message_html = render_to_string('emails/booking_ending_soon.html', context)
+            # Спрощена текстова версія
+            message_text = (
+                f"Вітаємо, {booking.user.username}!\n\n"
+                f"Ваше бронювання #{booking.id} завершується через 10 хвилин (о {booking.end_at}).\n"
+                f"Місце: {booking.spot.number}, {lot_name}.\n"
+            )
+            
+            msg = EmailMultiAlternatives(subject, message_text, settings.DEFAULT_FROM_EMAIL, [booking.user.email])
+            msg.attach_alternative(message_html, "text/html")
+            msg.send(fail_silently=True)
+            
+            logger.info(f"Successfully sent reminder email for booking {booking.id}.")
+            return True
+        except Exception as e:
+            logger.error(f"⚠️ REMINDER EMAIL FAILURE for booking {booking.id}: {e}")
+            return False

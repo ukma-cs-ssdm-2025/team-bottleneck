@@ -47,6 +47,7 @@ class Booking(models.Model):
     end_at = models.DateTimeField()
     status = models.CharField(max_length=16, default="confirmed")
     created_at = models.DateTimeField(auto_now_add=True)
+    reminder_sent = models.BooleanField(default=False, help_text="Чи було відправлено нагадування про завершення")
     cancellation_reason = models.CharField(max_length=255, blank=True, default="")
     payment_intent_id = models.CharField(max_length=100, blank=True)
     def check_cancellable_error(self) -> str | None:
