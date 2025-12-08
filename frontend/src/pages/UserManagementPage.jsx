@@ -202,23 +202,27 @@ const UserManagementPage = () => {
     }
 
     return (
-        <Container component="main" maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+        <Container component="main" maxWidth="xl" sx={{ mt: 4, mb: 4, px: { xs: 2, sm: 3 } }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3, gap: { xs: 2, sm: 0 } }}>
+                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.5rem', sm: '2rem' }, mb: { xs: 1, sm: 0 } }}>
                     Керування Користувачами та Ролями
                 </Typography>
                 <Button
                     variant="contained"
                     color="primary"
                     onClick={() => setCreateUserModalOpen(true)}
-                    sx={{ borderRadius: 1 }}
+                    sx={{
+                        borderRadius: 1,
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        width: { xs: '100%', sm: 'auto' }
+                    }}
                 >
                     + Створити Користувача
                 </Button>
             </Box>
 
             {/* Filter Buttons */}
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center', overflowX: 'auto', px: { xs: 0, sm: 2 } }}>
                 <ToggleButtonGroup
                     value={filterRole}
                     exclusive
@@ -227,12 +231,15 @@ const UserManagementPage = () => {
                     sx={{
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                         borderRadius: 2,
+                        flexWrap: { xs: 'nowrap', sm: 'wrap' },
                         '& .MuiToggleButton-root': {
                             borderRadius: 2,
-                            px: 3,
+                            px: { xs: 2, sm: 3 },
                             py: 1,
                             textTransform: 'none',
                             fontWeight: 500,
+                            fontSize: { xs: '0.875rem', sm: '1rem' },
+                            whiteSpace: 'nowrap'
                         }
                     }}
                 >
