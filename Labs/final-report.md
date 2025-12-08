@@ -1,7 +1,7 @@
 
 # Final Project Report — Smart Parking System
 
-**Team Bottleneck | UKMA SSDM 2025**
+## Team Bottleneck | UKMA SSDM 2025
 
 ## Executive Summary
 
