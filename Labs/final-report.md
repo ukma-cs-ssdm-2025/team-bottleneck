@@ -98,7 +98,7 @@ The backend is built with Django and exposes a complete REST API documented via 
 * **Booking management:**
 
   * View active/upcoming bookings
-  * Create/cancel bookings manually
+  * Cancel bookings manually
 
 ### Administrator Panel
 
@@ -115,5 +115,6 @@ The backend is built with Django and exposes a complete REST API documented via 
 
 * Booking confirmation with details
 * Cancellation confirmation
+* Push notifications 10 minutes before start and end of booking
 
 
