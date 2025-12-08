@@ -208,13 +208,13 @@ function BookingCreatePage() {
                 severity={errorPopup.severity}
             />
 
-            <Container maxWidth="md">
+            <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
                 <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', mb: 3 }}>
-                    <CardContent sx={{ p: 4 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 1 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 1, fontSize: { xs: '1.5rem', sm: '2rem' } }}>
                             Підтвердження бронювання
                         </Typography>
-                        <Typography variant="body1" sx={{ color: '#6B7280' }}>
+                        <Typography variant="body1" sx={{ color: '#6B7280', fontSize: { xs: '0.95rem', sm: '1rem' } }}>
                             Перевірте деталі перед підтвердженням
                         </Typography>
                     </CardContent>
@@ -224,8 +224,8 @@ function BookingCreatePage() {
                     {/* Booking Details */}
                     <Grid item xs={12} md={7}>
                         <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
                                     Деталі бронювання
                                 </Typography>
 
@@ -318,8 +318,8 @@ function BookingCreatePage() {
                     {/* Price Summary */}
                     <Grid item xs={12} md={5}>
                         <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', mb: 3 }}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
+                            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
                                     Підсумок
                                 </Typography>
 
