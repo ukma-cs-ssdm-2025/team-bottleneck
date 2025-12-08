@@ -23,17 +23,10 @@ function OperatorPage() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
 
-    // Filters
-    const [bookingFilter, setBookingFilter] = useState(0);
-
     // Dialogs
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
-    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-
     // Forms
     const [newSpot, setNewSpot] = useState({ number: '', is_ev: false, is_disabled: false });
-    const [bookingToCancel, setBookingToCancel] = useState(null);
-    const [cancelReason, setCancelReason] = useState('');
 
     // Errors
     const [errorPopup, setErrorPopup] = useState({ open: false, message: '', severity: 'error' });
@@ -300,13 +293,6 @@ function OperatorPage() {
     })));
     console.log('==================');
 
-    // Filtered bookings
-    const filteredBookings = bookings.filter(b => {
-        if (bookingFilter === 1) return b.status === 'confirmed' && new Date(b.end_at) > new Date();
-        if (bookingFilter === 2) return b.status === 'cancelled';
-        return true;
-    }).sort((a, b) => new Date(b.start_at) - new Date(a.start_at));
-
     // Create Spot
     const handleCreateSpot = async () => {
         // Валідація на клієнті
@@ -393,115 +379,6 @@ function OperatorPage() {
 
                     case 409:
                         errorMessage = 'Місце з таким номером вже існує. Оберіть інший номер.';
-                        break;
-
-                    case 500:
-                        errorMessage = 'Помилка сервера. Спробуйте пізніше або зверніться до адміністратора.';
-                        break;
-
-                    case 503:
-                        errorMessage = 'Сервіс тимчасово недоступний. Спробуйте через кілька хвилин.';
-                        break;
-
-                    default:
-                        errorMessage = `Помилка ${status}. Спробуйте ще раз або зверніться до підтримки.`;
-                }
-            }
-
-            setErrorPopup({ open: true, message: errorMessage, severity: 'error' });
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    // Cancel Booking
-    const openCancelDialog = (booking) => {
-        setBookingToCancel(booking);
-        setCancelReason('');
-        setCancelDialogOpen(true);
-    };
-
-    const handleCancelBooking = async () => {
-        if (!bookingToCancel) {
-            setErrorPopup({ open: true, message: 'Не вибрано бронювання для скасування', severity: 'error' });
-            return;
-        }
-
-        // Валідація причини
-        if (!cancelReason.trim()) {
-            setErrorPopup({ open: true, message: 'Будь ласка, вкажіть причину скасування', severity: 'error' });
-            return;
-        }
-
-        if (cancelReason.trim().length < 5) {
-            setErrorPopup({ open: true, message: 'Причина скасування має містити принаймні 5 символів', severity: 'error' });
-            return;
-        }
-
-        if (cancelReason.length > 255) {
-            setErrorPopup({ open: true, message: 'Причина скасування надто довга (максимум 255 символів)', severity: 'error' });
-            return;
-        }
-
-        setActionLoading(true);
-        try {
-            await apiClient.post(`/bookings/${bookingToCancel.id}/cancel-operator/`, {
-                reason: cancelReason
-            });
-            setErrorPopup({ open: true, message: 'Бронювання успішно скасовано!', severity: 'success' });
-            setCancelDialogOpen(false);
-            setBookingToCancel(null);
-            setCancelReason('');
-            await loadAllData();
-        } catch (err) {
-            console.error('Error cancelling booking:', err);
-
-            let errorMessage = 'Не вдалося скасувати бронювання.';
-
-            if (!err.response) {
-                errorMessage = 'Не вдалося з\'єднатися з сервером. Перевірте інтернет-з\'єднання.';
-            } else {
-                const status = err.response.status;
-                const data = err.response.data;
-
-                switch (status) {
-                    case 400:
-                        if (data.detail) {
-                            const detail = data.detail.toLowerCase();
-
-                            if (detail.includes('already cancelled') || detail.includes('вже скасовано')) {
-                                errorMessage = 'Це бронювання вже було скасовано раніше.';
-                            } else if (detail.includes('already completed') || detail.includes('завершено')) {
-                                errorMessage = 'Не можна скасувати завершене бронювання.';
-                            } else if (detail.includes('past') || detail.includes('минуле')) {
-                                errorMessage = 'Не можна скасувати бронювання, яке вже закінчилось.';
-                            } else {
-                                errorMessage = data.detail;
-                            }
-                        } else if (data.reason) {
-                            errorMessage = `Помилка: ${data.reason[0]}`;
-                        } else {
-                            errorMessage = 'Невірні дані. Перевірте правильність введення.';
-                        }
-                        break;
-
-                    case 401:
-                        errorMessage = 'Сесія закінчилась. Будь ласка, увійдіть знову.';
-                        setTimeout(() => navigate('/login'), 2000);
-                        break;
-
-                    case 403:
-                        errorMessage = 'У вас немає прав для скасування цього бронювання. Можливо, воно належить іншій парковці.';
-                        break;
-
-                    case 404:
-                        errorMessage = 'Бронювання не знайдено. Можливо, воно вже було видалено.';
-                        setCancelDialogOpen(false);
-                        await loadAllData();
-                        break;
-
-                    case 409:
-                        errorMessage = 'Конфлікт даних. Спробуйте оновити сторінку.';
                         break;
 
                     case 500:
@@ -808,149 +685,7 @@ function OperatorPage() {
                         )}
                     </CardContent>
                 </Card>
-
-                {/* Bookings Section */}
-                <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}>
-                    <CardContent sx={{ p: 3 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-                            Бронювання
-                        </Typography>
-
-                        <Tabs
-                            value={bookingFilter}
-                            onChange={(e, newValue) => setBookingFilter(newValue)}
-                            sx={{
-                                mb: 3,
-                                '& .MuiTab-root': {
-                                    textTransform: 'none',
-                                    fontWeight: 600,
-                                    minWidth: 120
-                                }
-                            }}
-                        >
-                            <Tab label={`Всі (${bookings.length})`} />
-                            <Tab label={`Активні (${bookings.filter(b => b.status === 'confirmed' && new Date(b.end_at) > new Date()).length})`} />
-                            <Tab label={`Скасовані (${bookings.filter(b => b.status === 'cancelled').length})`} />
-                        </Tabs>
-
-                        <Grid container spacing={2}>
-                            {filteredBookings.map((booking) => {
-                                const isActive = booking.status === 'confirmed' && new Date(booking.end_at) > new Date();
-                                const statusConfig = booking.status === 'cancelled'
-                                    ? { label: 'Скасовано', color: '#EF4444', bgColor: '#FEE2E2' }
-                                    : isActive
-                                        ? { label: 'Активне', color: '#10B981', bgColor: '#D1FAE5' }
-                                        : { label: 'Завершено', color: '#6B7280', bgColor: '#F3F4F6' };
-
-                                return (
-                                    <Grid item xs={12} md={6} lg={4} key={booking.id}>
-                                        <Card sx={{ borderRadius: '12px', border: `1px solid ${statusConfig.bgColor}` }}>
-                                            <CardContent sx={{ p: 2.5 }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                                        ID: {booking.id}
-                                                    </Typography>
-                                                    <Chip
-                                                        label={statusConfig.label}
-                                                        size="small"
-                                                        sx={{
-                                                            backgroundColor: statusConfig.bgColor,
-                                                            color: statusConfig.color,
-                                                            fontWeight: 600,
-                                                            fontSize: '0.75rem'
-                                                        }}
-                                                    />
-                                                </Box>
-
-                                                <Box sx={{ mb: 1.5 }}>
-                                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                                                        Користувач
-                                                    </Typography>
-                                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                                        {booking.user_email || 'N/A'}
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{ mb: 1.5 }}>
-                                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                                                        Місце
-                                                    </Typography>
-                                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                                        {booking.spot_number}
-                                                    </Typography>
-                                                </Box>
-
-                                                <Box sx={{ mb: 1.5 }}>
-                                                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                                                        {new Date(booking.start_at).toLocaleString('uk-UA', {
-                                                            day: '2-digit',
-                                                            month: '2-digit',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
-                                                        {' → '}
-                                                        {new Date(booking.end_at).toLocaleString('uk-UA', {
-                                                            day: '2-digit',
-                                                            month: '2-digit',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
-                                                    </Typography>
-                                                </Box>
-
-                                                {booking.cancellation_reason && (
-                                                    <Box sx={{ p: 1.5, backgroundColor: '#FEE2E2', borderRadius: '8px', mb: 2 }}>
-                                                        <Typography variant="caption" sx={{ color: '#991B1B', display: 'block', fontWeight: 500, mb: 0.5 }}>
-                                                            Причина скасування:
-                                                        </Typography>
-                                                        <Typography variant="body2" sx={{ fontSize: '0.8rem', color: '#DC2626' }}>
-                                                            {booking.cancellation_reason}
-                                                        </Typography>
-                                                    </Box>
-                                                )}
-
-                                                {isActive && (
-                                                    <Button
-                                                        variant="outlined"
-                                                        fullWidth
-                                                        size="small"
-                                                        onClick={() => openCancelDialog(booking)}
-                                                        sx={{
-                                                            mt: 1,
-                                                            py: 1,
-                                                            color: '#EF4444',
-                                                            borderColor: '#EF4444',
-                                                            borderRadius: '12px',
-                                                            textTransform: 'none',
-                                                            fontWeight: 600,
-                                                            '&:hover': {
-                                                                borderColor: '#DC2626',
-                                                                backgroundColor: '#FEF2F2',
-                                                            }
-                                                        }}
-                                                    >
-                                                        Скасувати
-                                                    </Button>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                );
-                            })}
-                        </Grid>
-
-                        {filteredBookings.length === 0 && (
-                            <Box sx={{ textAlign: 'center', py: 6 }}>
-                                <Typography variant="body1" color="text.secondary">
-                                    Немає бронювань у цій категорії
-                                </Typography>
-                            </Box>
-                        )}
-                    </CardContent>
-                </Card>
             </Container>
-
-            {/* Dialogs */}
 
             {/* Create Spot Dialog */}
             <Dialog open={createDialogOpen} onClose={() => !actionLoading && setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
@@ -1024,57 +759,6 @@ function OperatorPage() {
                         }}
                     >
                         {actionLoading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Створити'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Cancel Booking Dialog */}
-            <Dialog open={cancelDialogOpen} onClose={() => !actionLoading && setCancelDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ fontWeight: 600 }}>Скасувати бронювання</DialogTitle>
-                <DialogContent>
-                    <Typography gutterBottom>
-                        Скасувати бронювання ID: {bookingToCancel?.id}?
-                    </Typography>
-                    <TextField
-                        label="Причина скасування"
-                        multiline
-                        rows={3}
-                        fullWidth
-                        value={cancelReason}
-                        onChange={(e) => setCancelReason(e.target.value)}
-                        sx={{
-                            mt: 2,
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: '12px',
-                            }
-                        }}
-                        disabled={actionLoading}
-                        required
-                        placeholder="Обов'язково вкажіть причину скасування"
-                    />
-                </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={() => setCancelDialogOpen(false)} disabled={actionLoading}>
-                        Відмінити
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={handleCancelBooking}
-                        disabled={actionLoading}
-                        sx={{
-                            py: 1.5,
-                            background: '#EF4444',
-                            color: '#FFFFFF',
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            borderRadius: '12px',
-                            textTransform: 'none',
-                            '&:hover': {
-                                background: '#DC2626',
-                            }
-                        }}
-                    >
-                        {actionLoading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Підтвердити'}
                     </Button>
                 </DialogActions>
             </Dialog>

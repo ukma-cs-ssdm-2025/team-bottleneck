@@ -151,7 +151,7 @@ const BookingCard = ({ booking, onCancel }) => {
 };
 
 function ProfilePage() {
-    const { user, updateUser, loading } = useAuth();
+    const { user, updateUser, loading, isAdmin, isOperator } = useAuth();
     const [profileData, setProfileData] = useState({
         first_name: '',
         last_name: ''
@@ -210,10 +210,10 @@ function ProfilePage() {
     }, []);
 
     useEffect(() => {
-        if (user) {
+        if (user && !isAdmin && !isOperator) {
             loadBookings();
         }
-    }, [user, loadBookings]);
+    }, [user, isAdmin, isOperator, loadBookings]);
 
     const handleProfileChange = (e) => {
         const { name, value } = e.target;
@@ -425,35 +425,37 @@ function ProfilePage() {
                 </Grid>
 
                 {/* My Bookings Section */}
-                <Box sx={{ mt: 5 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
-                        Мої бронювання
-                    </Typography>
+                {!isAdmin && !isOperator && (
+                    <Box sx={{ mt: 5 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
+                            Мої бронювання
+                        </Typography>
 
-                    {loadingBookings && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
-                            <CircularProgress />
-                        </Box>
-                    )}
+                        {loadingBookings && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+                                <CircularProgress />
+                            </Box>
+                        )}
 
-                    {!loadingBookings && bookings.length === 0 && (
-                        <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', p: 4, textAlign: 'center' }}>
-                            <Typography variant="body1" color="text.secondary">
-                                У вас поки немає бронювань
-                            </Typography>
-                        </Card>
-                    )}
+                        {!loadingBookings && bookings.length === 0 && (
+                            <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', p: 4, textAlign: 'center' }}>
+                                <Typography variant="body1" color="text.secondary">
+                                    У вас поки немає бронювань
+                                </Typography>
+                            </Card>
+                        )}
 
-                    {!loadingBookings && bookings.length > 0 && (
-                        <Grid container spacing={3}>
-                            {bookings.map((booking) => (
-                                <Grid item key={booking.id} xs={12} sm={6} lg={4}>
-                                    <BookingCard booking={booking} onCancel={openCancelDialog} />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    )}
-                </Box>
+                        {!loadingBookings && bookings.length > 0 && (
+                            <Grid container spacing={3}>
+                                {bookings.map((booking) => (
+                                    <Grid item key={booking.id} xs={12} sm={6} lg={4}>
+                                        <BookingCard booking={booking} onCancel={openCancelDialog} />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        )}
+                    </Box>
+                )}
             </Container>
 
             {/* Cancel Dialog */}

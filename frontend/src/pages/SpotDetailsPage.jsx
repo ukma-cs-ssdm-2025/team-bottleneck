@@ -21,17 +21,11 @@ function OperatorSpotDetailsPage() {
 
     // Dialogs
     const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [blockDialogOpen, setBlockDialogOpen] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
     // Forms
     const [editForm, setEditForm] = useState({ is_ev: false, is_disabled: false });
-    const [blockForm, setBlockForm] = useState({
-        start_at: '',
-        end_at: '',
-        reason: ''
-    });
     const [bookingToCancel, setBookingToCancel] = useState(null);
     const [cancelReason, setCancelReason] = useState('');
 
@@ -134,42 +128,6 @@ function OperatorSpotDetailsPage() {
         } catch (err) {
             console.error('Error updating spot:', err);
             setErrorPopup({ open: true, message: 'Не вдалося оновити місце.', severity: 'error' });
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleBlockSpot = async () => {
-        if (!blockForm.start_at || !blockForm.end_at) {
-            setErrorPopup({ open: true, message: 'Вкажіть період блокування', severity: 'error' });
-            return;
-        }
-
-        if (new Date(blockForm.start_at) >= new Date(blockForm.end_at)) {
-            setErrorPopup({ open: true, message: 'Час початку має бути раніше часу закінчення', severity: 'error' });
-            return;
-        }
-
-        setActionLoading(true);
-        try {
-            await apiClient.post('/bookings/create/', {
-                spot: parseInt(spotId),
-                start_at: blockForm.start_at,
-                end_at: blockForm.end_at,
-            });
-            setErrorPopup({ open: true, message: 'Місце заблоковано!', severity: 'success' });
-            setBlockDialogOpen(false);
-            setBlockForm({ start_at: '', end_at: '', reason: '' });
-            await loadData();
-        } catch (err) {
-            console.error('Error blocking spot:', err);
-
-            let errorMessage = 'Не вдалося заблокувати місце.';
-            if (err.response?.status === 409) {
-                errorMessage = 'Місце вже заброньоване на цей час.';
-            }
-
-            setErrorPopup({ open: true, message: errorMessage, severity: 'error' });
         } finally {
             setActionLoading(false);
         }
@@ -409,20 +367,6 @@ function OperatorSpotDetailsPage() {
                                     }}
                                 >
                                     Редагувати
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    onClick={() => setBlockDialogOpen(true)}
-                                    sx={{
-                                        background: '#F59E0B',
-                                        textTransform: 'none',
-                                        fontWeight: 600,
-                                        '&:hover': {
-                                            background: '#D97706'
-                                        }
-                                    }}
-                                >
-                                    Заблокувати місце
                                 </Button>
                                 <Button
                                     variant="contained"
@@ -678,56 +622,6 @@ function OperatorSpotDetailsPage() {
                         }}
                     >
                         {actionLoading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Зберегти'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Block Spot Dialog */}
-            <Dialog open={blockDialogOpen} onClose={() => !actionLoading && setBlockDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ fontWeight: 600 }}>Заблокувати місце</DialogTitle>
-                <DialogContent>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        Створіть бронювання щоб заблокувати місце для інших користувачів
-                    </Typography>
-                    <TextField
-                        label="Початок блокування"
-                        type="datetime-local"
-                        fullWidth
-                        value={blockForm.start_at}
-                        onChange={(e) => setBlockForm({ ...blockForm, start_at: e.target.value })}
-                        sx={{ mt: 2, mb: 2 }}
-                        disabled={actionLoading}
-                        InputLabelProps={{ shrink: true }}
-                    />
-                    <TextField
-                        label="Кінець блокування"
-                        type="datetime-local"
-                        fullWidth
-                        value={blockForm.end_at}
-                        onChange={(e) => setBlockForm({ ...blockForm, end_at: e.target.value })}
-                        sx={{ mb: 2 }}
-                        disabled={actionLoading}
-                        InputLabelProps={{ shrink: true }}
-                    />
-                </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={() => setBlockDialogOpen(false)} disabled={actionLoading}>
-                        Скасувати
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={handleBlockSpot}
-                        disabled={actionLoading}
-                        sx={{
-                            background: '#F59E0B',
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            '&:hover': {
-                                background: '#D97706'
-                            }
-                        }}
-                    >
-                        {actionLoading ? <CircularProgress size={24} sx={{ color: '#FFF' }} /> : 'Заблокувати'}
                     </Button>
                 </DialogActions>
             </Dialog>
