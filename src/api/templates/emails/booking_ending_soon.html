@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Завершення бронювання #{{ booking.id|default:"N/A" }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    
+    <div style="background-color: #fff3cd; padding: 20px; border-bottom: 3px solid #ffc107;">
+        <h2 style="color: #856404; margin: 0;">⏳ Ваше бронювання завершується</h2>
+    </div>
+
+    <div style="padding: 20px;">
+        <p>Вітаємо, <strong>{{ user.username|default:"Користувачу" }}</strong>!</p>
+        <p>Нагадуємо, що час вашого бронювання паркувального місця спливає через <strong>10 хвилин</strong>.</p>
+        <p>Будь ласка, підготуйтеся до виїзду, щоб уникнути додаткових нарахувань або блокування.</p>
+
+        <h3 style="border-bottom: 2px solid #eee; padding-bottom: 5px;">Деталі:</h3>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Номер бронювання:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">#{{ booking.id|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Майданчик:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ booking.spot.lot.name|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Місце:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ booking.spot.number|default:"N/A" }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; color: #dc3545;">Час завершення:</td>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; color: #dc3545;">{{ booking.end_at|date:"d.m.Y H:i" }}</td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 25px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #007bff; font-size: 0.9em;">
+            <strong>Потрібно більше часу?</strong><br>
+            Ви можете подовжити бронювання у своєму особистому кабінеті, якщо місце ще не заброньоване іншим користувачем.
+        </div>
+    </div>
+</body>
+</html>
