@@ -74,7 +74,7 @@ The backend is built with Django and exposes a complete REST API documented via 
 
 ---
 
-###  User Management
+### User Management
 
 **Authentication & Authorization:**
 
