@@ -315,7 +315,8 @@ function OperatorSpotDetailsPage() {
                         mb: 3,
                         textTransform: 'none',
                         color: '#6B7280',
-                        fontWeight: 600
+                        fontWeight: 600,
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
                     }}
                 >
                     ← Назад до панелі
@@ -323,10 +324,10 @@ function OperatorSpotDetailsPage() {
 
                 {/* Spot Info */}
                 <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)', mb: 3 }}>
-                    <CardContent sx={{ p: 4 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-start' }, mb: 3, gap: { xs: 2, sm: 0 } }}>
                             <Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 2 }}>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 2, fontSize: { xs: '1.5rem', sm: '2rem' } }}>
                                     Місце {spot.number}
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
@@ -351,13 +352,15 @@ function OperatorSpotDetailsPage() {
                                     )}
                                 </Box>
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, width: { xs: '100%', sm: 'auto' } }}>
                                 <Button
                                     variant="outlined"
                                     onClick={() => setEditDialogOpen(true)}
+                                    fullWidth={{ xs: true, sm: false }}
                                     sx={{
                                         textTransform: 'none',
                                         fontWeight: 600,
+                                        fontSize: { xs: '0.875rem', sm: '1rem' },
                                         borderColor: '#10B981',
                                         color: '#10B981',
                                         '&:hover': {
@@ -371,10 +374,12 @@ function OperatorSpotDetailsPage() {
                                 <Button
                                     variant="contained"
                                     onClick={() => setDeleteConfirmOpen(true)}
+                                    fullWidth={{ xs: true, sm: false }}
                                     sx={{
                                         background: '#EF4444',
                                         textTransform: 'none',
                                         fontWeight: 600,
+                                        fontSize: { xs: '0.875rem', sm: '1rem' },
                                         '&:hover': {
                                             background: '#DC2626'
                                         }
@@ -463,8 +468,8 @@ function OperatorSpotDetailsPage() {
 
                 {/* Bookings List */}
                 <Card sx={{ borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}>
-                    <CardContent sx={{ p: 3 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                        <Typography variant="h5" sx={{ fontWeight: 600, mb: 3, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                             Історія бронювань
                         </Typography>
 
