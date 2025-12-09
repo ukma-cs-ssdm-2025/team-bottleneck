@@ -31,6 +31,7 @@ class Spot(models.Model):
 
     class Meta:
         unique_together = ("lot", "number")
+        ordering = ['number']
 
     def __str__(self):
         return f"{self.lot.name} #{self.number}"
